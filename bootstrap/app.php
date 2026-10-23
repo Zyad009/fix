@@ -1,13 +1,19 @@
 <?php
 
 use App\Exceptions\BusinessRuleException;
+use App\Http\Middleware\AdminOnlyMiddleware;
+use App\Http\Middleware\BranchContextMiddleware;
+use App\Http\Middleware\EnsureSubscriptionActive;
+use App\Http\Middleware\PermissionMiddleware;
 use App\Http\Middleware\SetLangMiddleware;
+use App\Http\Middleware\TenantContextMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -24,6 +30,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: env('TRUSTED_PROXIES', '*'));
         // Global (not just the api group) so that unmatched-route 404s are localized too.
         $middleware->prepend(SetLangMiddleware::class);
+
+        $middleware->alias([
+            'admin.only' => AdminOnlyMiddleware::class,
+            'tenant' => TenantContextMiddleware::class,
+            'branch' => BranchContextMiddleware::class,
+            'subscription' => EnsureSubscriptionActive::class,
+            'permission' => PermissionMiddleware::class,
+        ]);
+
+        // Tenant/branch context must exist before route-model binding runs,
+        // so bound models are resolved through the tenant and branch scopes.
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: TenantContextMiddleware::class);
+        $middleware->appendToPriorityList(after: TenantContextMiddleware::class, append: BranchContextMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

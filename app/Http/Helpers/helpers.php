@@ -1,8 +1,15 @@
 <?php
 
+use App\Models\User;
 use App\Support\Money;
+use App\Support\Tenancy\BranchContext;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
+use Illuminate\Validation\Rules\Unique;
 
 if (! function_exists('log_error')) {
     /**
@@ -38,6 +45,62 @@ if (! function_exists('requireRoutesFiles')) {
         foreach (glob($directory.'/*.php') ?: [] as $file) {
             require $file;
         }
+    }
+}
+
+if (! function_exists('actor')) {
+    /**
+     * The authenticated service-center user, if any.
+     */
+    function actor(): ?User
+    {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
+    }
+}
+
+if (! function_exists('tenantContext')) {
+    function tenantContext(): TenantContext
+    {
+        return app(TenantContext::class);
+    }
+}
+
+if (! function_exists('branchContext')) {
+    function branchContext(): BranchContext
+    {
+        return app(BranchContext::class);
+    }
+}
+
+if (! function_exists('tenantExists')) {
+    /**
+     * `exists` rule limited to the current tenant (and to live rows when the
+     * table soft-deletes).
+     */
+    function tenantExists(string $table, string $column = 'id', bool $withoutTrashed = false): Exists
+    {
+        $rule = Rule::exists($table, $column)->where('tenant_id', tenantContext()->id());
+
+        return $withoutTrashed ? $rule->withoutTrashed() : $rule;
+    }
+}
+
+if (! function_exists('tenantUnique')) {
+    /**
+     * `unique` rule limited to the current tenant.
+     */
+    function tenantUnique(string $table, string $column): Unique
+    {
+        return Rule::unique($table, $column)->where('tenant_id', tenantContext()->id());
+    }
+}
+
+if (! function_exists('publicFileUrl')) {
+    function publicFileUrl(?string $path): ?string
+    {
+        return $path ? Storage::disk(config('filesystems.default'))->url($path) : null;
     }
 }
 
