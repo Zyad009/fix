@@ -1,5 +1,31 @@
 # تصميم قاعدة البيانات – SaaS لمراكز صيانة السيارات (MVP)
 
+> **ملحوظة:** الملف ده هو اللي الـ `brief.md` بيسميه `DATABASE_DESIGN.md`.
+
+## 0. تعديلات معتمدة (أكتوبر 2026)
+
+القسم ده **بيتغلب على أي حاجة تخالفه في باقي الملف**. والـ SQL اللي تحت مكتوب بصيغة PostgreSQL للتوضيح بس، لكن التنفيذ الفعلي بيتعمل بـ Laravel migrations على MySQL.
+
+| الموضوع | التعديل |
+|---|---|
+| الداتابيز | **MySQL 8** بدل PostgreSQL، فمفيش RLS. العزل بقى بـ Global Scope في Eloquent + Composite FKs `(tenant_id, id)` + tests عزل إجبارية |
+| الـ IDs | `bigint` auto-increment بدل uuid |
+| الـ Super Admin | جدول `admins` منفصل. هو اللي بينشئ المراكز والفروع، ومفيش self-signup |
+| الفروع | جدول `branches` موجود من الأول (`next_order_no` و `next_receipt_no` عليه). الأوردرات والمدفوعات والإيصالات والمصروفات والموظفين والمخزون كلهم عليهم `branch_id`، والترقيم بقى **لكل فرع** |
+| `tenants` | اتشال منه `next_order_no`، واتضاف `subscription_ends_at` و `cashier_max_discount` (مبلغ) و `timezone` (default `Africa/Cairo`) و `logo_path` |
+| `users` | اتضاف `branch_id` nullable (null يعني الـ owner وده بيشوف كل الفروع) |
+| العربيات | اتضاف `plate_normalized` (للبحث والـ unique)، و `car_make_id` / `car_model_id` (nullable) بدل make/model كنص، وده بيشاور على جداول عامة `car_makes` / `car_models` اللي الأدمن بس يضيف فيها |
+| المخزون | `products.stock_qty` اتنقل لجدول `product_branch_stock (branch_id, product_id, qty)`. بيتخصم عند قفل الأوردر ويرجع عند الإلغاء، ومن غير ما يمنع البيع لو الرصيد مش كفاية |
+| التحصيل | جدول **`payment_receipts`** جديد. كل عملية تحصيل = إيصال واحد برقم متسلسل للفرع، وصفوف `payments` بتشاور عليه بـ `receipt_id` |
+| المرتجعات | `payments.type` بقى `payment` أو `refund`. وإلغاء أوردر مدفوع بيعمل صفوف refund، و `orders.paid = SUM(payment) − SUM(refund)` |
+| التصحيح | الحركات المالية (إيصالات، مدفوعات، مصروفات، حركات الموظف) **مابتتعدلش ولا بتتمسح**، بتتعمل لها void بسبب (`voided_at`, `voided_by`, `void_reason`) |
+| العربون | الدفع على أوردر `open` مسموح، والمديونية بتتحسب من الأوردرات `completed` بس |
+| الفاتورة المقفولة | الـ owner بيعدلها مباشرة، والـ totals والمخزون بيتظبطوا، وكل ده بيتسجل في `audit_logs` |
+| حركات الموظف | كلها كاش (مفيش عمود method). والمرتب مايتكررش لنفس الموظف في نفس الشهر، إلا لو المرتب الأول اتعمله void |
+| Audit | جدول `audit_logs` (tenant_id, user_id, auditable, event, old/new values, reason, ip) |
+| الوقت | التخزين UTC، والتقارير بتحسب حدود اليوم بتوقيت المركز |
+| خارج الـ MVP | VAT. وفكرة إن الـ branches تتأجل لـ "المرحلة التانية" اتلغت، لأنها اتنفذت من الأول |
+
 ## 1. نظرة عامة
 
 نظام SaaS لإدارة مراكز صيانة السيارات، بمعمارية **Multi-tenant / Single Database** على PostgreSQL.
