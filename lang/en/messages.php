@@ -58,6 +58,7 @@ return [
     'technician_invalid' => 'The selected technician is not available in this branch.',
     'order_completed' => 'Order completed and turned into an invoice.',
     'order_cancelled' => 'Order cancelled.',
+    'cancel_reason_required' => 'A reason is required to cancel a completed invoice.',
     'opening_balance_locked' => 'Opening-balance orders cannot be changed.',
     'opening_balance_item' => 'Opening balance',
     'opening_balance_created' => 'Opening balance recorded.',

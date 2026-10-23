@@ -23,6 +23,12 @@ class Category extends Model
     /** @var list<string> */
     public const DEFAULTS = ['زيوت', 'فلاتر', 'كاوتش', 'بطاريات', 'عمالة / مصنعية'];
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'sort_order' => 0,
+        'is_active' => true,
+    ];
+
     /**
      * @return array<string, string>
      */

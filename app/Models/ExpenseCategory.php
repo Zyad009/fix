@@ -20,6 +20,11 @@ class ExpenseCategory extends Model
     /** @var list<string> */
     public const DEFAULTS = ['إيجار', 'كهرباء', 'مياه', 'مرافق', 'نثريات'];
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'is_active' => true,
+    ];
+
     /**
      * @return array<string, string>
      */

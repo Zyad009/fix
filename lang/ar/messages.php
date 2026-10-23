@@ -58,6 +58,7 @@ return [
     'technician_invalid' => 'الفني المختار غير متاح في هذا الفرع.',
     'order_completed' => 'تم قفل الأوردر وتحويله لفاتورة.',
     'order_cancelled' => 'تم إلغاء الأوردر.',
+    'cancel_reason_required' => 'سبب الإلغاء مطلوب لإلغاء فاتورة مقفولة.',
     'opening_balance_locked' => 'لا يمكن تعديل أوردر رصيد افتتاحي.',
     'opening_balance_item' => 'رصيد افتتاحي',
     'opening_balance_created' => 'تم تسجيل الرصيد الافتتاحي.',

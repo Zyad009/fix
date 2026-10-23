@@ -50,7 +50,7 @@ trait ResponseTrait
     /**
      * @return array{current_page: int, per_page: int, total: int, last_page: int, has_more_pages: bool, next_page_url: ?string, prev_page_url: ?string}|array{}
      */
-    private static function formatPagination(object $collection): array
+    protected static function formatPagination(object $collection): array
     {
         if ($collection instanceof AnonymousResourceCollection) {
             $collection = $collection->resource;

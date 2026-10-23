@@ -29,6 +29,11 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use BelongsToTenant, HasApiTokens, HasFactory;
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'is_active' => true,
+    ];
+
     /**
      * @return array<string, string>
      */

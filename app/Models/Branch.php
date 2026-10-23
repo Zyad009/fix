@@ -21,6 +21,14 @@ class Branch extends Model
 {
     use BelongsToTenant;
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'next_order_no' => 1,
+        'next_receipt_no' => 1,
+        'is_default' => false,
+        'is_active' => true,
+    ];
+
     /**
      * @return array<string, string>
      */

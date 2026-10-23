@@ -21,6 +21,7 @@ abstract class IndexRequest extends AbstractFormRequest
             'q' => ['nullable', 'string', 'max:100'],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'format' => ['nullable', 'in:json,excel'],
             ...$this->filters(),
         ];
     }

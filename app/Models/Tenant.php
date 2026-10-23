@@ -24,6 +24,14 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name', 'phone', 'address', 'logo_path', 'plan', 'subscription_ends_at', 'cashier_max_discount', 'timezone', 'is_active'])]
 class Tenant extends Model
 {
+    /** @var array<string, mixed> Mirrors the column defaults so fresh models are complete. */
+    protected $attributes = [
+        'plan' => 'trial',
+        'cashier_max_discount' => '0.00',
+        'timezone' => 'Africa/Cairo',
+        'is_active' => true,
+    ];
+
     /**
      * @return array<string, string>
      */

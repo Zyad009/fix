@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\BusinessRuleException;
+use App\Exports\ArrayExport;
 use App\Support\Traits\ResponseTrait;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 abstract class Controller
@@ -40,5 +44,21 @@ abstract class Controller
         log_error($th);
 
         return $this->response([], $th->getMessage(), 500);
+    }
+
+    protected function wantsExcel(Request $request): bool
+    {
+        return $request->query('format') === 'excel';
+    }
+
+    /**
+     * Download rows as a right-to-left Excel sheet.
+     *
+     * @param  list<string>  $headings
+     * @param  list<list<mixed>>  $rows
+     */
+    protected function excel(string $filename, array $headings, array $rows): BinaryFileResponse
+    {
+        return Excel::download(new ArrayExport($headings, $rows), $filename.'-'.now()->format('Y-m-d').'.xlsx');
     }
 }

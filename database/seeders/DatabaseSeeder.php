@@ -2,24 +2,22 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Admin;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
-     * Seed the application's database.
+     * Platform data needed in every environment. Local/demo data lives in
+     * DemoSeeder (`php artisan db:seed --class=DemoSeeder`).
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call(CarCatalogSeeder::class);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        Admin::query()->firstOrCreate(
+            ['email' => config('dawar.admin.email')],
+            ['name' => 'Super Admin', 'password' => config('dawar.admin.password')],
+        );
     }
 }
