@@ -18,6 +18,7 @@ class ProductResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'barcode' => $this->barcode,
             'kind' => $this->kind->response(),
             'category' => $this->whenLoaded('category', fn () => $this->category ? ['id' => $this->category->id, 'name' => $this->category->name] : null),
             'sale_price' => formatNumber($this->sale_price),

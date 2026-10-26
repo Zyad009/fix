@@ -7,6 +7,7 @@ use App\Http\Requests\V1\Center\IndexProductRequest;
 use App\Http\Requests\V1\Center\ProductRequest;
 use App\Http\Requests\V1\Center\StockRequest;
 use App\Http\Requests\V1\ImageRequest;
+use App\Http\Requests\V1\ListRequest;
 use App\Http\Resources\V1\Center\CategoryResource;
 use App\Http\Resources\V1\Center\ProductResource;
 use App\Models\Product;
@@ -58,12 +59,17 @@ class ProductController extends Controller implements HasMiddleware
     }
 
     /**
-     * POS screen in one call: categories → active products (+ branch stock).
+     * POS screen in one call: categories → active products (+ branch stock),
+     * and the branch's next invoice number (display only: the real number is
+     * taken when the order is saved).
      */
-    public function catalog(): JsonResponse
+    public function catalog(ListRequest $request): JsonResponse
     {
         try {
-            return $this->response(CategoryResource::collection($this->productService->catalog()));
+            return $this->response([
+                'next_order_no' => branchContext()->resolve()?->fresh()?->next_order_no,
+                'categories' => CategoryResource::collection($this->productService->catalog($request->validated())),
+            ]);
         } catch (\Throwable $th) {
             return $this->failed($th);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1\Center;
 
+use App\Enums\ProductKind;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -28,6 +29,8 @@ class OrderResource extends JsonResource
             'next_service_odometer' => $this->next_service_odometer,
             'next_service_date' => $this->next_service_date?->toDateString(),
             'subtotal' => formatNumber($this->subtotal),
+            'parts_total' => $this->whenLoaded('items', fn () => $this->kindTotal(ProductKind::Part)->toFloat()),
+            'services_total' => $this->whenLoaded('items', fn () => $this->kindTotal(ProductKind::Service)->toFloat()),
             'discount' => formatNumber($this->discount),
             'total' => formatNumber($this->total),
             'paid' => formatNumber($this->paid),

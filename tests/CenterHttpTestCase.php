@@ -87,6 +87,21 @@ abstract class CenterHttpTestCase extends TestCase
     }
 
     /**
+     * A technician-cashier login linked to an employee of the branch.
+     */
+    protected function technicianCashier(?Branch $branch = null): User
+    {
+        $branch ??= $this->branch;
+
+        return tenantContext()->run($this->tenantOf($branch), function () use ($branch): User {
+            $user = User::factory()->technicianCashier($branch->id)->create();
+            Employee::query()->create(['branch_id' => $branch->id, 'user_id' => $user->id, 'name' => $user->name, 'base_salary' => '0']);
+
+            return $user;
+        });
+    }
+
+    /**
      * Request headers authenticating as a center user (optionally selecting a branch).
      *
      * @return array<string, string>

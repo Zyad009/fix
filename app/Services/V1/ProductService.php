@@ -31,7 +31,9 @@ class ProductService
     {
         return Product::query()
             ->with(['category:id,name', 'stocks'])
-            ->when($filters['q'] ?? null, fn (Builder $query, string $q) => $query->where('name', 'like', "%{$q}%"))
+            ->when($filters['q'] ?? null, fn (Builder $query, string $q) => $query->where(fn (Builder $query) => $query
+                ->where('name', 'like', "%{$q}%")
+                ->orWhere('barcode', $q)))
             ->when($filters['category_id'] ?? null, fn (Builder $query, $categoryId) => $query->where('category_id', $categoryId))
             ->when($filters['kind'] ?? null, fn (Builder $query, string $kind) => $query->where('kind', $kind))
             ->when(isset($filters['is_active']), fn (Builder $query) => $query->where('is_active', (bool) $filters['is_active']))
@@ -40,14 +42,26 @@ class ProductService
 
     /**
      * POS screen: active categories with their active products and stock.
+     * `q` is a scanned barcode (exact match wins) or part of a name; only
+     * categories with a match are returned then.
      *
+     * @param  array<string, mixed>  $filters
      * @return Collection<int, Category>
      */
-    public function catalog(): Collection
+    public function catalog(array $filters = []): Collection
     {
+        $q = $filters['q'] ?? null;
+        $barcodeHit = $q !== null && Product::query()->where('is_active', true)->where('barcode', $q)->exists();
+
+        $products = fn ($query) => $query->where('is_active', true)
+            ->when($q !== null, fn ($query) => $barcodeHit
+                ? $query->where('barcode', $q)
+                : $query->where('name', 'like', "%{$q}%"));
+
         return Category::query()
             ->where('is_active', true)
-            ->with(['products' => fn ($query) => $query->where('is_active', true)->with('stocks')->orderBy('name')])
+            ->when($q !== null, fn ($query) => $query->whereHas('products', $products))
+            ->with(['products' => fn ($query) => $products($query)->with('stocks')->orderBy('name')])
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get();
@@ -115,7 +129,7 @@ class ProductService
      */
     private function attributes(array $data): array
     {
-        $attributes = Arr::only($data, ['category_id', 'name', 'kind', 'sale_price', 'cost_price', 'track_stock']);
+        $attributes = Arr::only($data, ['category_id', 'name', 'barcode', 'kind', 'sale_price', 'cost_price', 'track_stock']);
 
         if (($data['kind'] ?? null) === ProductKind::Service->value) {
             $attributes['track_stock'] = false;

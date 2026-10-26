@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OrderStatus;
+use App\Enums\ProductKind;
 use App\Models\Concerns\BelongsToBranch;
 use App\Models\Concerns\BelongsToTenant;
 use App\Support\Money;
@@ -91,6 +92,15 @@ class Order extends Model
     public function remaining(): Money
     {
         return Money::of($this->total)->minus($this->paid);
+    }
+
+    /**
+     * Lines total of one kind (parts vs labour), before the discount.
+     * Uses the loaded items.
+     */
+    public function kindTotal(ProductKind $kind): Money
+    {
+        return Money::sum($this->items->where('kind', $kind)->pluck('line_total'));
     }
 
     /**

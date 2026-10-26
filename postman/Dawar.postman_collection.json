@@ -1,7 +1,7 @@
 {
     "info": {
         "name": "Dawar API",
-        "description": "Car service center SaaS API.\n\n1. Run `center / auth → center.auth.login` (or the admin one): the token is stored automatically.\n2. Owners can enable the `X-Branch-Id` header to act in one branch; staff are pinned to their branch.\n3. `lang` header: ar (default) or en.\n\nDemo data: `php artisan db:seed --class=DemoSeeder` (owner@dawar.test / cashier@dawar.test / tech@dawar.test / admin@dawar.test, password: password).",
+        "description": "Car service center SaaS API.\n\n1. Run `center / auth → center.auth.login` (or the admin one): the token is stored automatically.\n2. Owners can enable the `X-Branch-Id` header to act in one branch; staff are pinned to their branch.\n3. `lang` header: ar (default) or en.\n\nDemo data: `php artisan db:seed --class=DemoSeeder` (owner@dawar.test / cashier@dawar.test / tech@dawar.test / worker@dawar.test / admin@dawar.test, password: password).",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
@@ -2045,7 +2045,7 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"حسن\",\n    \"job_title\": \"ميكانيكي\",\n    \"base_salary\": 6000,\n    \"hired_at\": \"2026-01-01\"\n}"
+                            "raw": "{\n    \"name\": \"حسن\",\n    \"job_title\": \"ميكانيكي\",\n    \"base_salary\": 6000,\n    \"hired_at\": \"2026-01-01\",\n    \"account\": {\n        \"email\": \"hassan@dawar.test\",\n        \"password\": \"secret123\",\n        \"role\": \"technician_cashier\"\n    }\n}"
                         }
                     }
                 },
@@ -2989,7 +2989,7 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"vehicle_id\": 1,\n    \"odometer\": 52000,\n    \"technician_id\": null,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"qty\": 1\n        },\n        {\n            \"name\": \"مصنعية\",\n            \"qty\": 1,\n            \"unit_price\": 200\n        }\n    ],\n    \"discount\": 0,\n    \"next_service_odometer\": 57000,\n    \"next_service_date\": \"2027-01-15\"\n}"
+                            "raw": "{\n    \"customer\": {\n        \"name\": \"محمد علي\",\n        \"phone\": \"01012345678\"\n    },\n    \"vehicle\": {\n        \"plate_number\": \"أ ب ج 1234\",\n        \"vin\": null\n    },\n    \"odometer\": 45000,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"qty\": 1\n        },\n        {\n            \"name\": \"مصنعية\",\n            \"qty\": 1,\n            \"unit_price\": 300\n        }\n    ],\n    \"discount\": 50,\n    \"next_service_odometer\": 50000,\n    \"next_service_date\": \"2027-01-15\",\n    \"complete\": true,\n    \"payments\": [\n        {\n            \"amount\": 300,\n            \"method\": \"cash\"\n        }\n    ]\n}"
                         }
                     }
                 },
@@ -3639,7 +3639,7 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/center/pos/catalog",
+                            "raw": "{{base_url}}/center/pos/catalog?q=6221234567890",
                             "host": [
                                 "{{base_url}}"
                             ],
@@ -3648,7 +3648,12 @@
                                 "pos",
                                 "catalog"
                             ],
-                            "query": [],
+                            "query": [
+                                {
+                                    "key": "q",
+                                    "value": "6221234567890"
+                                }
+                            ],
                             "variable": []
                         },
                         "auth": {
@@ -3758,7 +3763,7 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"category_id\": 1,\n    \"name\": \"زيت 5W30\",\n    \"kind\": \"part\",\n    \"sale_price\": 850,\n    \"cost_price\": 700,\n    \"track_stock\": true\n}"
+                            "raw": "{\n    \"category_id\": 1,\n    \"name\": \"زيت 5W30\",\n    \"barcode\": \"6221234567890\",\n    \"kind\": \"part\",\n    \"sale_price\": 850,\n    \"cost_price\": 700,\n    \"track_stock\": true\n}"
                         }
                     }
                 },

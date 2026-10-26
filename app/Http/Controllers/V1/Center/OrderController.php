@@ -77,8 +77,9 @@ class OrderController extends Controller implements HasMiddleware
     {
         try {
             $result = $this->orderService->create($request->validated());
+            $message = $result['order']->isCompleted() ? __('messages.order_completed') : __('messages.created');
 
-            return $this->withWarnings($result, __('messages.created'), 201);
+            return $this->withWarnings($result, $message, 201);
         } catch (\Throwable $th) {
             return $this->failed($th);
         }

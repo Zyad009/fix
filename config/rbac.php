@@ -68,6 +68,24 @@ return [
             'expenses.manage',
         ],
 
+        // Medium workshops: the same person repairs, sells and collects.
+        // Same permissions as the cashier; the difference is the linked
+        // employee record that becomes the technician of their orders.
+        'technician_cashier' => [
+            'customers.view',
+            'customers.manage',
+            'catalog.view',
+            'orders.view',
+            'orders.view_closed',
+            'orders.create',
+            'orders.price_override',
+            'orders.discount',
+            'orders.complete',
+            'payments.collect',
+            'expenses.view',
+            'expenses.manage',
+        ],
+
         'technician' => [
             'customers.view',
             'catalog.view',

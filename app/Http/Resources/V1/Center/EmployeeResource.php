@@ -23,7 +23,13 @@ class EmployeeResource extends JsonResource
             'hired_at' => $this->hired_at?->toDateString(),
             'is_active' => $this->is_active,
             'branch' => $this->whenLoaded('branch', fn () => ['id' => $this->branch->id, 'name' => $this->branch->name]),
-            'user' => $this->whenLoaded('user', fn () => $this->user ? ['id' => $this->user->id, 'name' => $this->user->name, 'email' => $this->user->email] : null),
+            // The employee's login, when they have one.
+            'account' => $this->whenLoaded('user', fn () => $this->user ? [
+                'id' => $this->user->id,
+                'email' => $this->user->email,
+                'role' => $this->user->role->response(),
+                'is_active' => $this->user->is_active,
+            ] : null),
             // Positive: the center owes the employee; negative: the employee owes advances.
             'balance' => $this->whenLoaded('balance', fn () => formatNumber($this->balance?->balance)),
         ];

@@ -37,6 +37,9 @@ return [
     'car_model_mismatch' => 'The model does not belong to the selected make.',
     'same_owner' => 'The vehicle already belongs to this customer.',
     'owner_transferred' => 'Vehicle ownership transferred successfully.',
+    'plate_belongs_to_other_customer' => 'Plate :plate belongs to another customer. Pick it from search or transfer its ownership first.',
+    'vin_taken' => 'This VIN belongs to another vehicle.',
+    'customer_create_forbidden' => 'You may not add new customers or vehicles. Pick a registered vehicle.',
 
     // Catalog
     'category_in_use' => 'A category that has products cannot be deleted.',
@@ -57,6 +60,7 @@ return [
     'stock_insufficient' => 'Stock of ":product" is now :qty.',
     'technician_invalid' => 'The selected technician is not available in this branch.',
     'order_completed' => 'Order completed and turned into an invoice.',
+    'complete_forbidden' => 'You may not complete orders.',
     'order_cancelled' => 'Order cancelled.',
     'cancel_reason_required' => 'A reason is required to cancel a completed invoice.',
     'opening_balance_locked' => 'Opening-balance orders cannot be changed.',
@@ -75,6 +79,7 @@ return [
     'period_required' => 'The month is required for a salary entry.',
     'payroll_issued' => 'Salaries issued for :count employees.',
     'employee_inactive' => 'The employee is inactive.',
+    'employee_account_email_required' => 'An email is required to create the employee login.',
 
     // Expenses
     'expense_category_in_use' => 'A category used by expenses cannot be deleted.',

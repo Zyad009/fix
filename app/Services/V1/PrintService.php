@@ -2,6 +2,7 @@
 
 namespace App\Services\V1;
 
+use App\Enums\ProductKind;
 use App\Models\Order;
 use App\Models\PaymentReceipt;
 use App\Models\Tenant;
@@ -64,6 +65,8 @@ class PrintService
             ])->all(),
             'totals' => [
                 'subtotal' => formatNumber($order->subtotal),
+                'parts_total' => $order->kindTotal(ProductKind::Part)->toFloat(),
+                'services_total' => $order->kindTotal(ProductKind::Service)->toFloat(),
                 'discount' => formatNumber($order->discount),
                 'total' => formatNumber($order->total),
                 'paid' => formatNumber($order->paid),

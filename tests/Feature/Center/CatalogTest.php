@@ -51,7 +51,7 @@ class CatalogTest extends CenterHttpTestCase
             ->assertJsonPath('data.stock', 12);
 
         $response = $this->getJson($this->url('pos/catalog'), $this->as($this->cashier()))->assertOk();
-        $oilCategory = collect($response->json('data'))->firstWhere('name', 'زيوت');
+        $oilCategory = collect($response->json('data.categories'))->firstWhere('name', 'زيوت');
 
         $this->assertCount(1, $oilCategory['products']);
         $this->assertSame(12, $oilCategory['products'][0]['stock']);

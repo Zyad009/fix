@@ -37,6 +37,9 @@ return [
     'car_model_mismatch' => 'الموديل لا يتبع الماركة المختارة.',
     'same_owner' => 'العربية مسجلة بالفعل باسم هذا العميل.',
     'owner_transferred' => 'تم نقل ملكية العربية بنجاح.',
+    'plate_belongs_to_other_customer' => 'اللوحة :plate مسجلة باسم عميل آخر. اخترها من البحث أو انقل ملكيتها أولاً.',
+    'vin_taken' => 'رقم الشاسيه مسجل لعربية أخرى.',
+    'customer_create_forbidden' => 'ليس لديك صلاحية إضافة عميل أو عربية جديدة. اختر عربية مسجلة.',
 
     // Catalog
     'category_in_use' => 'لا يمكن حذف تصنيف يحتوي على منتجات.',
@@ -57,6 +60,7 @@ return [
     'stock_insufficient' => 'رصيد ":product" في المخزن أصبح :qty.',
     'technician_invalid' => 'الفني المختار غير متاح في هذا الفرع.',
     'order_completed' => 'تم قفل الأوردر وتحويله لفاتورة.',
+    'complete_forbidden' => 'ليس لديك صلاحية قفل الأوردر.',
     'order_cancelled' => 'تم إلغاء الأوردر.',
     'cancel_reason_required' => 'سبب الإلغاء مطلوب لإلغاء فاتورة مقفولة.',
     'opening_balance_locked' => 'لا يمكن تعديل أوردر رصيد افتتاحي.',
@@ -75,6 +79,7 @@ return [
     'period_required' => 'الشهر مطلوب لحركة المرتب.',
     'payroll_issued' => 'تم إصدار مرتبات :count موظف.',
     'employee_inactive' => 'الموظف موقوف.',
+    'employee_account_email_required' => 'البريد الإلكتروني مطلوب لإنشاء حساب دخول للموظف.',
 
     // Expenses
     'expense_category_in_use' => 'لا يمكن حذف تصنيف مستخدم في مصروفات.',

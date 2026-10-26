@@ -10,9 +10,15 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
 
 class EmployeeService
 {
+    /** @var list<string> */
+    private const FIELDS = ['name', 'phone', 'job_title', 'base_salary', 'hired_at'];
+
+    public function __construct(private readonly UserService $users) {}
+
     /**
      * @param  array<string, mixed>  $filters
      * @return LengthAwarePaginator<int, Employee>
@@ -20,7 +26,7 @@ class EmployeeService
     public function list(array $filters): LengthAwarePaginator
     {
         return Employee::query()
-            ->with(['branch:id,name', 'balance', 'user:id,name,email'])
+            ->with(['branch:id,name', 'balance', 'user:id,name,email,role,is_active'])
             ->when($filters['q'] ?? null, fn (Builder $query, string $q) => $query->where(fn (Builder $query) => $query
                 ->where('name', 'like', "%{$q}%")
                 ->orWhere('phone', 'like', "%{$q}%")))
@@ -40,22 +46,30 @@ class EmployeeService
     }
 
     /**
+     * The employee and, when `account` is sent, their login in the same branch.
+     *
      * @param  array<string, mixed>  $data
      */
     public function store(array $data): Employee
     {
-        $employee = Employee::query()->create([
-            ...Arr::only($data, ['user_id', 'name', 'phone', 'job_title', 'base_salary', 'hired_at']),
-            'branch_id' => branchContext()->requireId(),
-            'created_by' => actor()?->id,
-        ]);
+        return DB::transaction(function () use ($data): Employee {
+            $employee = Employee::query()->create([
+                ...Arr::only($data, self::FIELDS),
+                'branch_id' => branchContext()->requireId(),
+                'created_by' => actor()?->id,
+            ]);
 
-        return $this->show($employee);
+            if (isset($data['account'])) {
+                $this->createAccount($employee, $data['account']);
+            }
+
+            return $this->show($employee);
+        });
     }
 
     public function show(Employee $employee): Employee
     {
-        return $employee->load(['branch:id,name', 'balance', 'user:id,name,email']);
+        return $employee->load(['branch:id,name', 'balance', 'user:id,name,email,role,is_active']);
     }
 
     /**
@@ -63,17 +77,39 @@ class EmployeeService
      */
     public function update(Employee $employee, array $data): Employee
     {
-        $employee->update(Arr::only($data, ['user_id', 'name', 'phone', 'job_title', 'base_salary', 'hired_at']));
+        return DB::transaction(function () use ($employee, $data): Employee {
+            $employee->update(Arr::only($data, self::FIELDS));
+            $user = $employee->user()->first();
 
-        return $this->show($employee);
+            if ($user && (isset($data['account']) || $employee->wasChanged('name'))) {
+                $this->users->update($user, [...($data['account'] ?? []), 'name' => $employee->name]);
+            } elseif (isset($data['account'])) {
+                $this->createAccount($employee, $data['account']);
+            }
+
+            return $this->show($employee);
+        });
     }
 
+    /**
+     * Stopping an employee also stops their login (and signs it out).
+     */
     public function toggle(int $employeeId): Employee
     {
-        $employee = Employee::query()->findOrFail($employeeId);
-        $employee->update(['is_active' => ! $employee->is_active]);
+        return DB::transaction(function () use ($employeeId): Employee {
+            $employee = Employee::query()->findOrFail($employeeId);
+            $employee->update(['is_active' => ! $employee->is_active]);
 
-        return $this->show($employee);
+            if ($user = $employee->user()->first()) {
+                $user->update(['is_active' => $employee->is_active]);
+
+                if (! $employee->is_active) {
+                    $user->tokens()->delete();
+                }
+            }
+
+            return $this->show($employee);
+        });
     }
 
     /**
@@ -102,5 +138,19 @@ class EmployeeService
     public function balance(int $employeeId): Money
     {
         return Money::of((string) (EmployeeBalance::query()->whereKey($employeeId)->value('balance') ?? '0'));
+    }
+
+    /**
+     * @param  array<string, mixed>  $account
+     */
+    private function createAccount(Employee $employee, array $account): void
+    {
+        $user = $this->users->store([
+            ...Arr::only($account, ['email', 'password', 'role']),
+            'name' => $employee->name,
+            'branch_id' => $employee->branch_id,
+        ]);
+
+        $employee->update(['user_id' => $user->id]);
     }
 }

@@ -64,10 +64,15 @@ class VehicleRequest extends AbstractFormRequest
 
             $makeId = $this->input('car_make_id', $this->route('vehicle')?->car_make_id);
 
-            if ((int) CarModel::query()->whereKey($modelId)->value('car_make_id') !== (int) $makeId) {
+            if (! self::modelBelongsToMake($modelId, $makeId)) {
                 $validator->errors()->add('car_model_id', __('messages.car_model_mismatch'));
             }
         });
+    }
+
+    public static function modelBelongsToMake(mixed $modelId, mixed $makeId): bool
+    {
+        return (int) CarModel::query()->whereKey($modelId)->value('car_make_id') === (int) $makeId;
     }
 
     /**

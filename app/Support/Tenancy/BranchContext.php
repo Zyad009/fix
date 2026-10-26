@@ -42,17 +42,25 @@ class BranchContext
      */
     public function require(): Branch
     {
+        if ($branch = $this->resolve()) {
+            return $branch;
+        }
+
+        throw new BusinessRuleException(__('messages.branch_required'), 422, errorCode: 'branch_required');
+    }
+
+    /**
+     * The selected branch, or the only active one; null when it is ambiguous.
+     */
+    public function resolve(): ?Branch
+    {
         if ($this->branch) {
             return $this->branch;
         }
 
         $activeBranches = Branch::query()->where('is_active', true)->limit(2)->get();
 
-        if ($activeBranches->count() === 1) {
-            return $activeBranches->first();
-        }
-
-        throw new BusinessRuleException(__('messages.branch_required'), 422, errorCode: 'branch_required');
+        return $activeBranches->count() === 1 ? $activeBranches->first() : null;
     }
 
     public function requireId(): int

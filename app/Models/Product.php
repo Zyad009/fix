@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $id
  * @property int|null $category_id
  * @property string $name
+ * @property string|null $barcode
  * @property ProductKind $kind
  * @property string $sale_price
  * @property string|null $cost_price
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $track_stock
  * @property bool $is_active
  */
-#[Fillable(['category_id', 'name', 'kind', 'sale_price', 'cost_price', 'image_path', 'track_stock', 'is_active', 'created_by'])]
+#[Fillable(['category_id', 'name', 'barcode', 'kind', 'sale_price', 'cost_price', 'image_path', 'track_stock', 'is_active', 'created_by'])]
 class Product extends Model
 {
     use BelongsToTenant, SoftDeletes;

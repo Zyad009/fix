@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Exceptions\BusinessRuleException;
 use App\Models\Branch;
+use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -37,6 +38,7 @@ class OrderService
         private readonly PaymentService $payments,
         private readonly StockService $stock,
         private readonly VehicleService $vehicles,
+        private readonly CustomerService $customers,
         private readonly AuditLogService $audit,
     ) {}
 
@@ -85,17 +87,29 @@ class OrderService
 
     /**
      * Open an order for a vehicle; the customer is the vehicle's current owner.
+     * With `complete` it becomes an invoice (and collects `payments`) in the
+     * same transaction: the invoice screen's single "save" button.
      *
      * @param  array<string, mixed>  $data
      * @return array{order: Order, warnings: list<string>}
      */
     public function create(array $data): array
     {
-        return DB::transaction(function () use ($data): array {
-            $vehicle = Vehicle::query()->findOrFail($data['vehicle_id']);
+        $complete = (bool) ($data['complete'] ?? false);
+
+        if ($complete && ! actor()?->hasPermission('orders.complete')) {
+            throw new BusinessRuleException(__('messages.complete_forbidden'), 403);
+        }
+
+        return DB::transaction(function () use ($data, $complete): array {
+            $vehicle = $this->resolveVehicle($data);
             $branchId = branchContext()->requireId();
 
-            $this->assertTechnician($data['technician_id'] ?? null, $branchId);
+            if (! array_key_exists('technician_id', $data)) {
+                $data['technician_id'] = $this->defaultTechnicianId($branchId);
+            }
+
+            $this->assertTechnician($data['technician_id'], $branchId);
 
             $order = Order::query()->create([
                 ...Arr::only($data, self::HEADER_FIELDS),
@@ -117,6 +131,12 @@ class OrderService
             }
 
             $this->totals->recalculate($order);
+
+            if ($complete) {
+                $result = $this->complete($order, $data['payments'] ?? []);
+
+                return ['order' => $result['order'], 'warnings' => [...$warnings, ...$result['warnings']]];
+            }
 
             return ['order' => $this->load($order), 'warnings' => $warnings];
         });
@@ -255,6 +275,66 @@ class OrderService
             'items' => fn ($query) => $query->orderBy('id'),
             'payments' => fn ($query) => $query->with('receipt:id,receipt_no')->orderBy('id'),
         ]);
+    }
+
+    /**
+     * The order's vehicle: a registered one (`vehicle_id`), or the customer and
+     * vehicle typed on the invoice screen — reused when the phone/plate is
+     * already known, created otherwise. A plate owned by someone else is
+     * refused: that is an ownership transfer, not a new visit.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function resolveVehicle(array $data): Vehicle
+    {
+        if (isset($data['vehicle_id'])) {
+            return Vehicle::query()->findOrFail($data['vehicle_id']);
+        }
+
+        if (! actor()?->hasPermission('customers.manage')) {
+            throw new BusinessRuleException(__('messages.customer_create_forbidden'), 403);
+        }
+
+        $input = $data['customer'];
+        $customer = isset($input['id'])
+            ? Customer::query()->findOrFail($input['id'])
+            : Customer::query()->where('phone', $input['phone'])->first() ?? $this->customers->store(Arr::only($input, ['name', 'phone']));
+
+        $plate = PlateNormalizer::normalize($data['vehicle']['plate_number']);
+        $vehicle = Vehicle::query()->where('plate_normalized', $plate)->first();
+
+        if ($vehicle) {
+            if ($vehicle->customer_id !== $customer->id) {
+                throw new BusinessRuleException(__('messages.plate_belongs_to_other_customer', ['plate' => $vehicle->plate_number]), 422);
+            }
+
+            return $vehicle;
+        }
+
+        if (filled($data['vehicle']['vin'] ?? null) && Vehicle::query()->where('vin', $data['vehicle']['vin'])->exists()) {
+            throw new BusinessRuleException(__('messages.vin_taken'), 422);
+        }
+
+        return $this->vehicles->store([...$data['vehicle'], 'customer_id' => $customer->id]);
+    }
+
+    /**
+     * Technicians (and technician-cashiers) opening an order are its
+     * technician by default, through their linked employee record.
+     */
+    private function defaultTechnicianId(int $branchId): ?int
+    {
+        $user = actor();
+
+        if (! $user?->role->actsAsTechnician()) {
+            return null;
+        }
+
+        return Employee::query()->withoutGlobalScope('branch')
+            ->where('user_id', $user->id)
+            ->where('branch_id', $branchId)
+            ->where('is_active', true)
+            ->value('id');
     }
 
     private function assertDiscountAllowed(Order $order, mixed $discount): void

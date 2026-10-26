@@ -58,6 +58,10 @@
     </table>
 
     <table class="totals">
+        @if ($totals['parts_total'] > 0 && $totals['services_total'] > 0)
+            <tr><td class="label">إجمالي المنتجات</td><td class="num">{{ number_format($totals['parts_total'], 2) }}</td></tr>
+            <tr><td class="label">إجمالي الصيانة</td><td class="num">{{ number_format($totals['services_total'], 2) }}</td></tr>
+        @endif
         <tr><td class="label">الإجمالي</td><td class="num">{{ number_format($totals['subtotal'], 2) }}</td></tr>
         @if ($totals['discount'] > 0)
             <tr><td class="label">الخصم</td><td class="num">{{ number_format($totals['discount'], 2) }}</td></tr>

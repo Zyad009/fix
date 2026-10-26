@@ -15,6 +15,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\V1\Admin\TenantProvisioningService;
+use App\Services\V1\EmployeeService;
 use App\Services\V1\ExpenseService;
 use App\Services\V1\OpeningBalanceService;
 use App\Services\V1\OrderService;
@@ -27,7 +28,8 @@ use Illuminate\Support\Collection;
  * `php artisan db:seed --class=DemoSeeder`.
  *
  * Logins (password: "password"): owner@dawar.test, cashier@dawar.test,
- * tech@dawar.test — and admin@dawar.test for /api/v1/admin.
+ * tech@dawar.test, worker@dawar.test (technician + cashier) — and
+ * admin@dawar.test for /api/v1/admin.
  */
 class DemoSeeder extends Seeder
 {
@@ -65,6 +67,11 @@ class DemoSeeder extends Seeder
 
         $technician = Employee::query()->create(['name' => 'حسن الفني', 'user_id' => $techUser->id, 'job_title' => 'ميكانيكي', 'base_salary' => '6000', 'hired_at' => '2025-01-01']);
         Employee::query()->create(['name' => 'سعيد', 'job_title' => 'عامل غيار زيت', 'base_salary' => '4500', 'hired_at' => '2025-06-01']);
+
+        app(EmployeeService::class)->store([
+            'name' => 'محمود الصنايعي', 'job_title' => 'ميكانيكي وكاشير', 'base_salary' => '7000', 'hired_at' => '2025-03-01',
+            'account' => ['email' => 'worker@dawar.test', 'password' => 'password', 'role' => UserRole::TechnicianCashier->value],
+        ]);
 
         $products = $this->seedCatalog($main);
         $vehicles = $this->seedCustomers();

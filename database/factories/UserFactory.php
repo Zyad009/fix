@@ -46,6 +46,11 @@ class UserFactory extends Factory
         return $this->state(fn () => ['role' => UserRole::Technician, 'branch_id' => $branchId]);
     }
 
+    public function technicianCashier(int $branchId): static
+    {
+        return $this->state(fn () => ['role' => UserRole::TechnicianCashier, 'branch_id' => $branchId]);
+    }
+
     public function inactive(): static
     {
         return $this->state(fn () => ['is_active' => false]);
