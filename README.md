@@ -80,7 +80,19 @@ php artisan migrate:fresh --drop-views --seed --seeder=DemoSeeder
   - اللوجوهات من [car-logos-dataset](https://github.com/filippofilip95/car-logos-dataset)، ومثبتة على commit معيّن فمش هتتغير.
   - الأدمن يقدر يضيف ماركة بلوجو (`logo_url`) من `POST /api/v1/admin/car-makes`.
 - **القوائم الثابتة** (طرق الدفع، الحالات، الأدوار...): `GET /api/v1/center/options`.
-- **Postman:** استورد الملفين اللي في [postman/](postman/)، وشغّل `center.auth.login`. التوكن ورقم الفرع بيتحفظوا لوحدهم.
+- **Postman:** استورد الملفين اللي في [postman/](postman/)، وشغّل `center.auth.login`. التوكن ورقم الفرع بيتحفظوا لوحدهم. وشرح كل request موجود في تبويب **Docs** بتاعه.
+
+### تحديث Postman بعد أي تعديل في الـ APIs
+
+الملف بيتولّد من الـ routes الحقيقية، فأي endpoint جديد بيظهر فيه لوحده:
+
+1. ضيف الـ body أو الـ query في `postman/build/generate.php`.
+2. ضيف الشرح، أو الأمثلة المتعددة للـ endpoint اللي ليه أكتر من نوع، في `postman/build/docs.php`.
+3. شغّل:
+   ```bash
+   composer postman
+   ```
+4. اعمل commit لملف `postman/Dawar.postman_collection.json`.
 
 ---
 

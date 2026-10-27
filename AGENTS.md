@@ -39,6 +39,7 @@ References: `brief.md` (requirements), `shortdoc.md` (database design). Architec
 - Envelope: `{status, msg, data, pagination?}`. Page sizes from `config/paginate.php`.
 - Language: `lang` request header (default `ar`); all user-facing messages come from `lang/{ar,en}/messages.php`. Code and identifiers in English.
 - Authorization: role enum + `config/rbac.php` permission map, enforced with the `permission:` middleware in the backend (never UI only).
+- Postman is generated from the routes: when adding or changing an endpoint, add its body in `postman/build/generate.php` and its description (Arabic, Markdown) in `postman/build/docs.php`, then run `composer postman` and commit the JSON.
 
 ## 6) Code quality
 - PSR-12 via Pint; explicit return and parameter types; constructor promotion; curly braces always; PHPDoc only where intent is not obvious.
