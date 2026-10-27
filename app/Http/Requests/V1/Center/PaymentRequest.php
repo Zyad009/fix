@@ -9,6 +9,16 @@ use Illuminate\Validation\Rule;
 class PaymentRequest extends AbstractFormRequest
 {
     /**
+     * Cash unless another method is chosen.
+     */
+    protected function prepareForValidation(): void
+    {
+        if (blank($this->input('method'))) {
+            $this->merge(['method' => PaymentMethod::Cash->value]);
+        }
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function rules(): array

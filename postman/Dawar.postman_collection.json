@@ -1830,6 +1830,61 @@
                     }
                 },
                 {
+                    "name": "center.customers.orders.show",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/customers/:customer/orders/:orderId",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "customers",
+                                ":customer",
+                                "orders",
+                                ":orderId"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "customer",
+                                    "value": "1"
+                                },
+                                {
+                                    "key": "orderId",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
                     "name": "center.customers.payments",
                     "request": {
                         "method": "POST",
@@ -1883,7 +1938,116 @@
                         },
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"amount\": 500,\n    \"method\": \"cash\",\n    \"vehicle_id\": null\n}"
+                            "raw": "{\n    \"amount\": 500,\n    \"method\": \"cash\",\n    \"allocation\": \"manual\",\n    \"orders\": [\n        {\n            \"order_id\": 1,\n            \"amount\": 300\n        },\n        {\n            \"order_id\": 2,\n            \"amount\": 200\n        }\n    ]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "center.customers.statement",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/customers/:customer/statement?from=2026-10-01&to=2026-10-31",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "customers",
+                                ":customer",
+                                "statement"
+                            ],
+                            "query": [
+                                {
+                                    "key": "from",
+                                    "value": "2026-10-01"
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "2026-10-31"
+                                }
+                            ],
+                            "variable": [
+                                {
+                                    "key": "customer",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "center.customers.unpaid-orders",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/customers/:customer/unpaid-orders",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "customers",
+                                ":customer",
+                                "unpaid-orders"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "customer",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
                         }
                     }
                 }

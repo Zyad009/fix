@@ -72,6 +72,12 @@ return [
     'amount_exceeds_due' => 'The amount exceeds what is due on the order (:due EGP).',
     'amount_exceeds_debt' => 'The amount exceeds the total debt (:debt EGP).',
     'no_debt' => 'There is no debt to collect.',
+    'allocation_sum_mismatch' => 'The amounts split over the invoices must add up to the amount paid (:amount EGP).',
+    'order_not_payable' => 'One or more of the chosen invoices cannot be paid (another customer’s, not completed, or fully paid).',
+    'amount_exceeds_due_order' => 'The amount on invoice #:order is more than what it owes (:due EGP).',
+    'statement_invoice' => 'Invoice',
+    'statement_opening_balance' => 'Opening balance',
+    'statement_payment' => 'Payment',
     'receipt_has_cancelled_order' => 'A receipt covering a cancelled order cannot be voided (it was already refunded).',
 
     // Employees & payroll

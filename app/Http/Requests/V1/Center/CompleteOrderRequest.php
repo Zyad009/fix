@@ -32,7 +32,7 @@ class CompleteOrderRequest extends AbstractFormRequest
         return [
             'payments' => ['sometimes', ...$extra, 'array', 'max:5'],
             'payments.*.amount' => ['required', 'decimal:0,2', 'gt:0', 'max:9999999999'],
-            'payments.*.method' => ['required', Rule::enum(PaymentMethod::class)],
+            'payments.*.method' => ['nullable', Rule::enum(PaymentMethod::class)],
         ];
     }
 }

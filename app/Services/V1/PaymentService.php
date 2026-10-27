@@ -16,6 +16,7 @@ use App\Support\Money;
 use App\Support\Period;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -65,15 +66,7 @@ class PaymentService
     public function collectDebt(Customer $customer, ?int $vehicleId, string $amount, PaymentMethod $method, ?string $notes = null): PaymentReceipt
     {
         return DB::transaction(function () use ($customer, $vehicleId, $amount, $method, $notes): PaymentReceipt {
-            $orders = Order::query()->withoutGlobalScope('branch')
-                ->where('customer_id', $customer->id)
-                ->when($vehicleId, fn (Builder $query) => $query->where('vehicle_id', $vehicleId))
-                ->where('status', OrderStatus::Completed)
-                ->whereColumn('total', '>', 'paid')
-                ->orderBy('completed_at')
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get();
+            $orders = $this->unpaidQuery($customer->id, $vehicleId)->lockForUpdate()->get();
 
             $debt = Money::sum($orders->map(fn (Order $order): Money => $order->remaining()));
             $amount = Money::of($amount);
@@ -102,6 +95,64 @@ class PaymentService
 
             return $this->loadReceipt($receipt);
         });
+    }
+
+    /**
+     * Collect a sum the user split by hand over chosen invoices (or one
+     * invoice: "pay this invoice"), from any branch of the center. The money
+     * goes to the collecting branch's drawer on a single receipt.
+     *
+     * @param  list<array{order_id: int, amount: string|int|float}>  $allocations
+     */
+    public function collectAllocated(Customer $customer, array $allocations, string $amount, PaymentMethod $method, ?string $notes = null): PaymentReceipt
+    {
+        return DB::transaction(function () use ($customer, $allocations, $amount, $method, $notes): PaymentReceipt {
+            $amount = Money::of($amount);
+            $portions = collect($allocations)->mapWithKeys(fn (array $row): array => [(int) $row['order_id'] => Money::of((string) $row['amount'])]);
+
+            if (! Money::sum($portions->values())->isEqualTo($amount)) {
+                throw new BusinessRuleException(__('messages.allocation_sum_mismatch', ['amount' => (string) $amount]), 422);
+            }
+
+            $orders = $this->unpaidQuery($customer->id)
+                ->whereIn('id', $portions->keys())
+                ->reorder('id')
+                ->lockForUpdate()
+                ->get();
+
+            if ($orders->count() !== $portions->count()) {
+                throw new BusinessRuleException(__('messages.order_not_payable'), 422);
+            }
+
+            foreach ($orders as $order) {
+                if ($portions[$order->id]->isGreaterThan($order->remaining())) {
+                    throw new BusinessRuleException(__('messages.amount_exceeds_due_order', ['order' => $order->order_no, 'due' => (string) $order->remaining()]), 422);
+                }
+            }
+
+            $vehicleIds = $orders->pluck('vehicle_id')->unique();
+            $receipt = $this->createReceipt($customer->id, $vehicleIds->count() === 1 ? $vehicleIds->first() : null, $amount, $method, $notes);
+
+            foreach ($orders as $order) {
+                $this->createPayment($receipt, $order, $portions[$order->id]);
+                $this->totals->recalculate($order);
+            }
+
+            return $this->loadReceipt($receipt);
+        });
+    }
+
+    /**
+     * The customer's invoices that still owe money, every branch, oldest first
+     * (the order a lump sum pays them off in).
+     *
+     * @return Collection<int, Order>
+     */
+    public function unpaidOrders(int $customerId, ?int $vehicleId = null): Collection
+    {
+        return $this->unpaidQuery($customerId, $vehicleId)
+            ->with(['vehicle', 'branch:id,name', 'customer:id,name,phone'])
+            ->get();
     }
 
     /**
@@ -195,6 +246,20 @@ class PaymentService
             'receiver:id,name',
             'payments.order' => fn ($query) => $query->select(['id', 'order_no', 'branch_id', 'vehicle_id', 'total', 'paid', 'status']),
         ]);
+    }
+
+    /**
+     * @return Builder<Order>
+     */
+    private function unpaidQuery(int $customerId, ?int $vehicleId = null): Builder
+    {
+        return Order::query()->withoutGlobalScope('branch')
+            ->where('customer_id', $customerId)
+            ->when($vehicleId, fn (Builder $query) => $query->where('vehicle_id', $vehicleId))
+            ->where('status', OrderStatus::Completed)
+            ->whereColumn('total', '>', 'paid')
+            ->orderBy('completed_at')
+            ->orderBy('id');
     }
 
     /**

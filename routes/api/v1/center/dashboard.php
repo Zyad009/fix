@@ -36,6 +36,9 @@ Route::middleware(['auth:sanctum', 'tenant', 'branch', 'subscription'])->group(f
     Route::apiResource('customers', CustomerController::class);
     Route::get('customers/{customer}/balance', [CustomerController::class, 'balance'])->name('customers.balance');
     Route::post('customers/{customer}/payments', [CustomerController::class, 'collect'])->name('customers.payments');
+    Route::get('customers/{customer}/statement', [CustomerController::class, 'statement'])->name('customers.statement');
+    Route::get('customers/{customer}/unpaid-orders', [CustomerController::class, 'unpaidOrders'])->name('customers.unpaid-orders');
+    Route::get('customers/{customer}/orders/{orderId}', [CustomerController::class, 'showOrder'])->whereNumber('orderId')->name('customers.orders.show');
 
     Route::apiResource('vehicles', VehicleController::class);
     Route::patch('vehicles/{vehicle}/transfer-owner', [VehicleController::class, 'transferOwner'])->name('vehicles.transfer-owner');

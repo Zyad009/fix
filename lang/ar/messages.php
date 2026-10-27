@@ -72,6 +72,12 @@ return [
     'amount_exceeds_due' => 'المبلغ أكبر من المتبقي على الأوردر (:due جنيه).',
     'amount_exceeds_debt' => 'المبلغ أكبر من إجمالي المديونية (:debt جنيه).',
     'no_debt' => 'لا توجد مديونية للتحصيل.',
+    'allocation_sum_mismatch' => 'مجموع المبالغ الموزعة على الفواتير لازم يساوي المبلغ المدفوع (:amount جنيه).',
+    'order_not_payable' => 'فاتورة أو أكتر من المختارة مش متاحة للتحصيل (مش للعميل ده، أو مش مقفولة، أو مدفوعة بالكامل).',
+    'amount_exceeds_due_order' => 'المبلغ على الفاتورة رقم :order أكبر من المتبقي عليها (:due جنيه).',
+    'statement_invoice' => 'فاتورة',
+    'statement_opening_balance' => 'رصيد افتتاحي',
+    'statement_payment' => 'تحصيل',
     'receipt_has_cancelled_order' => 'لا يمكن إبطال إيصال يخص أوردر ملغي (تم رد المبلغ بالفعل).',
 
     // Employees & payroll

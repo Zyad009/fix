@@ -184,7 +184,7 @@ class OrderService
      * Turn the order into an invoice: stock leaves the branch, the vehicle's
      * last visit/reading is refreshed and optional payments are collected.
      *
-     * @param  list<array{amount: string, method: string}>  $payments
+     * @param  list<array{amount: string, method?: ?string}>  $payments  method defaults to cash
      * @return array{order: Order, warnings: list<string>}
      */
     public function complete(Order $order, array $payments = []): array
@@ -212,7 +212,7 @@ class OrderService
             $this->vehicles->refreshLastVisit($order->vehicle_id);
 
             foreach ($payments as $payment) {
-                $this->payments->payOrder($order, (string) $payment['amount'], PaymentMethod::from($payment['method']));
+                $this->payments->payOrder($order, (string) $payment['amount'], PaymentMethod::from($payment['method'] ?? PaymentMethod::Cash->value));
             }
 
             return ['order' => $this->load($order->refresh()), 'warnings' => $warnings];
