@@ -84,10 +84,10 @@ php artisan migrate:fresh --drop-views --seed --seeder=DemoSeeder
 
 ### تحديث Postman بعد أي تعديل في الـ APIs
 
-الملف بيتولّد من الـ routes الحقيقية، فأي endpoint جديد بيظهر فيه لوحده:
+الملف بيتولّد من التطبيق نفسه. تبويب **Docs** في كل request فيه شرح عربي وإنجليزي، وبعده الصلاحية والأدوار وجدول المدخلات، ودول الاتنين **بيتقروا من الكود**، فمش ممكن يختلفوا عن الـ API.
 
-1. ضيف الـ body أو الـ query في `postman/build/generate.php`.
-2. ضيف الشرح، أو الأمثلة المتعددة للـ endpoint اللي ليه أكتر من نوع، في `postman/build/docs.php`.
+1. اكتب شرح الـ endpoint بالعربي والإنجليزي في `postman/build/docs.php`. لو نسيته، الأمر هيفشل ويقولك الـ endpoint الناقص.
+2. ضيف مثال الـ body أو الـ query في `postman/build/examples.php`.
 3. شغّل:
    ```bash
    composer postman
