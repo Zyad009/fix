@@ -26,7 +26,7 @@
 
 **بالأرقام:**
 - 112 endpoint.
-- 151 test (795 assertion)، كلهم ناجحين.
+- 153 test (821 assertion)، كلهم ناجحين.
 - commits محلية على `main`. **مفيش push** لسه.
 
 ```
@@ -237,7 +237,7 @@ erDiagram
 |---|---|
 | `admins` | حسابات الـ Super Admin |
 | `tenants` | المراكز. فيها الاسم، اللوجو، الـ plan، `subscription_ends_at`، `cashier_max_discount`، `timezone` (default `Africa/Cairo`)، `is_active` |
-| `car_makes` / `car_models` | ماركات وموديلات العربيات. فيها seed بـ 30 ماركة منتشرة في مصر، والأدمن بس هو اللي يضيف |
+| `car_makes` / `car_models` | ماركات وموديلات العربيات. فيها seed بـ 30 ماركة منتشرة في مصر **بلوجوهاتها** (`logo_url`)، والأدمن بس هو اللي يضيف. والفرونت ياخد الماركات من `GET /center/car-makes` عشان الإدخال يبقى موحّد |
 | `personal_access_tokens` | توكنات Sanctum (للأدمن والـ users) |
 
 **المركز والفرع:**
@@ -579,24 +579,12 @@ php artisan storage:link
 php artisan serve
 ```
 
-> ⚠️ **الداتابيز المحلية `dawar` اتمسحت واتعملت من الأول** (`migrate:fresh`) وفيها دلوقتي بيانات الديمو.
+**حسابات الديمو والمراكز التجريبية** موجودة في [README.md](../README.md#حسابات-الدخول-demoseeder):
+- **مركز الدوار التجريبي:** فرع واحد وفيه داتا كاملة. حساباته: owner و cashier و tech و worker.
+- **مركز النور:** فرع واحد وفاضي. حسابه: `owner2@dawar.test`.
+- **Super Admin:** `admin@dawar.test`.
 
-**حسابات الديمو** (كلمة السر لكلهم `password`):
-
-| الحساب | الدور |
-|---|---|
-| `owner@dawar.test` | صاحب المركز |
-| `cashier@dawar.test` | كاشير (الفرع الرئيسي) |
-| `tech@dawar.test` | فني |
-| `worker@dawar.test` | فني وكاشير (اتعمل من صفحة الموظف) |
-| `admin@dawar.test` | Super Admin |
-
-بيانات الديمو فيها:
-- مركز بفرعين.
-- 8 عملاء بعربياتهم.
-- 9 منتجات وخدمات بمخزون.
-- 6 فواتير بدفع كامل وجزئي وآجل.
-- أوردر مفتوح، ورصيد افتتاحي، ومصروفات.
+كلمة السر لكل الحسابات `password`.
 
 **Postman:** استورد الملفين اللي في `postman/`، وشغّل `center.auth.login`. التوكن ورقم الفرع بيتحفظوا لوحدهم.
 

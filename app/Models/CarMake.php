@@ -12,9 +12,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property string $name_ar
  * @property string|null $name_en
+ * @property string|null $logo_url
  * @property bool $is_active
  */
-#[Fillable(['name_ar', 'name_en', 'is_active'])]
+#[Fillable(['name_ar', 'name_en', 'logo_url', 'is_active'])]
 class CarMake extends Model
 {
     /** @var array<string, mixed> */

@@ -31,7 +31,7 @@ class CarCatalogService
      */
     public function storeMake(array $data): CarMake
     {
-        return CarMake::query()->create(Arr::only($data, ['name_ar', 'name_en']))->load('models');
+        return CarMake::query()->create(Arr::only($data, ['name_ar', 'name_en', 'logo_url']))->load('models');
     }
 
     /**
@@ -39,7 +39,7 @@ class CarCatalogService
      */
     public function updateMake(CarMake $make, array $data): CarMake
     {
-        $make->update(Arr::only($data, ['name_ar', 'name_en']));
+        $make->update(Arr::only($data, ['name_ar', 'name_en', 'logo_url']));
 
         return $make->load('models');
     }

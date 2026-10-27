@@ -1,58 +1,95 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Dawar Backend
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API لنظام SaaS بيدير مراكز صيانة العربيات في مصر. كل المراكز على قاعدة بيانات واحدة (multi-tenant)، والمشروع API بس من غير واجهة.
 
-## About Laravel
+- **التقنيات:** Laravel 13، PHP 8.4، MySQL 8، Sanctum.
+- **الشرح الكامل للمشروع:** [docs/PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) (الهيكلية، الجداول، الـ flows، الصلاحيات).
+- **المتطلبات وتصميم الداتابيز:** [brief.md](brief.md) و [shortdoc.md](shortdoc.md).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## التشغيل محلياً
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+cp .env.example .env          # وظبط DB_DATABASE=dawar
+php artisan key:generate
+php artisan migrate
+php artisan db:seed --class=DemoSeeder
+php artisan storage:link
+php artisan serve             # http://localhost:8000
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+**ترجع البيانات من الأول:** الأمر ده **بيمسح كل حاجة** في الداتابيز المحلية.
 
-## Contributing
+```bash
+php artisan migrate:fresh --drop-views --seed --seeder=DemoSeeder
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+| Seeder | بيعمل إيه | يتشغل فين |
+|---|---|---|
+| `DatabaseSeeder` | الماركات والموديلات (بلوجوهاتها) + حساب الـ Super Admin من `DAWAR_ADMIN_*` | كل البيئات، والسيرفر كمان |
+| `DemoSeeder` | كل اللي فوق + مركزين تجربة | **محلي و demo بس** |
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## حسابات الدخول (DemoSeeder)
 
-## Security Vulnerabilities
+> كلمة السر لكل الحسابات: **`password`**
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Super Admin** على `POST /api/v1/admin/auth/login`:
 
-## License
+| الإيميل | الدور |
+|---|---|
+| `admin@dawar.test` | Super Admin (المراكز والفروع والماركات) |
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**المراكز** على `POST /api/v1/center/auth/login`:
+
+| المركز | الإيميل | الدور |
+|---|---|---|
+| **مركز الدوار التجريبي** (فرع واحد، فيه داتا كاملة) | `owner@dawar.test` | صاحب المركز |
+| | `cashier@dawar.test` | كاشير |
+| | `tech@dawar.test` | فني |
+| | `worker@dawar.test` | فني وكاشير |
+| **مركز النور** (فرع واحد، **فاضي** زي مركز لسه مشترك) | `owner2@dawar.test` | صاحب المركز |
+
+**داتا مركز الدوار التجريبي:**
+- 8 عملاء بعربياتهم.
+- 9 منتجات وخدمات بمخزون.
+- 6 فواتير: مدفوعة كامل، وجزئي، وآجل.
+- أوردر مفتوح.
+- رصيد افتتاحي.
+- 4 موظفين.
+- مصروفات.
+
+**مركز النور:** فيه بس الـ owner والفرع الرئيسي والتصنيفات الافتراضية، ومفيش أي عملاء أو منتجات أو فواتير. يعني كأن الأدمن لسه عامله.
+
+> على السيرفر حساب الأدمن بياخد الإيميل وكلمة السر من `DAWAR_ADMIN_EMAIL` و `DAWAR_ADMIN_PASSWORD` في `.env`. **ماتستخدمش `password` هناك.**
+
+---
+
+## ملاحظات للفرونت
+
+- **الـ Base URL:** `/api/v1/center` للمراكز و `/api/v1/admin` للأدمن.
+- **التوكن:** بيتبعت في `Authorization: Bearer {token}`.
+- **الـ Headers:**
+  - `lang`: `ar` (الافتراضي) أو `en`.
+  - `X-Branch-Id`: للـ owner لو عايز يشتغل على فرع معين.
+- **شكل الرد:** كله `{status, msg, data, pagination?}`.
+- **الماركات والموديلات:** `GET /api/v1/center/car-makes` بيرجّع كل ماركة بـ `name_ar` و `name_en` و `logo_url` وموديلاتها. **الفرونت ياخد الماركات منه بس**، ويبعت `car_make_id` و `car_model_id`، وسنة الموديل في `year`. كده الإدخال موحّد.
+  - اللوجوهات من [car-logos-dataset](https://github.com/filippofilip95/car-logos-dataset)، ومثبتة على commit معيّن فمش هتتغير.
+  - الأدمن يقدر يضيف ماركة بلوجو (`logo_url`) من `POST /api/v1/admin/car-makes`.
+- **القوائم الثابتة** (طرق الدفع، الحالات، الأدوار...): `GET /api/v1/center/options`.
+- **Postman:** استورد الملفين اللي في [postman/](postman/)، وشغّل `center.auth.login`. التوكن ورقم الفرع بيتحفظوا لوحدهم.
+
+---
+
+## الـ Tests
+
+```bash
+php artisan test --compact
+vendor/bin/pint --dirty --format agent
+```
+
+- الـ tests بتشتغل على داتابيز MySQL اسمها **`dawar_test`**، ولازم تعملها مرة واحدة الأول.
+- الـ TestCase بيرفض أي داتابيز اسمها مش منتهي بـ `_test`، عشان مايمسحش داتا حقيقية.

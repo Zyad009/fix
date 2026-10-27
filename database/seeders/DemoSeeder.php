@@ -24,20 +24,29 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 
 /**
- * A ready-to-try center for local development and demos:
- * `php artisan db:seed --class=DemoSeeder`.
+ * Local development and demo data: `php artisan db:seed --class=DemoSeeder`.
  *
- * Logins (password: "password"): owner@dawar.test, cashier@dawar.test,
- * tech@dawar.test, worker@dawar.test (technician + cashier) — and
- * admin@dawar.test for /api/v1/admin.
+ * - "مركز الدوار التجريبي": one branch, full of realistic data.
+ * - "مركز النور": one branch and nothing else — a center that just signed up.
+ *
+ * Logins are listed in README.md (password "password" for all). Re-running
+ * skips whatever already exists.
  */
 class DemoSeeder extends Seeder
 {
+    public const PASSWORD = 'password';
+
     public function run(): void
     {
         $this->call(DatabaseSeeder::class);
 
-        if (User::query()->withoutGlobalScope('tenant')->where('email', 'owner@dawar.test')->exists()) {
+        $this->seedDemoCenter();
+        $this->seedEmptyCenter();
+    }
+
+    private function seedDemoCenter(): void
+    {
+        if ($this->accountExists('owner@dawar.test')) {
             $this->command?->warn('Demo center already exists — skipped.');
 
             return;
@@ -50,27 +59,53 @@ class DemoSeeder extends Seeder
             'plan' => 'pro',
             'subscription_ends_at' => now()->addYear()->toDateString(),
             'cashier_max_discount' => '100',
-            'owner' => ['name' => 'صاحب المركز', 'email' => 'owner@dawar.test', 'password' => 'password'],
+            'owner' => ['name' => 'صاحب المركز', 'email' => 'owner@dawar.test', 'password' => self::PASSWORD],
         ]);
 
         tenantContext()->run($tenant, fn () => $this->seedCenter($tenant));
     }
 
+    /**
+     * Provisioned exactly like the admin creates a center: owner, main branch
+     * and the default categories — no customers, products, orders or staff.
+     */
+    private function seedEmptyCenter(): void
+    {
+        if ($this->accountExists('owner2@dawar.test')) {
+            $this->command?->warn('Empty center already exists — skipped.');
+
+            return;
+        }
+
+        app(TenantProvisioningService::class)->provision([
+            'name' => 'مركز النور',
+            'phone' => '01100000000',
+            'address' => 'الجيزة - الهرم',
+            'plan' => 'pro',
+            'subscription_ends_at' => now()->addYear()->toDateString(),
+            'owner' => ['name' => 'صاحب مركز النور', 'email' => 'owner2@dawar.test', 'password' => self::PASSWORD],
+        ]);
+    }
+
+    private function accountExists(string $email): bool
+    {
+        return User::query()->withoutGlobalScope('tenant')->where('email', $email)->exists();
+    }
+
     private function seedCenter(Tenant $tenant): void
     {
         $main = Branch::query()->where('is_default', true)->firstOrFail();
-        Branch::query()->create(['name' => 'فرع المعادي', 'address' => 'القاهرة - المعادي']);
         branchContext()->set($main);
 
-        User::query()->create(['name' => 'كاشير الفرع', 'email' => 'cashier@dawar.test', 'password' => 'password', 'role' => UserRole::Cashier, 'branch_id' => $main->id]);
-        $techUser = User::query()->create(['name' => 'فني الفرع', 'email' => 'tech@dawar.test', 'password' => 'password', 'role' => UserRole::Technician, 'branch_id' => $main->id]);
+        User::query()->create(['name' => 'كاشير الفرع', 'email' => 'cashier@dawar.test', 'password' => self::PASSWORD, 'role' => UserRole::Cashier, 'branch_id' => $main->id]);
+        $techUser = User::query()->create(['name' => 'فني الفرع', 'email' => 'tech@dawar.test', 'password' => self::PASSWORD, 'role' => UserRole::Technician, 'branch_id' => $main->id]);
 
         $technician = Employee::query()->create(['name' => 'حسن الفني', 'user_id' => $techUser->id, 'job_title' => 'ميكانيكي', 'base_salary' => '6000', 'hired_at' => '2025-01-01']);
         Employee::query()->create(['name' => 'سعيد', 'job_title' => 'عامل غيار زيت', 'base_salary' => '4500', 'hired_at' => '2025-06-01']);
 
         app(EmployeeService::class)->store([
             'name' => 'محمود الصنايعي', 'job_title' => 'ميكانيكي وكاشير', 'base_salary' => '7000', 'hired_at' => '2025-03-01',
-            'account' => ['email' => 'worker@dawar.test', 'password' => 'password', 'role' => UserRole::TechnicianCashier->value],
+            'account' => ['email' => 'worker@dawar.test', 'password' => self::PASSWORD, 'role' => UserRole::TechnicianCashier->value],
         ]);
 
         $products = $this->seedCatalog($main);

@@ -18,6 +18,7 @@ class CarMakeResource extends JsonResource
             'id' => $this->id,
             'name_ar' => $this->name_ar,
             'name_en' => $this->name_en,
+            'logo_url' => $this->logo_url,
             'is_active' => $this->is_active,
             'models' => CarModelResource::collection($this->whenLoaded('models')),
         ];

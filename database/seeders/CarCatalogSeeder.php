@@ -4,12 +4,19 @@ namespace Database\Seeders;
 
 use App\Models\CarMake;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 /**
- * Makes and models common on Egyptian roads. Idempotent: safe to re-run.
+ * Makes and models common on Egyptian roads, with their logos. Idempotent:
+ * safe to re-run (fills a missing logo, never overwrites one the admin set).
+ *
+ * Logos come from the open-source car-logos-dataset on jsDelivr, pinned to a
+ * commit so the URLs never change under the frontend.
  */
 class CarCatalogSeeder extends Seeder
 {
+    private const LOGO_BASE = 'https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@e334a4d2e8742108ba164c629dff5636576d3808/logos/optimized/';
+
     /** @var array<string, array{0: string, 1: list<string>}> name_ar => [name_en, models] */
     private const CATALOG = [
         'هيونداي' => ['Hyundai', ['فيرنا', 'إلنترا', 'أكسنت', 'توسان', 'كريتا', 'i10', 'i20', 'ماتريكس']],
@@ -48,6 +55,8 @@ class CarCatalogSeeder extends Seeder
     {
         foreach (self::CATALOG as $nameAr => [$nameEn, $models]) {
             $make = CarMake::query()->firstOrCreate(['name_ar' => $nameAr], ['name_en' => $nameEn]);
+            $make->logo_url ??= self::LOGO_BASE.Str::slug($nameEn).'.png';
+            $make->save();
 
             foreach ($models as $model) {
                 $make->models()->firstOrCreate(['name_ar' => $model]);

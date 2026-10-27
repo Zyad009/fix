@@ -15,6 +15,7 @@ class CarMakeRequest extends AbstractFormRequest
         return [
             'name_ar' => [$this->isMethod('post') ? 'required' : 'sometimes', 'string', 'max:100', Rule::unique('car_makes', 'name_ar')->ignore($this->route('car_make'))],
             'name_en' => ['nullable', 'string', 'max:100'],
+            'logo_url' => ['nullable', 'url:https', 'max:500'],
         ];
     }
 }
