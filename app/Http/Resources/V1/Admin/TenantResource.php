@@ -26,6 +26,7 @@ class TenantResource extends JsonResource
             'is_subscription_expired' => $this->isSubscriptionExpired(),
             'cashier_max_discount' => formatNumber($this->cashier_max_discount),
             'timezone' => $this->timezone,
+            'whatsapp_device_id' => $this->whatsapp_device_id,
             'is_active' => $this->is_active,
             'branches_count' => $this->whenCounted('branches'),
             'users_count' => $this->whenCounted('users'),

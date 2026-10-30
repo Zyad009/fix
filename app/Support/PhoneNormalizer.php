@@ -23,4 +23,36 @@ final class PhoneNormalizer
 
         return preg_replace('/\D+/', '', $phone) ?? '';
     }
+
+    /**
+     * International digits for WhatsApp (01012345678 → 201012345678), or null
+     * when the number is unusable. A leading "+" or "00" already carries the
+     * country code.
+     */
+    public static function toWhatsapp(?string $phone): ?string
+    {
+        $digits = self::normalize($phone);
+        $countryCode = (string) config('services.gowa.country_code');
+
+        $digits = match (true) {
+            $digits === '' => '',
+            str_starts_with(trim((string) $phone), '+') => $digits,
+            str_starts_with($digits, '00') => substr($digits, 2),
+            str_starts_with($digits, '0') => $countryCode.substr($digits, 1),
+            str_starts_with($digits, $countryCode) => $digits,
+            default => $countryCode.$digits,
+        };
+
+        return strlen($digits) >= 10 ? $digits : null;
+    }
+
+    /**
+     * Partly hidden for logs (201551****52).
+     */
+    public static function mask(string $phone): string
+    {
+        return strlen($phone) <= 8
+            ? str_repeat('*', strlen($phone))
+            : substr($phone, 0, 6).str_repeat('*', strlen($phone) - 8).substr($phone, -2);
+    }
 }

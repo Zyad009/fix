@@ -96,6 +96,23 @@ php artisan migrate:fresh --drop-views --seed --seeder=DemoSeeder
 
 ---
 
+## رسائل واتساب
+
+لما فاتورة تتقفل، العميل بتوصله **صورة الفاتورة**، ولما يدفع بتوصله **صورة إيصال**. الإرسال في الخلفية عن طريق بوابة GOWA، والفشل مابيأثرش على البيع وبيتسجل في `GET /api/v1/center/whatsapp/messages`.
+
+**المطلوب على السيرفر:**
+1. قيم `GOWA_URL` و `GOWA_USERNAME` و `GOWA_PASSWORD` في `.env`.
+2. **الـ queue worker شغال** بـ `deploy/dawar-api-worker.conf`. من غيره مفيش رسالة هتطلع.
+3. Node.js ومتصفح Chrome للصور:
+   ```bash
+   npm ci --omit=dev
+   npx puppeteer browsers install chrome
+   ```
+   وعلى Linux لازم مكتبات تشغيل Chromium. ولو هتستخدم Chrome متسطب على الجهاز، حط مساره في `BROWSERSHOT_CHROME_PATH`. ولو الـ worker شغال بـ root أو في Docker، خلّي `BROWSERSHOT_NO_SANDBOX=true`.
+4. الأدمن يحط `whatsapp_device_id` لكل مركز من `PUT /api/v1/admin/tenants/{id}`.
+
+---
+
 ## الـ Tests
 
 ```bash

@@ -28,6 +28,20 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'gowa' => [
+        'url' => env('GOWA_URL'),
+        'username' => env('GOWA_USERNAME'),
+        'password' => env('GOWA_PASSWORD'),
+        'country_code' => env('GOWA_COUNTRY_CODE', '20'),
+    ],
+
+    'browsershot' => [
+        'node' => env('BROWSERSHOT_NODE_BINARY'),
+        'npm' => env('BROWSERSHOT_NPM_BINARY'),
+        'chrome' => env('BROWSERSHOT_CHROME_PATH'),
+        'no_sandbox' => (bool) env('BROWSERSHOT_NO_SANDBOX', false),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

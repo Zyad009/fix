@@ -25,6 +25,9 @@ class SettingsResource extends JsonResource
             'is_subscription_expired' => $this->isSubscriptionExpired(),
             'cashier_max_discount' => formatNumber($this->cashier_max_discount),
             'timezone' => $this->timezone,
+            'whatsapp_connected' => filled($this->whatsapp_device_id),
+            'whatsapp_invoice_enabled' => $this->whatsapp_invoice_enabled,
+            'whatsapp_payment_enabled' => $this->whatsapp_payment_enabled,
         ];
     }
 }

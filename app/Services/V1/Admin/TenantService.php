@@ -37,7 +37,7 @@ class TenantService
      */
     public function update(Tenant $tenant, array $data): Tenant
     {
-        $tenant->update(Arr::only($data, ['name', 'phone', 'address', 'cashier_max_discount', 'timezone']));
+        $tenant->update(Arr::only($data, ['name', 'phone', 'address', 'cashier_max_discount', 'timezone', 'whatsapp_device_id']));
 
         return $this->show($tenant);
     }

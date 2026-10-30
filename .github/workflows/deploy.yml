@@ -33,6 +33,9 @@ jobs:
             echo "📦 Installing dependencies..."
             composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
+            echo "🖼️ Installing the image renderer..."
+            npm ci --omit=dev
+
             echo "🗄️ Migrating..."
             php artisan optimize:clear
             php artisan migrate --force

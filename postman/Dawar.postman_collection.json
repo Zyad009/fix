@@ -685,10 +685,10 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل بيانات مركز (الاسم، التليفون، العنوان، حد خصم الكاشير، المنطقة الزمنية). الاشتراك له endpoint لوحده.\n\n---\n\n### 🇬🇧 English\n\nUpdate a center (name, phone, address, cashier discount limit, timezone). The subscription has its own endpoint.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/admin/tenants/{tenant}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `timezone` | — | timezone:all |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل بيانات مركز (الاسم، التليفون، العنوان، حد خصم الكاشير، المنطقة الزمنية، و `whatsapp_device_id` رقم واتساب اللي بيبعت منه على GOWA). الاشتراك له endpoint لوحده.\n\n---\n\n### 🇬🇧 English\n\nUpdate a center (name, phone, address, cashier discount limit, timezone, and `whatsapp_device_id`, its sending WhatsApp device on GOWA). The subscription has its own endpoint.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/admin/tenants/{tenant}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `timezone` | — | timezone:all |\n| `whatsapp_device_id` | — | string · max:255 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"مركز الأمل\",\n    \"cashier_max_discount\": 150\n}"
+                            "raw": "{\n    \"name\": \"مركز الأمل\",\n    \"cashier_max_discount\": 150,\n    \"whatsapp_device_id\": \"device-1\"\n}"
                         }
                     }
                 },
@@ -3420,6 +3420,59 @@
             "name": "center / orders",
             "item": [
                 {
+                    "name": "center.orders.whatsapp",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/orders/:order/whatsapp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "orders",
+                                ":order",
+                                "whatsapp"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "order",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nإعادة إرسال صورة الفاتورة للعميل على واتساب (الفواتير المقفولة بس). بيشتغل حتى لو رسالة الفاتورة الأوتوماتيك موقوفة. واتساب مش مربوط أو الرقم غلط → 422.\n\n---\n\n### 🇬🇧 English\n\nResend the invoice image to the customer on WhatsApp (completed invoices only). Works even when the automatic invoice message is off. WhatsApp not connected or a bad number → 422.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders/{order}/whatsapp` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.complete` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
                     "name": "center.orders.index",
                     "request": {
                         "method": "GET",
@@ -3924,7 +3977,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nقفل أوردر مفتوح → فاتورة: المخزون بيتخصم، وآخر عداد وزيارة للعربية بيتحدثوا. `payments` اختيارية (`method` افتراضي `cash`). الأوردر الفاضي مايتقفلش.\n\n---\n\n### 🇬🇧 English\n\nComplete an open order into an invoice: stock leaves, the vehicle's last odometer/visit update. `payments` optional (`method` defaults to `cash`). Empty orders cannot be completed.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders/{order}/complete` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.complete` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `payments` | — | array · max:5 |\n| `payments.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `payments.*.method` | — | in: cash, instapay, wallet, card, bank · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
+                        "description": "### 🇪🇬 العربية\n\nقفل أوردر مفتوح → فاتورة: المخزون بيتخصم، وآخر عداد وزيارة للعربية بيتحدثوا، وصورة الفاتورة بتتبعت للعميل على واتساب. `payments` اختيارية (`method` افتراضي `cash`). الأوردر الفاضي مايتقفلش.\n\n---\n\n### 🇬🇧 English\n\nComplete an open order into an invoice: stock leaves, the vehicle's last odometer/visit update, and the invoice image goes to the customer on WhatsApp. `payments` optional (`method` defaults to `cash`). Empty orders cannot be completed.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders/{order}/complete` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.complete` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `payments` | — | array · max:5 |\n| `payments.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `payments.*.method` | — | in: cash, instapay, wallet, card, bank · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"payments\": [\n        {\n            \"amount\": 500,\n            \"method\": \"cash\"\n        },\n        {\n            \"amount\": 100\n        }\n    ]\n}"
@@ -4726,6 +4779,59 @@
             "name": "center / receipts",
             "item": [
                 {
+                    "name": "center.receipts.whatsapp",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/receipts/:receipt/whatsapp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "receipts",
+                                ":receipt",
+                                "whatsapp"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "receipt",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nإعادة إرسال صورة إيصال السداد للعميل على واتساب. الإيصال الملغي مرفوض (422).\n\n---\n\n### 🇬🇧 English\n\nResend the payment receipt image to the customer on WhatsApp. A voided receipt is refused (422).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/receipts/{receipt}/whatsapp` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payments.collect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
                     "name": "center.receipts.index",
                     "request": {
                         "method": "GET",
@@ -5420,10 +5526,10 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل إعدادات المركز (owner).\n\n---\n\n### 🇬🇧 English\n\nUpdate center settings (owner).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/settings` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل إعدادات المركز (owner)، ومنها تشغيل وإيقاف رسائل واتساب الأوتوماتيك: `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`. الرد فيه `whatsapp_connected`. رقم الإرسال (device) بيحدده الأدمن بس.\n\n---\n\n### 🇬🇧 English\n\nUpdate center settings (owner), including the automatic WhatsApp messages: `whatsapp_invoice_enabled` and `whatsapp_payment_enabled`. The response includes `whatsapp_connected`. The sending device is set by the admin only.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/settings` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `whatsapp_invoice_enabled` | — | boolean |\n| `whatsapp_payment_enabled` | — | boolean |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"مركز الدوار\",\n    \"phone\": \"01000000000\",\n    \"cashier_max_discount\": 100\n}"
+                            "raw": "{\n    \"name\": \"مركز الدوار\",\n    \"phone\": \"01000000000\",\n    \"cashier_max_discount\": 100,\n    \"whatsapp_invoice_enabled\": true,\n    \"whatsapp_payment_enabled\": true\n}"
                         }
                     }
                 },
@@ -6247,6 +6353,118 @@
                             "mode": "raw",
                             "raw": "{\n    \"amount\": 1500,\n    \"notes\": \"رصيد قديم من الدفتر\"\n}"
                         }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "center / whatsapp",
+            "item": [
+                {
+                    "name": "center.whatsapp.test",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/whatsapp/test",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "whatsapp",
+                                "test"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nتجربة الربط: رسالة نصية لرقم معين (10 محاولات في الدقيقة). النتيجة بتظهر في سجل الرسائل.\n\n---\n\n### 🇬🇧 English\n\nConnection test: a text message to a given number (10 attempts per minute). The result appears in the message log.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/whatsapp/test` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `phone` | ✅ | string · max:20 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"phone\": \"01012345678\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "center.whatsapp.messages",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/whatsapp/messages?status=failed",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "whatsapp",
+                                "messages"
+                            ],
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "failed"
+                                }
+                            ],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nسجل رسائل واتساب بتاعة المركز (paginated). الرقم متخفي.\n\n**الحالات:** `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط.\nالرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.\n\n---\n\n### 🇬🇧 English\n\nThe center's WhatsApp message log (paginated). Numbers are masked.\n\n**Statuses:** `sent`; `failed` after 3 attempts (reason in `error`); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number.\nMessages go out in the background, so the API answers before delivery. Follow them here.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/whatsapp/messages` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n| `type` | — | in: invoice, payment, test · nullable |\n| `status` | — | in: sent, failed, skipped_disabled, skipped_no_device, skipped_invalid_phone · nullable |\n| `from` | — | date_format:Y-m-d · nullable |\n| `to` | — | date_format:Y-m-d · after_or_equal:from · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 }
             ]

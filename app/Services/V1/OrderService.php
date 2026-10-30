@@ -40,6 +40,7 @@ class OrderService
         private readonly VehicleService $vehicles,
         private readonly CustomerService $customers,
         private readonly AuditLogService $audit,
+        private readonly WhatsappNotifier $whatsapp,
     ) {}
 
     /**
@@ -212,8 +213,10 @@ class OrderService
             $this->vehicles->refreshLastVisit($order->vehicle_id);
 
             foreach ($payments as $payment) {
-                $this->payments->payOrder($order, (string) $payment['amount'], PaymentMethod::from($payment['method'] ?? PaymentMethod::Cash->value));
+                $this->payments->payOrder($order, (string) $payment['amount'], PaymentMethod::from($payment['method'] ?? PaymentMethod::Cash->value), notify: false);
             }
+
+            $this->whatsapp->invoiceCompleted($order);
 
             return ['order' => $this->load($order->refresh()), 'warnings' => $warnings];
         });

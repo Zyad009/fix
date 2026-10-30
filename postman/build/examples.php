@@ -9,7 +9,7 @@ $bodies = [
     // Admin
     'admin.auth.login' => ['email' => 'admin@dawar.test', 'password' => 'password'],
     'admin.tenants.store' => ['name' => 'مركز الأمل', 'phone' => '01000000000', 'address' => 'الإسكندرية', 'plan' => 'pro', 'subscription_ends_at' => '2027-12-31', 'cashier_max_discount' => 100, 'branch_name' => 'الفرع الرئيسي', 'owner' => ['name' => 'أحمد', 'email' => 'owner@amal.test', 'password' => 'secret123']],
-    'admin.tenants.update' => ['name' => 'مركز الأمل', 'cashier_max_discount' => 150],
+    'admin.tenants.update' => ['name' => 'مركز الأمل', 'cashier_max_discount' => 150, 'whatsapp_device_id' => 'device-1'],
     'admin.tenants.subscription' => ['plan' => 'pro', 'subscription_ends_at' => '2027-12-31'],
     'admin.tenants.branches.store' => ['name' => 'فرع المعادي', 'phone' => '01000000001', 'address' => 'القاهرة - المعادي'],
     'admin.tenants.branches.update' => ['name' => 'فرع المعادي الجديد'],
@@ -21,7 +21,8 @@ $bodies = [
     // Auth & settings
     'center.auth.login' => ['email' => 'owner@dawar.test', 'password' => 'password'],
     'center.auth.password' => ['current_password' => 'password', 'password' => 'new-password', 'password_confirmation' => 'new-password'],
-    'center.settings.update' => ['name' => 'مركز الدوار', 'phone' => '01000000000', 'cashier_max_discount' => 100],
+    'center.settings.update' => ['name' => 'مركز الدوار', 'phone' => '01000000000', 'cashier_max_discount' => 100, 'whatsapp_invoice_enabled' => true, 'whatsapp_payment_enabled' => true],
+    'center.whatsapp.test' => ['phone' => '01012345678'],
     'center.users.store' => ['name' => 'مالك تاني', 'email' => 'owner3@dawar.test', 'password' => 'secret123', 'role' => 'owner'],
     'center.users.update' => ['name' => 'اسم جديد'],
 
@@ -68,6 +69,7 @@ $bodies = [
 
 $queries = [
     'center.search' => 'q=123',
+    'center.whatsapp.messages' => 'status=failed',
     'center.customers.statement' => 'from=2026-10-01&to=2026-10-31',
     'center.customers.unpaid-orders' => 'vehicle_id=',
     'center.pos.catalog' => 'q=6221234567890',

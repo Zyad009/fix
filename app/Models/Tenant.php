@@ -19,9 +19,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $subscription_ends_at
  * @property string $cashier_max_discount
  * @property string $timezone
+ * @property string|null $whatsapp_device_id
+ * @property bool $whatsapp_invoice_enabled
+ * @property bool $whatsapp_payment_enabled
  * @property bool $is_active
  */
-#[Fillable(['name', 'phone', 'address', 'logo_path', 'plan', 'subscription_ends_at', 'cashier_max_discount', 'timezone', 'is_active'])]
+#[Fillable(['name', 'phone', 'address', 'logo_path', 'plan', 'subscription_ends_at', 'cashier_max_discount', 'timezone', 'whatsapp_device_id', 'whatsapp_invoice_enabled', 'whatsapp_payment_enabled', 'is_active'])]
 class Tenant extends Model
 {
     /** @var array<string, mixed> Mirrors the column defaults so fresh models are complete. */
@@ -29,6 +32,8 @@ class Tenant extends Model
         'plan' => 'trial',
         'cashier_max_discount' => '0.00',
         'timezone' => 'Africa/Cairo',
+        'whatsapp_invoice_enabled' => true,
+        'whatsapp_payment_enabled' => true,
         'is_active' => true,
     ];
 
@@ -40,6 +45,8 @@ class Tenant extends Model
         return [
             'subscription_ends_at' => 'datetime',
             'cashier_max_discount' => 'decimal:2',
+            'whatsapp_invoice_enabled' => 'boolean',
+            'whatsapp_payment_enabled' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

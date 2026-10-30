@@ -30,15 +30,17 @@ class PaymentService
         private readonly OrderGuard $guard,
         private readonly OrderTotalsService $totals,
         private readonly AuditLogService $audit,
+        private readonly WhatsappNotifier $whatsapp,
     ) {}
 
     /**
      * Collect money against one order (a deposit on an open order, or a
      * full/partial payment of an invoice). Never more than what is due.
+     * `notify` is off when paying while completing: the invoice image says it all.
      */
-    public function payOrder(Order $order, string $amount, PaymentMethod $method, ?string $notes = null): PaymentReceipt
+    public function payOrder(Order $order, string $amount, PaymentMethod $method, ?string $notes = null, bool $notify = true): PaymentReceipt
     {
-        return DB::transaction(function () use ($order, $amount, $method, $notes): PaymentReceipt {
+        return DB::transaction(function () use ($order, $amount, $method, $notes, $notify): PaymentReceipt {
             $order = $this->guard->lock($order);
 
             if ($order->isCancelled()) {
@@ -54,6 +56,10 @@ class PaymentService
             $receipt = $this->createReceipt($order->customer_id, $order->vehicle_id, $amount, $method, $notes, $order->branch_id);
             $this->createPayment($receipt, $order, $amount);
             $this->totals->recalculate($order);
+
+            if ($notify) {
+                $this->whatsapp->paymentCollected($receipt);
+            }
 
             return $this->loadReceipt($receipt);
         });
@@ -92,6 +98,8 @@ class PaymentService
                 $this->totals->recalculate($order);
                 $left = $left->minus($portion);
             }
+
+            $this->whatsapp->paymentCollected($receipt);
 
             return $this->loadReceipt($receipt);
         });
@@ -137,6 +145,8 @@ class PaymentService
                 $this->createPayment($receipt, $order, $portions[$order->id]);
                 $this->totals->recalculate($order);
             }
+
+            $this->whatsapp->paymentCollected($receipt);
 
             return $this->loadReceipt($receipt);
         });

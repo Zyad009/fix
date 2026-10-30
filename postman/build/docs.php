@@ -55,8 +55,8 @@ MD,
         'en' => 'Center details.',
     ],
     'admin.tenants.update' => [
-        'ar' => 'تعديل بيانات مركز (الاسم، التليفون، العنوان، حد خصم الكاشير، المنطقة الزمنية). الاشتراك له endpoint لوحده.',
-        'en' => 'Update a center (name, phone, address, cashier discount limit, timezone). The subscription has its own endpoint.',
+        'ar' => 'تعديل بيانات مركز (الاسم، التليفون، العنوان، حد خصم الكاشير، المنطقة الزمنية، و `whatsapp_device_id` رقم واتساب اللي بيبعت منه على GOWA). الاشتراك له endpoint لوحده.',
+        'en' => 'Update a center (name, phone, address, cashier discount limit, timezone, and `whatsapp_device_id`, its sending WhatsApp device on GOWA). The subscription has its own endpoint.',
     ],
     'admin.tenants.toggle' => [
         'ar' => 'إيقاف/تفعيل مركز. الإيقاف بيمسح توكنات كل مستخدميه فوراً ويمنع الدخول.',
@@ -146,8 +146,8 @@ MD,
         'en' => 'Center settings: name, phone, address, logo, cashier discount limit, subscription.',
     ],
     'center.settings.update' => [
-        'ar' => 'تعديل إعدادات المركز (owner).',
-        'en' => 'Update center settings (owner).',
+        'ar' => 'تعديل إعدادات المركز (owner)، ومنها تشغيل وإيقاف رسائل واتساب الأوتوماتيك: `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`. الرد فيه `whatsapp_connected`. رقم الإرسال (device) بيحدده الأدمن بس.',
+        'en' => 'Update center settings (owner), including the automatic WhatsApp messages: `whatsapp_invoice_enabled` and `whatsapp_payment_enabled`. The response includes `whatsapp_connected`. The sending device is set by the admin only.',
     ],
     'center.settings.logo' => [
         'ar' => 'رفع لوجو المركز (`multipart/form-data`، حقل `image`). بيظهر في الفواتير المطبوعة.',
@@ -471,8 +471,8 @@ MD,
         'en' => 'Remove a line. Totals are recalculated.',
     ],
     'center.orders.complete' => [
-        'ar' => 'قفل أوردر مفتوح → فاتورة: المخزون بيتخصم، وآخر عداد وزيارة للعربية بيتحدثوا. `payments` اختيارية (`method` افتراضي `cash`). الأوردر الفاضي مايتقفلش.',
-        'en' => 'Complete an open order into an invoice: stock leaves, the vehicle\'s last odometer/visit update. `payments` optional (`method` defaults to `cash`). Empty orders cannot be completed.',
+        'ar' => 'قفل أوردر مفتوح → فاتورة: المخزون بيتخصم، وآخر عداد وزيارة للعربية بيتحدثوا، وصورة الفاتورة بتتبعت للعميل على واتساب. `payments` اختيارية (`method` افتراضي `cash`). الأوردر الفاضي مايتقفلش.',
+        'en' => 'Complete an open order into an invoice: stock leaves, the vehicle\'s last odometer/visit update, and the invoice image goes to the customer on WhatsApp. `payments` optional (`method` defaults to `cash`). Empty orders cannot be completed.',
     ],
     'center.orders.cancel' => [
         'ar' => 'إلغاء أوردر. المفتوح: أي حد يقدر يفتح أوردرات. المقفول: owner بس وبسبب؛ المخزون بيرجع، ولو مدفوع بيتعمل مرتجع (refund) بتاريخ النهارده.',
@@ -613,6 +613,37 @@ MD,
     ],
 
     // =====================================================================
+    // Center — WhatsApp
+    // =====================================================================
+
+    'center.orders.whatsapp' => [
+        'ar' => 'إعادة إرسال صورة الفاتورة للعميل على واتساب (الفواتير المقفولة بس). بيشتغل حتى لو رسالة الفاتورة الأوتوماتيك موقوفة. واتساب مش مربوط أو الرقم غلط → 422.',
+        'en' => 'Resend the invoice image to the customer on WhatsApp (completed invoices only). Works even when the automatic invoice message is off. WhatsApp not connected or a bad number → 422.',
+    ],
+    'center.receipts.whatsapp' => [
+        'ar' => 'إعادة إرسال صورة إيصال السداد للعميل على واتساب. الإيصال الملغي مرفوض (422).',
+        'en' => 'Resend the payment receipt image to the customer on WhatsApp. A voided receipt is refused (422).',
+    ],
+    'center.whatsapp.test' => [
+        'ar' => 'تجربة الربط: رسالة نصية لرقم معين (10 محاولات في الدقيقة). النتيجة بتظهر في سجل الرسائل.',
+        'en' => 'Connection test: a text message to a given number (10 attempts per minute). The result appears in the message log.',
+    ],
+    'center.whatsapp.messages' => [
+        'ar' => <<<'MD'
+سجل رسائل واتساب بتاعة المركز (paginated). الرقم متخفي.
+
+**الحالات:** `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط.
+الرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.
+MD,
+        'en' => <<<'MD'
+The center's WhatsApp message log (paginated). Numbers are masked.
+
+**Statuses:** `sent`; `failed` after 3 attempts (reason in `error`); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number.
+Messages go out in the background, so the API answers before delivery. Follow them here.
+MD,
+    ],
+
+    // =====================================================================
     // Center — reports (owner)
     // =====================================================================
 
@@ -718,6 +749,7 @@ MD,
 $paging = ['page', 'per_page'];
 
 $fieldsOnly = [
+    'center.whatsapp.messages' => ['type', 'status', 'from', 'to', ...$paging],
     'admin.tenants.index' => ['q', 'is_active', 'expired', ...$paging],
     'center.users.index' => ['q', 'role', 'branch_id', 'is_active', ...$paging],
     'center.audit-logs.index' => ['auditable_type', 'auditable_id', 'event', 'user_id', 'from', 'to', ...$paging],

@@ -14,6 +14,7 @@ use App\Http\Controllers\V1\Center\ReportController;
 use App\Http\Controllers\V1\Center\SettingsController;
 use App\Http\Controllers\V1\Center\UserController;
 use App\Http\Controllers\V1\Center\VehicleController;
+use App\Http\Controllers\V1\Center\WhatsappController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'tenant', 'branch', 'subscription'])->group(function (): void {
@@ -56,6 +57,11 @@ Route::middleware(['auth:sanctum', 'tenant', 'branch', 'subscription'])->group(f
     Route::patch('products/{product}/stock', [ProductController::class, 'stock'])->name('products.stock');
 
     // Orders (= invoices)
+    Route::post('orders/{order}/whatsapp', [WhatsappController::class, 'sendInvoice'])->name('orders.whatsapp');
+    Route::post('receipts/{receipt}/whatsapp', [WhatsappController::class, 'sendReceipt'])->name('receipts.whatsapp');
+    Route::post('whatsapp/test', [WhatsappController::class, 'test'])->name('whatsapp.test');
+    Route::get('whatsapp/messages', [WhatsappController::class, 'messages'])->name('whatsapp.messages');
+
     Route::apiResource('orders', OrderController::class)->except('destroy');
     Route::prefix('orders/{order}')->name('orders.')->controller(OrderController::class)->group(function (): void {
         Route::post('items', 'addItem')->name('items.store');

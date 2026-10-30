@@ -23,7 +23,10 @@ class PrintService
 
     public const SIZE_THERMAL = 'thermal';
 
-    public function __construct(private readonly OrderService $orders) {}
+    public function __construct(
+        private readonly OrderService $orders,
+        private readonly BalanceService $balances,
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -52,6 +55,7 @@ class PrintService
             'customer' => ['name' => $order->customer?->name, 'phone' => $order->customer?->phone],
             'vehicle' => [
                 'plate_number' => $order->vehicle?->plate_number,
+                'vin' => $order->vehicle?->vin,
                 'make' => $order->vehicle?->carMake?->name_ar,
                 'model' => $order->vehicle?->carModel?->name_ar,
                 'year' => $order->vehicle?->year,
@@ -59,6 +63,7 @@ class PrintService
             ],
             'items' => $order->items->map(fn ($item): array => [
                 'name' => $item->name,
+                'kind' => $item->kind->response(),
                 'qty' => formatNumber($item->qty),
                 'unit_price' => formatNumber($item->unit_price),
                 'line_total' => Money::of($item->unit_price)->multipliedBy($item->qty)->toFloat(),
@@ -103,6 +108,7 @@ class PrintService
             ],
             'customer' => ['name' => $receipt->customer?->name, 'phone' => $receipt->customer?->phone],
             'vehicle' => ['plate_number' => $receipt->vehicle?->plate_number],
+            'customer_debt' => $this->balances->customerBalance($receipt->customer_id)->toFloat(),
             'allocations' => $receipt->payments->map(fn ($payment): array => [
                 'order_no' => $payment->order?->order_no,
                 'amount' => formatNumber($payment->amount),
