@@ -5948,10 +5948,81 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإضافة عربية لعميل. اللوحة بتتخزن زي ما اتكتبت وبتتطابق بعد توحيدها (مسافات/أرقام/همزات). الماركة والموديل من `car-makes`، و `year` سنة الموديل.\n\n---\n\n### 🇬🇧 English\n\nAdd a vehicle to a customer. The plate is stored as typed and matched after normalisation (spaces/digits/letter variants). Make/model from `car-makes`; `year` is the model year.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/vehicles` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `customers.manage` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `customer_id` | ✅ | integer · exists:customers |\n| `plate_number` | ✅ | string · max:30 |\n| `vin` | — | string · max:50 · unique:vehicles · nullable |\n| `car_make_id` | — | integer · exists:car_makes · nullable |\n| `car_model_id` | — | integer · exists:car_models · nullable |\n| `year` | — | integer · min:1950 · max:2027 · nullable |\n| `color` | — | string · max:50 · nullable |\n| `notes` | — | string · max:2000 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإضافة عربية لعميل. اللوحة بتتخزن زي ما اتكتبت وبتتطابق بعد توحيدها (مسافات/أرقام/همزات). الماركة والموديل من `car-makes`، و `year` سنة الموديل. صورة الشاسيه اختيارية في `vin_image` (`multipart/form-data`)، شوف الطلب التاني.\n\n---\n\n### 🇬🇧 English\n\nAdd a vehicle to a customer. The plate is stored as typed and matched after normalisation (spaces/digits/letter variants). Make/model from `car-makes`; `year` is the model year. The chassis image is optional in `vin_image` (`multipart/form-data`), see the second request.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/vehicles` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `customers.manage` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `customer_id` | ✅ | integer · exists:customers |\n| `plate_number` | ✅ | string · max:30 |\n| `vin` | — | string · max:50 · unique:vehicles · nullable |\n| `car_make_id` | — | integer · exists:car_makes · nullable |\n| `car_model_id` | — | integer · exists:car_models · nullable |\n| `year` | — | integer · min:1950 · max:2027 · nullable |\n| `color` | — | string · max:50 · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `vin_image` | — | image · mimes:jpg,jpeg,png,webp · max:4096 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"customer_id\": 1,\n    \"plate_number\": \"ب ج 456\",\n    \"car_make_id\": 1,\n    \"car_model_id\": null,\n    \"year\": 2020,\n    \"color\": \"فضي\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "center.vehicles.store — مع صورة الشاسيه",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/vehicles",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "vehicles"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nإضافة عربية مع صورة رقم الشاسيه. الطلب `multipart/form-data`، والصورة في `vin_image` (jpg, jpeg, png, webp بحد أقصى 4 ميجا). رابطها بيرجع في `vin_image_url`.\n\n---\n\n### 🇬🇧 English\n\nAdd a vehicle with a photo of its chassis number. The request is `multipart/form-data`, with the image in `vin_image` (jpg, jpeg, png, webp, 4 MB max). Its link comes back in `vin_image_url`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/vehicles` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `customers.manage` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `customer_id` | ✅ | integer · exists:customers |\n| `plate_number` | ✅ | string · max:30 |\n| `vin` | — | string · max:50 · unique:vehicles · nullable |\n| `car_make_id` | — | integer · exists:car_makes · nullable |\n| `car_model_id` | — | integer · exists:car_models · nullable |\n| `year` | — | integer · min:1950 · max:2027 · nullable |\n| `color` | — | string · max:50 · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `vin_image` | — | image · mimes:jpg,jpeg,png,webp · max:4096 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "customer_id",
+                                    "value": "1",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "plate_number",
+                                    "value": "ب ج 456",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "vin",
+                                    "value": "JTDBR32E720123456",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "vin_image",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
                         }
                     }
                 },
@@ -6060,10 +6131,77 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل بيانات العربية (المالك يتغير من `transfer-owner`).\n\n---\n\n### 🇬🇧 English\n\nUpdate a vehicle (the owner changes through `transfer-owner`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/vehicles/{vehicle}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `customers.manage` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `plate_number` | — | string · max:30 |\n| `vin` | — | string · max:50 · unique:vehicles · nullable |\n| `car_make_id` | — | integer · exists:car_makes · nullable |\n| `car_model_id` | — | integer · exists:car_models · nullable |\n| `year` | — | integer · min:1950 · max:2027 · nullable |\n| `color` | — | string · max:50 · nullable |\n| `notes` | — | string · max:2000 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل بيانات العربية (المالك يتغير من `transfer-owner`). إرسال `vin_image: null` بيمسح صورة الشاسيه. ولرفع صورة، شوف الطلب التاني.\n\n---\n\n### 🇬🇧 English\n\nUpdate a vehicle (the owner changes through `transfer-owner`). Sending `vin_image: null` removes the chassis image. To upload one, see the second request.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/vehicles/{vehicle}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `customers.manage` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `plate_number` | — | string · max:30 |\n| `vin` | — | string · max:50 · unique:vehicles · nullable |\n| `car_make_id` | — | integer · exists:car_makes · nullable |\n| `car_model_id` | — | integer · exists:car_models · nullable |\n| `year` | — | integer · min:1950 · max:2027 · nullable |\n| `color` | — | string · max:50 · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `vin_image` | — | image · mimes:jpg,jpeg,png,webp · max:4096 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"color\": \"أسود\",\n    \"year\": 2021\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "center.vehicles.update — رفع أو تغيير صورة الشاسيه",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/vehicles/:vehicle",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "vehicles",
+                                ":vehicle"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "vehicle",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nرفع أو تغيير صورة رقم الشاسيه، والقديمة بتتمسح. **الطلب لازم يتبعت `POST` ومعاه `_method=PUT`**، لأن PHP مابيقراش ملفات `PUT` مباشرة. ممكن تبعت معاها أي حقل تاني من حقول التعديل.\n\n---\n\n### 🇬🇧 English\n\nUpload or replace the chassis number image; the old file is deleted. **Send it as `POST` with `_method=PUT`**, because PHP does not parse files on a direct `PUT`. Any other update field may go with it.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/vehicles/{vehicle}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `customers.manage` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `plate_number` | — | string · max:30 |\n| `vin` | — | string · max:50 · unique:vehicles · nullable |\n| `car_make_id` | — | integer · exists:car_makes · nullable |\n| `car_model_id` | — | integer · exists:car_models · nullable |\n| `year` | — | integer · min:1950 · max:2027 · nullable |\n| `color` | — | string · max:50 · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `vin_image` | — | image · mimes:jpg,jpeg,png,webp · max:4096 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "_method",
+                                    "value": "PUT",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "vin_image",
+                                    "type": "file",
+                                    "src": []
+                                }
+                            ]
                         }
                     }
                 },

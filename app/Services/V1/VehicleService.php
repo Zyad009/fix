@@ -10,8 +10,10 @@ use App\Models\Vehicle;
 use App\Support\PlateNormalizer;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class VehicleService
 {
@@ -46,12 +48,16 @@ class VehicleService
     /**
      * @param  array<string, mixed>  $data
      */
-    public function store(array $data): Vehicle
+    public function store(array $data, ?UploadedFile $vinImage = null): Vehicle
     {
         $vehicle = Vehicle::query()->create([
             ...Arr::only($data, ['customer_id', 'plate_number', 'vin', 'car_make_id', 'car_model_id', 'year', 'color', 'notes']),
             'created_by' => actor()?->id,
         ]);
+
+        if ($vinImage) {
+            $this->replaceVinImage($vehicle, $vinImage);
+        }
 
         return $vehicle->load(['customer:id,name,phone', 'carMake', 'carModel']);
     }
@@ -80,13 +86,31 @@ class VehicleService
     }
 
     /**
+     * A new `vin_image` replaces the old one; sending it as null removes it.
+     *
      * @param  array<string, mixed>  $data
      */
-    public function update(Vehicle $vehicle, array $data): Vehicle
+    public function update(Vehicle $vehicle, array $data, ?UploadedFile $vinImage = null): Vehicle
     {
         $vehicle->update(Arr::only($data, ['plate_number', 'vin', 'car_make_id', 'car_model_id', 'year', 'color', 'notes']));
 
+        if ($vinImage || array_key_exists('vin_image', $data)) {
+            $this->replaceVinImage($vehicle, $vinImage);
+        }
+
         return $this->show($vehicle);
+    }
+
+    private function replaceVinImage(Vehicle $vehicle, ?UploadedFile $vinImage): void
+    {
+        $disk = config('filesystems.default');
+        $path = $vinImage?->store('tenants/'.tenantContext()->id().'/vehicles', $disk);
+
+        if ($vehicle->vin_image_path) {
+            Storage::disk($disk)->delete($vehicle->vin_image_path);
+        }
+
+        $vehicle->update(['vin_image_path' => $path]);
     }
 
     /**

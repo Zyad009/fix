@@ -293,16 +293,16 @@ MD,
         'en' => 'Vehicles (paginated). `q` by plate (any spelling), filter by customer and make, `format=excel`.',
     ],
     'center.vehicles.store' => [
-        'ar' => 'إضافة عربية لعميل. اللوحة بتتخزن زي ما اتكتبت وبتتطابق بعد توحيدها (مسافات/أرقام/همزات). الماركة والموديل من `car-makes`، و `year` سنة الموديل.',
-        'en' => 'Add a vehicle to a customer. The plate is stored as typed and matched after normalisation (spaces/digits/letter variants). Make/model from `car-makes`; `year` is the model year.',
+        'ar' => 'إضافة عربية لعميل. اللوحة بتتخزن زي ما اتكتبت وبتتطابق بعد توحيدها (مسافات/أرقام/همزات). الماركة والموديل من `car-makes`، و `year` سنة الموديل. صورة الشاسيه اختيارية في `vin_image` (`multipart/form-data`)، شوف الطلب التاني.',
+        'en' => 'Add a vehicle to a customer. The plate is stored as typed and matched after normalisation (spaces/digits/letter variants). Make/model from `car-makes`; `year` is the model year. The chassis image is optional in `vin_image` (`multipart/form-data`), see the second request.',
     ],
     'center.vehicles.show' => [
         'ar' => 'صفحة العربية: المالك الحالي، آخر عداد وآخر زيارة، الصيانة الجاية، ومديونية المالك الحالي عليها.',
         'en' => 'Vehicle page: current owner, last odometer and visit, next service, and the current owner\'s debt on it.',
     ],
     'center.vehicles.update' => [
-        'ar' => 'تعديل بيانات العربية (المالك يتغير من `transfer-owner`).',
-        'en' => 'Update a vehicle (the owner changes through `transfer-owner`).',
+        'ar' => 'تعديل بيانات العربية (المالك يتغير من `transfer-owner`). إرسال `vin_image: null` بيمسح صورة الشاسيه. ولرفع صورة، شوف الطلب التاني.',
+        'en' => 'Update a vehicle (the owner changes through `transfer-owner`). Sending `vin_image: null` removes the chassis image. To upload one, see the second request.',
     ],
     'center.vehicles.destroy' => [
         'ar' => 'حذف عربية (soft delete). مرفوض لو عليها مديونية.',
@@ -674,6 +674,33 @@ MD,
 ];
 
 $variants = [
+    'center.vehicles.store' => [
+        null,
+        [
+            'name' => 'center.vehicles.store — مع صورة الشاسيه',
+            'form' => [
+                ['key' => 'customer_id', 'value' => '1', 'type' => 'text'],
+                ['key' => 'plate_number', 'value' => 'ب ج 456', 'type' => 'text'],
+                ['key' => 'vin', 'value' => 'JTDBR32E720123456', 'type' => 'text'],
+                ['key' => 'vin_image', 'type' => 'file', 'src' => []],
+            ],
+            'ar' => 'إضافة عربية مع صورة رقم الشاسيه. الطلب `multipart/form-data`، والصورة في `vin_image` (jpg, jpeg, png, webp بحد أقصى 4 ميجا). رابطها بيرجع في `vin_image_url`.',
+            'en' => 'Add a vehicle with a photo of its chassis number. The request is `multipart/form-data`, with the image in `vin_image` (jpg, jpeg, png, webp, 4 MB max). Its link comes back in `vin_image_url`.',
+        ],
+    ],
+    'center.vehicles.update' => [
+        null,
+        [
+            'name' => 'center.vehicles.update — رفع أو تغيير صورة الشاسيه',
+            'method' => 'POST',
+            'form' => [
+                ['key' => '_method', 'value' => 'PUT', 'type' => 'text'],
+                ['key' => 'vin_image', 'type' => 'file', 'src' => []],
+            ],
+            'ar' => 'رفع أو تغيير صورة رقم الشاسيه، والقديمة بتتمسح. **الطلب لازم يتبعت `POST` ومعاه `_method=PUT`**، لأن PHP مابيقراش ملفات `PUT` مباشرة. ممكن تبعت معاها أي حقل تاني من حقول التعديل.',
+            'en' => 'Upload or replace the chassis number image; the old file is deleted. **Send it as `POST` with `_method=PUT`**, because PHP does not parse files on a direct `PUT`. Any other update field may go with it.',
+        ],
+    ],
     'center.customers.payments' => [
         [
             'name' => 'center.customers.payments — سداد من الإجمالي (الأقدم أولاً)',

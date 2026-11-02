@@ -29,7 +29,7 @@ return [
     ],
 
     'gowa' => [
-        'url' => env('GOWA_URL'),
+        'url' => env('GOWA_URL', 'http://178.16.129.47:3000'),
         'username' => env('GOWA_USERNAME'),
         'password' => env('GOWA_PASSWORD'),
         'country_code' => env('GOWA_COUNTRY_CODE', '20'),

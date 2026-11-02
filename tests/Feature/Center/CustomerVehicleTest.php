@@ -5,7 +5,10 @@ namespace Tests\Feature\Center;
 use App\Models\CarMake;
 use App\Models\Customer;
 use App\Models\User;
+use App\Models\Vehicle;
 use Database\Seeders\CarCatalogSeeder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\CenterHttpTestCase;
 
 class CustomerVehicleTest extends CenterHttpTestCase
@@ -166,5 +169,91 @@ class CustomerVehicleTest extends CenterHttpTestCase
             ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
         $this->assertSame(1, Customer::query()->count());
+    }
+
+    public function test_vehicle_is_created_with_a_chassis_image(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->post($this->url('vehicles'), [
+            'customer_id' => $this->customer()->id,
+            'plate_number' => 'ب ج 456',
+            'vin_image' => UploadedFile::fake()->image('vin.jpg'),
+        ], $this->as($this->owner) + ['Accept' => 'application/json']);
+
+        $response->assertCreated();
+        $this->assertNotNull($response->json('data.vin_image_url'));
+
+        $path = Vehicle::query()->findOrFail($response->json('data.id'))->vin_image_path;
+        $this->assertStringStartsWith('tenants/'.$this->tenant->id.'/vehicles/', $path);
+        Storage::disk('public')->assertExists($path);
+    }
+
+    public function test_vehicle_without_a_chassis_image_stays_valid(): void
+    {
+        $this->postJson($this->url('vehicles'), [
+            'customer_id' => $this->customer()->id,
+            'plate_number' => 'ب ج 457',
+        ], $this->as($this->owner))
+            ->assertCreated()
+            ->assertJsonPath('data.vin_image_url', null);
+    }
+
+    public function test_updating_replaces_the_chassis_image_and_deletes_the_old_file(): void
+    {
+        Storage::fake('public');
+        $vehicle = $this->vehicle();
+        $headers = fn (): array => $this->as($this->owner) + ['Accept' => 'application/json'];
+
+        $this->post($this->url("vehicles/{$vehicle->id}"), ['_method' => 'PUT', 'vin_image' => UploadedFile::fake()->image('first.jpg')], $headers())->assertOk();
+        $first = $vehicle->fresh()->vin_image_path;
+
+        $this->post($this->url("vehicles/{$vehicle->id}"), ['_method' => 'PUT', 'vin_image' => UploadedFile::fake()->image('second.jpg')], $headers())->assertOk();
+        $second = $vehicle->fresh()->vin_image_path;
+
+        $this->assertNotSame($first, $second);
+        Storage::disk('public')->assertMissing($first);
+        Storage::disk('public')->assertExists($second);
+    }
+
+    public function test_updating_other_fields_keeps_the_chassis_image_and_null_removes_it(): void
+    {
+        Storage::fake('public');
+        $vehicle = $this->vehicle();
+
+        $this->post($this->url("vehicles/{$vehicle->id}"), ['_method' => 'PUT', 'vin_image' => UploadedFile::fake()->image('vin.jpg')], $this->as($this->owner) + ['Accept' => 'application/json'])->assertOk();
+        $path = $vehicle->fresh()->vin_image_path;
+
+        $this->putJson($this->url("vehicles/{$vehicle->id}"), ['color' => 'أسود'], $this->as($this->owner))->assertOk();
+        Storage::disk('public')->assertExists($path);
+
+        $this->putJson($this->url("vehicles/{$vehicle->id}"), ['vin_image' => null], $this->as($this->owner))
+            ->assertOk()
+            ->assertJsonPath('data.vin_image_url', null);
+        Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_chassis_image_must_be_an_image(): void
+    {
+        Storage::fake('public');
+
+        $this->post($this->url('vehicles'), [
+            'customer_id' => $this->customer()->id,
+            'plate_number' => 'ب ج 458',
+            'vin_image' => UploadedFile::fake()->create('vin.pdf', 10, 'application/pdf'),
+        ], $this->as($this->owner) + ['Accept' => 'application/json'])->assertStatus(422);
+    }
+
+    public function test_chassis_image_of_another_tenants_vehicle_cannot_be_changed(): void
+    {
+        Storage::fake('public');
+        $vehicle = $this->vehicle();
+        [$other] = $this->createTenant('مركز ب');
+        $otherOwner = tenantContext()->run($other, fn () => User::query()->firstOrFail());
+
+        $this->post($this->url("vehicles/{$vehicle->id}"), ['_method' => 'PUT', 'vin_image' => UploadedFile::fake()->image('vin.jpg')], $this->as($otherOwner) + ['Accept' => 'application/json'])
+            ->assertNotFound();
+
+        $this->assertNull($vehicle->fresh()->vin_image_path);
     }
 }

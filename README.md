@@ -101,7 +101,7 @@ php artisan migrate:fresh --drop-views --seed --seeder=DemoSeeder
 لما فاتورة تتقفل، العميل بتوصله **صورة الفاتورة**، ولما يدفع بتوصله **صورة إيصال**. الإرسال في الخلفية عن طريق بوابة GOWA، والفشل مابيأثرش على البيع وبيتسجل في `GET /api/v1/center/whatsapp/messages`.
 
 **المطلوب على السيرفر:**
-1. قيم `GOWA_URL` و `GOWA_USERNAME` و `GOWA_PASSWORD` في `.env`.
+1. قيم `GOWA_USERNAME` و `GOWA_PASSWORD` في `.env`، نفس قيم fitZone. عنوان البوابة ليه قيمة افتراضية، ولو اتغير حطه في `GOWA_URL`.
 2. **الـ queue worker شغال** بـ `deploy/dawar-api-worker.conf`. من غيره مفيش رسالة هتطلع.
 3. Node.js ومتصفح Chrome للصور:
    ```bash

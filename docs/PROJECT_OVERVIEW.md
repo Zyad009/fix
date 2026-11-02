@@ -26,7 +26,7 @@
 
 **بالأرقام:**
 - 116 endpoint.
-- 165 test (906 assertion)، كلهم ناجحين.
+- 171 test (926 assertion)، كلهم ناجحين.
 - commits محلية على `main`. **مفيش push** لسه.
 
 ```

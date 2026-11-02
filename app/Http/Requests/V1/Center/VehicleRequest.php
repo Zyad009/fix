@@ -30,6 +30,7 @@ class VehicleRequest extends AbstractFormRequest
             ...self::vehicleRules('', $isCreate),
             'plate_normalized' => [$isCreate ? 'required' : 'sometimes', 'string', 'min:2', tenantUnique('vehicles', 'plate_active')->ignore($vehicle)],
             'vin' => ['nullable', 'string', 'max:50', tenantUnique('vehicles', 'vin_active')->ignore($vehicle)],
+            'vin_image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ];
     }
 
@@ -49,6 +50,14 @@ class VehicleRequest extends AbstractFormRequest
             $prefix.'color' => ['nullable', 'string', 'max:50'],
             $prefix.'notes' => ['nullable', 'string', 'max:2000'],
         ];
+    }
+
+    /**
+     * `vin_image: null` alone is a real change: it removes the image.
+     */
+    protected function isEmptyRequest(): bool
+    {
+        return ! $this->has('vin_image') && parent::isEmptyRequest();
     }
 
     public function withValidator(Validator $validator): void

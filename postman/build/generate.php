@@ -141,8 +141,15 @@ foreach (app('router')->getRoutes()->getRoutes() as $route) {
 
         $copy = $item;
         $copy['name'] = $variant['name'];
-        $copy['request']['header'] = [...array_filter($item['request']['header'], fn (array $header): bool => $header['key'] !== 'Content-Type'), ['key' => 'Content-Type', 'value' => 'application/json']];
-        $copy['request']['body'] = ['mode' => 'raw', 'raw' => json_encode($variant['body'], JSON_FLAGS)];
+        $copy['request']['header'] = array_values(array_filter($item['request']['header'], fn (array $header): bool => $header['key'] !== 'Content-Type'));
+
+        if (isset($variant['form'])) {
+            $copy['request']['method'] = $variant['method'] ?? $method;
+            $copy['request']['body'] = ['mode' => 'formdata', 'formdata' => $variant['form']];
+        } else {
+            $copy['request']['header'][] = ['key' => 'Content-Type', 'value' => 'application/json'];
+            $copy['request']['body'] = ['mode' => 'raw', 'raw' => json_encode($variant['body'], JSON_FLAGS)];
+        }
 
         if (isset($variant['ar'])) {
             $copy['request']['description'] = documentation($route, ['ar' => $variant['ar'], 'en' => $variant['en']], $fields);

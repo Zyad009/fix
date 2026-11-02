@@ -70,7 +70,7 @@ class VehicleController extends Controller implements HasMiddleware
     public function store(VehicleRequest $request): JsonResponse
     {
         try {
-            $vehicle = $this->vehicleService->store($request->validated());
+            $vehicle = $this->vehicleService->store($request->validated(), $request->file('vin_image'));
 
             return $this->response(new $this->resource($this->vehicleService->show($vehicle)), __('messages.created'), 201);
         } catch (\Throwable $th) {
@@ -90,7 +90,7 @@ class VehicleController extends Controller implements HasMiddleware
     public function update(VehicleRequest $request, Vehicle $vehicle): JsonResponse
     {
         try {
-            return $this->response(new $this->resource($this->vehicleService->update($vehicle, $request->validated())), __('messages.updated'));
+            return $this->response(new $this->resource($this->vehicleService->update($vehicle, $request->validated(), $request->file('vin_image'))), __('messages.updated'));
         } catch (\Throwable $th) {
             return $this->failed($th);
         }

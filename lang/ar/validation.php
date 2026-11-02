@@ -167,6 +167,7 @@ return [
         'vehicle_id' => 'العربية',
         'plate_number' => 'رقم اللوحة',
         'vin' => 'رقم الشاسيه',
+        'vin_image' => 'صورة الشاسيه',
         'car_make_id' => 'الماركة',
         'car_model_id' => 'الموديل',
         'year' => 'سنة الصنع',

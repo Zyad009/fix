@@ -18,6 +18,7 @@ use Illuminate\Support\Carbon;
  * @property string $plate_number
  * @property string $plate_normalized
  * @property string|null $vin
+ * @property string|null $vin_image_path
  * @property int|null $car_make_id
  * @property int|null $car_model_id
  * @property int|null $year
@@ -26,7 +27,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $last_visit_at
  * @property string|null $notes
  */
-#[Fillable(['customer_id', 'plate_number', 'vin', 'car_make_id', 'car_model_id', 'year', 'color', 'notes', 'created_by'])]
+#[Fillable(['customer_id', 'plate_number', 'vin', 'vin_image_path', 'car_make_id', 'car_model_id', 'year', 'color', 'notes', 'created_by'])]
 class Vehicle extends Model
 {
     use BelongsToTenant, SoftDeletes;
@@ -62,6 +63,11 @@ class Vehicle extends Model
     protected function vin(): Attribute
     {
         return Attribute::make(set: fn (?string $value): ?string => filled($value) ? mb_strtoupper(preg_replace('/\s+/', '', $value)) : null);
+    }
+
+    public function vinImageUrl(): ?string
+    {
+        return publicFileUrl($this->vin_image_path);
     }
 
     /**
