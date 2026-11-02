@@ -28,6 +28,9 @@ class SettingsResource extends JsonResource
             'whatsapp_connected' => filled($this->whatsapp_device_id),
             'whatsapp_invoice_enabled' => $this->whatsapp_invoice_enabled,
             'whatsapp_payment_enabled' => $this->whatsapp_payment_enabled,
+            'whatsapp_service_reminder_enabled' => $this->whatsapp_service_reminder_enabled,
+            'whatsapp_debt_reminder_enabled' => $this->whatsapp_debt_reminder_enabled,
+            'debt_reminder_days' => $this->debt_reminder_days,
         ];
     }
 }

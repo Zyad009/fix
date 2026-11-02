@@ -98,5 +98,13 @@ return [
     'whatsapp_receipt_voided' => 'A voided receipt cannot be sent.',
     'whatsapp_test_body' => 'Test message from :center. The WhatsApp connection works ✅',
     'whatsapp_invoice_caption' => "Thank you for choosing :center 🌟\nInvoice #:number\nTotal: :total EGP\nPaid: :paid EGP\nRemaining: :remaining EGP",
+    'whatsapp_service_reminder_body' => 'A reminder from :center 🔧
+Your car (:plate) is due for service tomorrow, :date.
+We look forward to seeing you!:contact',
+    'whatsapp_debt_reminder_body' => 'A reminder from :center
+Your outstanding balance is :amount EGP.
+Please settle it at your earliest convenience.:contact',
+    'whatsapp_contact_line' => '
+Contact us: :phone',
     'whatsapp_payment_caption' => "Payment received ✅\n:center\nReceipt #:number\nAmount: :amount EGP\nRemaining debt: :debt EGP",
 ];

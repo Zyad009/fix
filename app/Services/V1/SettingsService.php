@@ -20,7 +20,7 @@ class SettingsService
     public function update(array $data): Tenant
     {
         $tenant = tenantContext()->tenant();
-        $tenant->update(Arr::only($data, ['name', 'phone', 'address', 'cashier_max_discount', 'whatsapp_invoice_enabled', 'whatsapp_payment_enabled']));
+        $tenant->update(Arr::only($data, ['name', 'phone', 'address', 'cashier_max_discount', 'whatsapp_invoice_enabled', 'whatsapp_payment_enabled', 'whatsapp_service_reminder_enabled', 'whatsapp_debt_reminder_enabled', 'debt_reminder_days']));
 
         return $tenant;
     }

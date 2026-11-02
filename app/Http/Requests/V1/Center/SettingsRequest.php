@@ -18,6 +18,9 @@ class SettingsRequest extends AbstractFormRequest
             'cashier_max_discount' => ['sometimes', 'decimal:0,2', 'min:0', 'max:9999999999'],
             'whatsapp_invoice_enabled' => ['sometimes', 'boolean'],
             'whatsapp_payment_enabled' => ['sometimes', 'boolean'],
+            'whatsapp_service_reminder_enabled' => ['sometimes', 'boolean'],
+            'whatsapp_debt_reminder_enabled' => ['sometimes', 'boolean'],
+            'debt_reminder_days' => ['sometimes', 'integer', 'min:1', 'max:365'],
         ];
     }
 }

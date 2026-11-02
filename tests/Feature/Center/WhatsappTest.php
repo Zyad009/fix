@@ -6,6 +6,7 @@ use App\Enums\WhatsappMessageStatus;
 use App\Jobs\SendWhatsappMessageJob;
 use App\Models\Tenant;
 use App\Models\WhatsappMessage;
+use App\Services\V1\BalanceService;
 use App\Services\V1\DocumentImageService;
 use App\Services\V1\GowaWhatsappService;
 use Illuminate\Http\Client\Request;
@@ -141,7 +142,7 @@ class WhatsappTest extends CenterHttpTestCase
         Http::fake(['*' => Http::response(['code' => 'SUCCESS', 'results' => ['message_id' => 'wa-1']])]);
         config(['services.gowa.url' => 'http://gowa.test']);
 
-        $this->jobs()[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class));
+        $this->jobs()[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
 
         Http::assertSent(fn (Request $request): bool => $request->url() === 'http://gowa.test/send/image'
             && $request->header('X-Device-Id') === ['device-1']
@@ -166,7 +167,7 @@ class WhatsappTest extends CenterHttpTestCase
         $job = $this->jobs()[0];
 
         try {
-            $job->handle(app(GowaWhatsappService::class), app(DocumentImageService::class));
+            $job->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
             $this->fail('The job must throw so the queue retries it.');
         } catch (RuntimeException $exception) {
             $this->assertSame('device offline', $exception->getMessage());

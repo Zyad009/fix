@@ -17,13 +17,14 @@ use Illuminate\Support\Carbon;
  * @property WhatsappMessageType $type
  * @property int|null $order_id
  * @property int|null $receipt_id
+ * @property int|null $customer_id
  * @property string|null $recipient
  * @property WhatsappMessageStatus $status
  * @property string|null $provider_message_id
  * @property string|null $error
  * @property Carbon|null $sent_at
  */
-#[Fillable(['type', 'order_id', 'receipt_id', 'recipient', 'status', 'provider_message_id', 'error', 'sent_at'])]
+#[Fillable(['type', 'order_id', 'receipt_id', 'customer_id', 'recipient', 'status', 'provider_message_id', 'error', 'sent_at'])]
 class WhatsappMessage extends Model
 {
     use BelongsToTenant;
@@ -46,6 +47,14 @@ class WhatsappMessage extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class)->withoutGlobalScope('branch');
+    }
+
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class)->withTrashed();
     }
 
     /**

@@ -98,5 +98,13 @@ return [
     'whatsapp_receipt_voided' => 'لا يمكن إرسال إيصال ملغي.',
     'whatsapp_test_body' => 'رسالة تجربة من :center. الربط بواتساب يعمل بنجاح ✅',
     'whatsapp_invoice_caption' => "شكراً لتعاملكم مع :center 🌟\nفاتورة رقم :number\nالإجمالي: :total جنيه\nالمدفوع: :paid جنيه\nالمتبقي: :remaining جنيه",
+    'whatsapp_service_reminder_body' => 'تذكير من :center 🔧
+معاد صيانة عربيتك (:plate) بكرة :date.
+مستنيينك!:contact',
+    'whatsapp_debt_reminder_body' => 'تذكير من :center
+إجمالي المديونية المستحقة عليك: :amount جنيه.
+برجاء السداد في أقرب وقت.:contact',
+    'whatsapp_contact_line' => '
+للتواصل: :phone',
     'whatsapp_payment_caption' => "تم استلام دفعتكم بنجاح ✅\n:center\nإيصال رقم :number\nالمبلغ: :amount جنيه\nإجمالي المديونية المتبقية: :debt جنيه",
 ];

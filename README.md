@@ -110,6 +110,11 @@ php artisan migrate:fresh --drop-views --seed --seeder=DemoSeeder
    ```
    وعلى Linux لازم مكتبات تشغيل Chromium. ولو هتستخدم Chrome متسطب على الجهاز، حط مساره في `BROWSERSHOT_CHROME_PATH`. ولو الـ worker شغال بـ root أو في Docker، خلّي `BROWSERSHOT_NO_SANDBOX=true`.
 4. الأدمن يحط `whatsapp_device_id` لكل مركز من `PUT /api/v1/admin/tenants/{id}`.
+5. **الـ scheduler شغال** عشان تذكيرات الصيانة والمديونية (كل يوم 10 الصبح). ضيف السطر ده في crontab مستخدم الموقع (`crontab -e`):
+   ```cron
+   * * * * * cd /home/warsha-api/htdocs/warsha-api && php8.4 artisan schedule:run >> /dev/null 2>&1
+   ```
+   ولتجربة مركز واحد يدوياً: `php8.4 artisan whatsapp:reminders --tenant=1`.
 
 ---
 

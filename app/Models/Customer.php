@@ -9,17 +9,27 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string $name
  * @property string $phone
  * @property string|null $notes
+ * @property Carbon|null $debt_reminded_at
  */
 #[Fillable(['name', 'phone', 'notes', 'created_by'])]
 class Customer extends Model
 {
     use BelongsToTenant, SoftDeletes;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['debt_reminded_at' => 'datetime'];
+    }
 
     /**
      * @return Attribute<string, string>

@@ -39,6 +39,24 @@ class WhatsappNotifier
         $this->automatic(WhatsappMessageType::Payment, tenantContext()->tenant()->whatsapp_payment_enabled, $receipt->customer_id, receiptId: $receipt->id);
     }
 
+    /**
+     * The day before the next service date of the vehicle's latest invoice,
+     * sent to whoever owns the vehicle now.
+     */
+    public function serviceReminder(Order $order, int $ownerId): void
+    {
+        $this->automatic(WhatsappMessageType::ServiceReminder, tenantContext()->tenant()->whatsapp_service_reminder_enabled, $ownerId, orderId: $order->id);
+    }
+
+    /**
+     * The amount is read again when the job runs, so a payment made in between
+     * is never ignored.
+     */
+    public function debtReminder(Customer $customer): void
+    {
+        $this->automatic(WhatsappMessageType::DebtReminder, tenantContext()->tenant()->whatsapp_debt_reminder_enabled, $customer->id);
+    }
+
     public function resendInvoice(Order $order): void
     {
         if (! $order->isCompleted() || $order->is_opening_balance) {
@@ -69,7 +87,7 @@ class WhatsappNotifier
     public function log(array $filters): LengthAwarePaginator
     {
         return WhatsappMessage::query()
-            ->with(['order:id,order_no', 'receipt:id,receipt_no'])
+            ->with(['order:id,order_no', 'receipt:id,receipt_no', 'customer:id,name'])
             ->when($filters['type'] ?? null, fn (Builder $query, string $type) => $query->where('type', $type))
             ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
             ->when(isset($filters['from']) || isset($filters['to']), function (Builder $query) use ($filters): void {
@@ -97,6 +115,7 @@ class WhatsappNotifier
                 'type' => $type,
                 'order_id' => $orderId,
                 'receipt_id' => $receiptId,
+                'customer_id' => $customerId,
                 'recipient' => $recipient === null ? null : PhoneNormalizer::mask($recipient),
                 'status' => $skip,
             ]);
@@ -105,7 +124,7 @@ class WhatsappNotifier
         }
 
         // After commit, and a queue outage is only reported: the sale is already saved.
-        DB::afterCommit(fn () => rescue(fn () => $this->dispatch($tenant, $type, $recipient, $orderId, $receiptId)));
+        DB::afterCommit(fn () => rescue(fn () => $this->dispatch($tenant, $type, $recipient, $orderId, $receiptId, $customerId)));
     }
 
     private function manual(WhatsappMessageType $type, ?string $phone, ?int $orderId = null, ?int $receiptId = null): void
@@ -125,7 +144,7 @@ class WhatsappNotifier
         $this->dispatch($tenant, $type, $recipient, $orderId, $receiptId);
     }
 
-    private function dispatch(Tenant $tenant, WhatsappMessageType $type, string $recipient, ?int $orderId, ?int $receiptId): void
+    private function dispatch(Tenant $tenant, WhatsappMessageType $type, string $recipient, ?int $orderId, ?int $receiptId, ?int $customerId = null): void
     {
         SendWhatsappMessageJob::dispatch(
             $tenant->id,
@@ -134,6 +153,7 @@ class WhatsappNotifier
             (string) $tenant->whatsapp_device_id,
             $orderId,
             $receiptId,
+            $customerId,
         );
     }
 

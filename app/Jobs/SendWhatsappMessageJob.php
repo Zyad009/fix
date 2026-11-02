@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\PaymentReceipt;
 use App\Models\Tenant;
 use App\Models\WhatsappMessage;
+use App\Services\V1\BalanceService;
 use App\Services\V1\DocumentImageService;
 use App\Services\V1\GowaWhatsappService;
 use App\Support\PhoneNormalizer;
@@ -41,19 +42,35 @@ class SendWhatsappMessageJob implements ShouldQueue
         public readonly string $deviceId,
         public readonly ?int $orderId = null,
         public readonly ?int $receiptId = null,
+        public readonly ?int $customerId = null,
     ) {
         $this->onQueue('notifications');
     }
 
-    public function handle(GowaWhatsappService $gowa, DocumentImageService $images): void
+    public function handle(GowaWhatsappService $gowa, DocumentImageService $images, BalanceService $balances): void
     {
         app()->setLocale('ar');
 
-        $this->inTenant(function () use ($gowa, $images): void {
-            $messageId = match (WhatsappMessageType::from($this->type)) {
+        $this->inTenant(function () use ($gowa, $images, $balances): void {
+            $type = WhatsappMessageType::from($this->type);
+            $debt = $type === WhatsappMessageType::DebtReminder ? $balances->customerBalance((int) $this->customerId) : null;
+
+            if ($debt !== null && ! $debt->isPositive()) {
+                $this->record(WhatsappMessageStatus::SkippedNoDebt, []);
+
+                return;
+            }
+
+            $messageId = match ($type) {
                 WhatsappMessageType::Test => $gowa->sendText($this->recipient, __('messages.whatsapp_test_body', ['center' => tenantContext()->tenant()->name]), $this->deviceId),
                 WhatsappMessageType::Invoice => $this->sendInvoice($gowa, $images),
                 WhatsappMessageType::Payment => $this->sendReceipt($gowa, $images),
+                WhatsappMessageType::ServiceReminder => $gowa->sendText($this->recipient, $this->serviceReminderText(), $this->deviceId),
+                WhatsappMessageType::DebtReminder => $gowa->sendText($this->recipient, __('messages.whatsapp_debt_reminder_body', [
+                    'center' => tenantContext()->tenant()->name,
+                    'amount' => number_format($debt->toFloat(), 2),
+                    'contact' => $this->contactLine(),
+                ]), $this->deviceId),
             };
 
             $this->record(WhatsappMessageStatus::Sent, ['provider_message_id' => $messageId, 'sent_at' => now()]);
@@ -97,6 +114,25 @@ class SendWhatsappMessageJob implements ShouldQueue
         ]));
     }
 
+    private function serviceReminderText(): string
+    {
+        $order = Order::query()->withoutGlobalScope('branch')->with('vehicle:id,plate_number')->findOrFail($this->orderId);
+
+        return __('messages.whatsapp_service_reminder_body', [
+            'center' => tenantContext()->tenant()->name,
+            'plate' => $order->vehicle?->plate_number,
+            'date' => $order->next_service_date?->toDateString(),
+            'contact' => $this->contactLine(),
+        ]);
+    }
+
+    private function contactLine(): string
+    {
+        $phone = tenantContext()->tenant()->phone;
+
+        return filled($phone) ? __('messages.whatsapp_contact_line', ['phone' => $phone]) : '';
+    }
+
     /**
      * The image is removed on success and on failure alike.
      */
@@ -120,6 +156,7 @@ class SendWhatsappMessageJob implements ShouldQueue
             'type' => $this->type,
             'order_id' => $this->orderId,
             'receipt_id' => $this->receiptId,
+            'customer_id' => $this->customerId,
             'recipient' => PhoneNormalizer::mask($this->recipient),
             'status' => $status,
             ...$attributes,

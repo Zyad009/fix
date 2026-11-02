@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $odometer
  * @property int|null $next_service_odometer
  * @property Carbon|null $next_service_date
+ * @property Carbon|null $service_reminder_sent_at
  * @property string $subtotal
  * @property string $discount
  * @property string $total
@@ -64,6 +65,7 @@ class Order extends Model
             'odometer' => 'integer',
             'next_service_odometer' => 'integer',
             'next_service_date' => 'date',
+            'service_reminder_sent_at' => 'datetime',
             'subtotal' => 'decimal:2',
             'discount' => 'decimal:2',
             'total' => 'decimal:2',

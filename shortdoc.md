@@ -26,6 +26,7 @@
 | الوقت | التخزين UTC، والتقارير بتحسب حدود اليوم بتوقيت المركز |
 | خارج الـ MVP | VAT. وفكرة إن الـ branches تتأجل لـ "المرحلة التانية" اتلغت، لأنها اتنفذت من الأول |
 | الأدوار (أكتوبر 2026) | دور جديد `technician_cashier` ("فني وكاشير") للورش المتوسطة: صلاحيات الكاشير، ومربوط بموظف بيتحط هو الفني الافتراضي على أوردراته. وحساب الدخول بيتعمل من صفحة الموظف (`employees.user_id`) |
+| تذكيرات واتساب (نوفمبر 2026) | `tenants`: `whatsapp_service_reminder_enabled` و `whatsapp_debt_reminder_enabled` و `debt_reminder_days`. `orders.service_reminder_sent_at`، و `customers.debt_reminded_at`، و `whatsapp_messages.customer_id` |
 | صورة الشاسيه (أكتوبر 2026) | `vehicles`: اتضاف `vin_image_path` |
 | واتساب (أكتوبر 2026) | `tenants`: اتضاف `whatsapp_device_id` و `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`. وجدول `whatsapp_messages` جديد لسجل الرسائل |
 | `products` (أكتوبر 2026) | اتضاف `barcode` nullable و unique جوه المركز (المنتج المحذوف بيحرره) |

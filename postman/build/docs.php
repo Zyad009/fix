@@ -146,8 +146,28 @@ MD,
         'en' => 'Center settings: name, phone, address, logo, cashier discount limit, subscription.',
     ],
     'center.settings.update' => [
-        'ar' => 'تعديل إعدادات المركز (owner)، ومنها تشغيل وإيقاف رسائل واتساب الأوتوماتيك: `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`. الرد فيه `whatsapp_connected`. رقم الإرسال (device) بيحدده الأدمن بس.',
-        'en' => 'Update center settings (owner), including the automatic WhatsApp messages: `whatsapp_invoice_enabled` and `whatsapp_payment_enabled`. The response includes `whatsapp_connected`. The sending device is set by the admin only.',
+        'ar' => <<<'MD'
+تعديل إعدادات المركز (owner)، ومنها رسائل واتساب الأوتوماتيك. الرد فيه `whatsapp_connected`، ورقم الإرسال (device) بيحدده الأدمن بس.
+
+- `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`: صورة الفاتورة وصورة الإيصال.
+- `whatsapp_service_reminder_enabled`: تذكير قبل معاد الصيانة الجاية بيوم. مقفول افتراضياً.
+- `whatsapp_debt_reminder_enabled` و `debt_reminder_days` (1 لـ 365، الافتراضي 30): تذكير المديونية. مقفول افتراضياً.
+
+**قاعدة تذكير المديونية:** العميل بيتفكّر لما يعدّي `debt_reminder_days` يوم من غير أي حاجة جديدة: لا فاتورة جديدة عليها فلوس، ولا دفعة (حتى لو جزئية)، ولا تذكير سابق. وبيتكرر كل فترة لحد ما يسدد كله.
+
+التذكيرات بتتبعت كل يوم الساعة 10 الصبح بتوقيت القاهرة.
+MD,
+        'en' => <<<'MD'
+Update center settings (owner), including the automatic WhatsApp messages. The response includes `whatsapp_connected`; the sending device is set by the admin only.
+
+- `whatsapp_invoice_enabled`, `whatsapp_payment_enabled`: invoice and receipt images.
+- `whatsapp_service_reminder_enabled`: a reminder the day before the next service date. Off by default.
+- `whatsapp_debt_reminder_enabled` and `debt_reminder_days` (1–365, default 30): debt reminder. Off by default.
+
+**Debt reminder rule:** a customer is reminded once `debt_reminder_days` pass with nothing new: no new unpaid invoice, no payment (even partial), no earlier reminder. It repeats every period until the debt is fully paid.
+
+Reminders go out daily at 10:00 Cairo time.
+MD,
     ],
     'center.settings.logo' => [
         'ar' => 'رفع لوجو المركز (`multipart/form-data`، حقل `image`). بيظهر في الفواتير المطبوعة.',
@@ -632,13 +652,17 @@ MD,
         'ar' => <<<'MD'
 سجل رسائل واتساب بتاعة المركز (paginated). الرقم متخفي.
 
-**الحالات:** `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط.
+**الأنواع:** `invoice` فاتورة، `payment` إيصال، `test` تجربة، `service_reminder` تذكير صيانة، `debt_reminder` تذكير مديونية (فيه `customer`).
+
+**الحالات:** `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال.
 الرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.
 MD,
         'en' => <<<'MD'
 The center's WhatsApp message log (paginated). Numbers are masked.
 
-**Statuses:** `sent`; `failed` after 3 attempts (reason in `error`); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number.
+**Types:** `invoice`, `payment`, `test`, `service_reminder`, `debt_reminder` (carries `customer`).
+
+**Statuses:** `sent`; `failed` after 3 attempts (reason in `error`); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending.
 Messages go out in the background, so the API answers before delivery. Follow them here.
 MD,
     ],
