@@ -30,7 +30,7 @@ class VehicleRequest extends AbstractFormRequest
             ...self::vehicleRules('', $isCreate),
             'plate_normalized' => [$isCreate ? 'required' : 'sometimes', 'string', 'min:2', tenantUnique('vehicles', 'plate_active')->ignore($vehicle)],
             'vin' => ['nullable', 'string', 'max:50', tenantUnique('vehicles', 'vin_active')->ignore($vehicle)],
-            'vin_image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+            'vin_image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
         ];
     }
 

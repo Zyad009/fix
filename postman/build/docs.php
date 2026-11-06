@@ -708,8 +708,8 @@ $variants = [
                 ['key' => 'vin', 'value' => 'JTDBR32E720123456', 'type' => 'text'],
                 ['key' => 'vin_image', 'type' => 'file', 'src' => []],
             ],
-            'ar' => 'إضافة عربية مع صورة رقم الشاسيه. الطلب `multipart/form-data`، والصورة في `vin_image` (jpg, jpeg, png, webp بحد أقصى 4 ميجا). رابطها بيرجع في `vin_image_url`.',
-            'en' => 'Add a vehicle with a photo of its chassis number. The request is `multipart/form-data`, with the image in `vin_image` (jpg, jpeg, png, webp, 4 MB max). Its link comes back in `vin_image_url`.',
+            'ar' => 'إضافة عربية مع صورة رقم الشاسيه. الطلب `multipart/form-data`، والصورة في `vin_image` (jpg, jpeg, png, webp بحد أقصى 12 ميجا). السيرفر بيصغّرها لـ 2000 بكسل على الضلع الطويل ويحفظها JPEG. رابطها بيرجع في `vin_image_url`.',
+            'en' => 'Add a vehicle with a photo of its chassis number. The request is `multipart/form-data`, with the image in `vin_image` (jpg, jpeg, png, webp, 12 MB max). The server shrinks it to 2000 px on the long edge and stores it as JPEG. Its link comes back in `vin_image_url`.',
         ],
     ],
     'center.vehicles.update' => [

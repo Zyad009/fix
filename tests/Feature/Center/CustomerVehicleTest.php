@@ -6,6 +6,7 @@ use App\Models\CarMake;
 use App\Models\Customer;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Services\V1\ImageOptimizer;
 use Database\Seeders\CarCatalogSeeder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -231,6 +232,36 @@ class CustomerVehicleTest extends CenterHttpTestCase
             ->assertOk()
             ->assertJsonPath('data.vin_image_url', null);
         Storage::disk('public')->assertMissing($path);
+    }
+
+    public function test_large_chassis_image_is_shrunk_and_stored_as_jpeg(): void
+    {
+        Storage::fake('public');
+
+        $response = $this->post($this->url('vehicles'), [
+            'customer_id' => $this->customer()->id,
+            'plate_number' => 'ب ج 459',
+            'vin_image' => UploadedFile::fake()->image('vin.png', 4000, 3000)->size(11000),
+        ], $this->as($this->owner) + ['Accept' => 'application/json'])->assertCreated();
+
+        $path = Vehicle::query()->findOrFail($response->json('data.id'))->vin_image_path;
+        $this->assertStringEndsWith('.jpg', $path);
+
+        [$width, $height, $type] = getimagesizefromstring(Storage::disk('public')->get($path));
+        $this->assertSame([ImageOptimizer::MAX_SIDE, 1500, IMAGETYPE_JPEG], [$width, $height, $type]);
+    }
+
+    public function test_chassis_image_over_12_mb_is_rejected(): void
+    {
+        Storage::fake('public');
+
+        $this->post($this->url('vehicles'), [
+            'customer_id' => $this->customer()->id,
+            'plate_number' => 'ب ج 460',
+            'vin_image' => UploadedFile::fake()->image('vin.jpg')->size(12289),
+        ], $this->as($this->owner) + ['Accept' => 'application/json'])
+            ->assertStatus(422)
+            ->assertJsonPath('code', 422);
     }
 
     public function test_chassis_image_must_be_an_image(): void

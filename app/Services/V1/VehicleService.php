@@ -20,6 +20,7 @@ class VehicleService
     public function __construct(
         private readonly BalanceService $balanceService,
         private readonly AuditLogService $audit,
+        private readonly ImageOptimizer $images,
     ) {}
 
     /**
@@ -104,7 +105,7 @@ class VehicleService
     private function replaceVinImage(Vehicle $vehicle, ?UploadedFile $vinImage): void
     {
         $disk = config('filesystems.default');
-        $path = $vinImage?->store('tenants/'.tenantContext()->id().'/vehicles', $disk);
+        $path = $vinImage ? $this->images->store($vinImage, 'tenants/'.tenantContext()->id().'/vehicles', $disk) : null;
 
         if ($vehicle->vin_image_path) {
             Storage::disk($disk)->delete($vehicle->vin_image_path);
