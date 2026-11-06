@@ -29,6 +29,7 @@ class EmployeeRequest extends AbstractFormRequest
             'base_salary' => [$required, 'decimal:0,2', 'min:0', 'max:9999999999'],
             'hired_at' => ['nullable', 'date_format:Y-m-d'],
             'account' => ['sometimes', 'array'],
+            'account.username' => ['exclude_without:account', ...$this->usernameRules($userId)],
             'account.email' => ['exclude_without:account', $accountRequired, 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'account.password' => ['exclude_without:account', $accountRequired, 'string', 'min:8', 'max:255'],
             'account.role' => ['exclude_without:account', $accountRequired, Rule::in(UserRole::staffValues())],

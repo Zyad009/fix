@@ -47,6 +47,16 @@ class AdminTenantTest extends CenterHttpTestCase
         ], $this->asAdmin())->assertStatus(422);
     }
 
+    public function test_owner_can_be_provisioned_with_a_username(): void
+    {
+        $this->postJson('/api/v1/admin/tenants', [
+            'name' => 'مركز النور',
+            'owner' => ['name' => 'أحمد', 'username' => 'noor_owner', 'email' => 'owner@noor.test', 'password' => 'secret123'],
+        ], $this->asAdmin())->assertCreated();
+
+        $this->postJson('/api/v1/center/auth/login', ['username' => 'noor_owner', 'password' => 'secret123'])->assertOk();
+    }
+
     public function test_listing_and_searching_tenants(): void
     {
         $this->createTenant('مركز الأمل');

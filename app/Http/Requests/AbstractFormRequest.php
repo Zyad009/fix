@@ -5,9 +5,21 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Validation\Rule;
 
 abstract class AbstractFormRequest extends FormRequest
 {
+    /**
+     * Rules for a login username: optional, unique across all centers (login
+     * happens before any center is known), and never shaped like an email.
+     *
+     * @return list<mixed>
+     */
+    protected function usernameRules(mixed $ignoreUser = null): array
+    {
+        return ['nullable', 'string', 'min:3', 'max:50', 'alpha_dash:ascii', Rule::unique('users', 'username')->ignore($ignoreUser)];
+    }
+
     public function authorize(): bool
     {
         return true;

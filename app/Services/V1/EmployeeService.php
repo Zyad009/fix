@@ -26,7 +26,7 @@ class EmployeeService
     public function list(array $filters): LengthAwarePaginator
     {
         return Employee::query()
-            ->with(['branch:id,name', 'balance', 'user:id,name,email,role,is_active'])
+            ->with(['branch:id,name', 'balance', 'user:id,name,username,email,role,is_active'])
             ->when($filters['q'] ?? null, fn (Builder $query, string $q) => $query->where(fn (Builder $query) => $query
                 ->where('name', 'like', "%{$q}%")
                 ->orWhere('phone', 'like', "%{$q}%")))
@@ -69,7 +69,7 @@ class EmployeeService
 
     public function show(Employee $employee): Employee
     {
-        return $employee->load(['branch:id,name', 'balance', 'user:id,name,email,role,is_active']);
+        return $employee->load(['branch:id,name', 'balance', 'user:id,name,username,email,role,is_active']);
     }
 
     /**
@@ -146,7 +146,7 @@ class EmployeeService
     private function createAccount(Employee $employee, array $account): void
     {
         $user = $this->users->store([
-            ...Arr::only($account, ['email', 'password', 'role']),
+            ...Arr::only($account, ['username', 'email', 'password', 'role']),
             'name' => $employee->name,
             'branch_id' => $employee->branch_id,
         ]);

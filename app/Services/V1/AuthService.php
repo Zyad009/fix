@@ -12,13 +12,14 @@ class AuthService
     public function __construct(private readonly DevAccessService $devAccessService) {}
 
     /**
+     * @param  array{email?: ?string, username?: ?string, password: string}  $credentials
      * @return array{token: string, user: User}
      */
-    public function login(string $email, string $password): array
+    public function login(array $credentials): array
     {
-        $user = User::query()->withoutGlobalScope('tenant')->with('tenant')->where('email', $email)->first();
+        $user = $this->findLoginUser($credentials);
 
-        if (! $user || ! $this->passwordMatches($user, $password)) {
+        if (! $user || ! $this->passwordMatches($user, $credentials['password'])) {
             throw new BusinessRuleException(__('messages.invalid_credentials'), 401, errorCode: 'invalid_credentials');
         }
 
@@ -37,6 +38,24 @@ class AuthService
     public function logout(User $user): void
     {
         $user->currentAccessToken()->delete();
+    }
+
+    /**
+     * Email wins when both are sent. A missing identifier finds nobody: a null
+     * `where` would otherwise match the first user who has no username.
+     *
+     * @param  array{email?: ?string, username?: ?string, password: string}  $credentials
+     */
+    private function findLoginUser(array $credentials): ?User
+    {
+        $column = isset($credentials['email']) ? 'email' : 'username';
+        $identifier = $credentials[$column] ?? null;
+
+        if ($identifier === null) {
+            return null;
+        }
+
+        return User::query()->withoutGlobalScope('tenant')->with('tenant')->where($column, $identifier)->first();
     }
 
     /**

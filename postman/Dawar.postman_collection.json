@@ -585,7 +585,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإنشاء مركز جديد (مفيش تسجيل ذاتي). في transaction واحدة بيعمل:\nالمركز + حساب الـ **owner** + **الفرع الرئيسي** (`branch_name` اختياري) + التصنيفات الافتراضية للمنتجات والمصروفات.\n\n- `subscription_ends_at`: آخر يوم في الاشتراك؛ بعده المركز يبقى **قراءة بس** (أي كتابة → 402).\n- `cashier_max_discount`: أقصى خصم بالجنيه للكاشير.\n\n---\n\n### 🇬🇧 English\n\nCreate a center (no self sign-up). One transaction creates the center, its **owner** account, the **main branch** (`branch_name` optional) and the default product/expense categories.\n\n- `subscription_ends_at`: last day of the subscription; after it the center is **read-only** (writes → 402).\n- `cashier_max_discount`: the cashier's maximum discount in EGP.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/admin/tenants` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `plan` | — | string · max:50 · nullable |\n| `subscription_ends_at` | — | date · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `branch_name` | — | string · max:255 · nullable |\n| `owner` | ✅ | array |\n| `owner.name` | ✅ | string · max:255 |\n| `owner.email` | ✅ | email · max:255 · unique:users |\n| `owner.password` | ✅ | string · min:8 · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإنشاء مركز جديد (مفيش تسجيل ذاتي). في transaction واحدة بيعمل:\nالمركز + حساب الـ **owner** + **الفرع الرئيسي** (`branch_name` اختياري) + التصنيفات الافتراضية للمنتجات والمصروفات.\n\n- `subscription_ends_at`: آخر يوم في الاشتراك؛ بعده المركز يبقى **قراءة بس** (أي كتابة → 402).\n- `cashier_max_discount`: أقصى خصم بالجنيه للكاشير.\n- `owner.username`: اختياري، وفريد على مستوى كل المراكز.\n\n---\n\n### 🇬🇧 English\n\nCreate a center (no self sign-up). One transaction creates the center, its **owner** account, the **main branch** (`branch_name` optional) and the default product/expense categories.\n\n- `subscription_ends_at`: last day of the subscription; after it the center is **read-only** (writes → 402).\n- `cashier_max_discount`: the cashier's maximum discount in EGP.\n- `owner.username`: optional, and unique across all centers.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/admin/tenants` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `plan` | — | string · max:50 · nullable |\n| `subscription_ends_at` | — | date · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `branch_name` | — | string · max:255 · nullable |\n| `owner` | ✅ | array |\n| `owner.name` | ✅ | string · max:255 |\n| `owner.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `owner.email` | ✅ | email · max:255 · unique:users |\n| `owner.password` | ✅ | string · min:8 · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"مركز الأمل\",\n    \"phone\": \"01000000000\",\n    \"address\": \"الإسكندرية\",\n    \"plan\": \"pro\",\n    \"subscription_ends_at\": \"2027-12-31\",\n    \"cashier_max_discount\": 100,\n    \"branch_name\": \"الفرع الرئيسي\",\n    \"owner\": {\n        \"name\": \"أحمد\",\n        \"email\": \"owner@amal.test\",\n        \"password\": \"secret123\"\n    }\n}"
@@ -1106,10 +1106,71 @@
                         "auth": {
                             "type": "noauth"
                         },
-                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة).\n\n**الرد:** `token`, `user` (بالدور)، `tenant`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute).\n\n**Returns:** `token`, `user` (with role), `tenant`, available `branches`, and `permissions` (for hiding UI actions).\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ✅ | email · max:255 |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\n\n**الرد:** `token`, `user` (بالدور)، `tenant`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\n\n**Returns:** `token`, `user` (with role), `tenant`, available `branches`, and `permissions` (for hiding UI actions).\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"email\": \"owner@dawar.test\",\n    \"password\": \"password\"\n}"
+                        }
+                    },
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "const body = pm.response.json();",
+                                    "if (body.status && body.data.token) { pm.collectionVariables.set('token', body.data.token); }",
+                                    "if (body.data && body.data.branches && body.data.branches.length) { pm.collectionVariables.set('branch_id', body.data.branches[0].id); }"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "center.auth.login — بالـ username",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/auth/login",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "auth",
+                                "login"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\n\n**الرد:** `token`, `user` (بالدور)، `tenant`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\n\n**Returns:** `token`, `user` (with role), `tenant`, available `branches`, and `permissions` (for hiding UI actions).\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"username\": \"owner3\",\n    \"password\": \"password\"\n}"
                         }
                     },
                     "event": [
@@ -2542,10 +2603,10 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإضافة موظف (owner)، **ومعاه حساب الدخول لو محتاج** (زي fitZone).\n\n`account`: `{email, password, role}` — الدور `cashier` أو `technician` أو `technician_cashier` (فني وكاشير). **`owner` ممنوع.**\nالحساب بيتعمل في نفس فرع الموظف وبنفس اسمه. الرد فيه `account: {id, email, role, is_active}`.\n\n---\n\n### 🇬🇧 English\n\nCreate an employee (owner), **with a login account when needed** (like fitZone).\n\n`account`: `{email, password, role}` — role `cashier`, `technician` or `technician_cashier`. **`owner` is not allowed.**\nThe account is created in the employee's branch with the same name. The response includes `account: {id, email, role, is_active}`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/employees` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payroll.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:20 · nullable |\n| `job_title` | — | string · max:100 · nullable |\n| `base_salary` | ✅ | decimal:0,2 · min:0 · max:9999999999 |\n| `hired_at` | — | date_format:Y-m-d · nullable |\n| `account` | — | array |\n| `account.email` | ✅ | email · max:255 · unique:users |\n| `account.password` | ✅ | string · min:8 · max:255 |\n| `account.role` | ✅ | in: cashier,technician,technician_cashier |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإضافة موظف (owner)، **ومعاه حساب الدخول لو محتاج** (زي fitZone).\n\n`account`: `{username?, email, password, role}` — الدور `cashier` أو `technician` أو `technician_cashier` (فني وكاشير). **`owner` ممنوع.**\nالحساب بيتعمل في نفس فرع الموظف وبنفس اسمه. الرد فيه `account: {id, username, email, role, is_active}`.\n\n---\n\n### 🇬🇧 English\n\nCreate an employee (owner), **with a login account when needed** (like fitZone).\n\n`account`: `{username?, email, password, role}` — role `cashier`, `technician` or `technician_cashier`. **`owner` is not allowed.**\nThe account is created in the employee's branch with the same name. The response includes `account: {id, username, email, role, is_active}`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/employees` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payroll.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:20 · nullable |\n| `job_title` | — | string · max:100 · nullable |\n| `base_salary` | ✅ | decimal:0,2 · min:0 · max:9999999999 |\n| `hired_at` | — | date_format:Y-m-d · nullable |\n| `account` | — | array |\n| `account.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `account.email` | ✅ | email · max:255 · unique:users |\n| `account.password` | ✅ | string · min:8 · max:255 |\n| `account.role` | ✅ | in: cashier,technician,technician_cashier |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"حسن\",\n    \"job_title\": \"ميكانيكي\",\n    \"base_salary\": 6000,\n    \"hired_at\": \"2026-01-01\",\n    \"account\": {\n        \"email\": \"hassan@dawar.test\",\n        \"password\": \"secret123\",\n        \"role\": \"technician_cashier\"\n    }\n}"
+                            "raw": "{\n    \"name\": \"حسن\",\n    \"job_title\": \"ميكانيكي\",\n    \"base_salary\": 6000,\n    \"hired_at\": \"2026-01-01\",\n    \"account\": {\n        \"username\": \"hassan\",\n        \"email\": \"hassan@dawar.test\",\n        \"password\": \"secret123\",\n        \"role\": \"technician_cashier\"\n    }\n}"
                         }
                     }
                 },
@@ -2654,7 +2715,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل موظف. `account`: لو عنده حساب بيتعدّل (أي حقل؛ تغيير الباسورد بيطلّعه)، ولو معندوش بيتعمل (`email` + `password` + `role`). تغيير الاسم بيغيّر اسم الحساب.\n\n---\n\n### 🇬🇧 English\n\nUpdate an employee. `account`: updates the existing login (any field; a password change signs it out) or creates one (`email` + `password` + `role`). Renaming the employee renames the account.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/employees/{employee}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payroll.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:20 · nullable |\n| `job_title` | — | string · max:100 · nullable |\n| `base_salary` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `hired_at` | — | date_format:Y-m-d · nullable |\n| `account` | — | array |\n| `account.email` | ✅ | email · max:255 · unique:users |\n| `account.password` | ✅ | string · min:8 · max:255 |\n| `account.role` | ✅ | in: cashier,technician,technician_cashier |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل موظف. `account`: لو عنده حساب بيتعدّل (أي حقل؛ تغيير الباسورد بيطلّعه)، ولو معندوش بيتعمل (`email` + `password` + `role`). تغيير الاسم بيغيّر اسم الحساب.\n\n---\n\n### 🇬🇧 English\n\nUpdate an employee. `account`: updates the existing login (any field; a password change signs it out) or creates one (`email` + `password` + `role`). Renaming the employee renames the account.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/employees/{employee}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payroll.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:20 · nullable |\n| `job_title` | — | string · max:100 · nullable |\n| `base_salary` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `hired_at` | — | date_format:Y-m-d · nullable |\n| `account` | — | array |\n| `account.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `account.email` | ✅ | email · max:255 · unique:users |\n| `account.password` | ✅ | string · min:8 · max:255 |\n| `account.role` | ✅ | in: cashier,technician,technician_cashier |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"base_salary\": 6500,\n    \"account\": {\n        \"role\": \"technician_cashier\"\n    }\n}"
@@ -5678,10 +5739,10 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإضافة حساب من غير سجل موظف (زي owner إضافي). **حسابات الموظفين تتعمل من `employees` (الحقل `account`).** الكاشير والفني لازم `branch_id`؛ الـ owner مالوش فرع.\n\n---\n\n### 🇬🇧 English\n\nCreate an account without an employee record (e.g. another owner). **Staff logins are created from `employees` (`account` field).** Cashiers/technicians need `branch_id`; owners have none.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/users` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `email` | ✅ | email · max:255 · unique:users |\n| `password` | ✅ | string · min:8 · max:255 |\n| `role` | ✅ | in: owner, cashier, technician, technician_cashier |\n| `branch_id` | — | integer · exists:branches · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإضافة حساب من غير سجل موظف (زي owner إضافي). **حسابات الموظفين تتعمل من `employees` (الحقل `account`).** الكاشير والفني لازم `branch_id`؛ الـ owner مالوش فرع. `username` اختياري وفريد على مستوى كل المراكز (حروف إنجليزي وأرقام و`-` و`_`، من 3 لـ 50 حرف).\n\n---\n\n### 🇬🇧 English\n\nCreate an account without an employee record (e.g. another owner). **Staff logins are created from `employees` (`account` field).** Cashiers/technicians need `branch_id`; owners have none. `username` is optional and unique across all centers (English letters, digits, `-` and `_`, 3 to 50 characters).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/users` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `email` | ✅ | email · max:255 · unique:users |\n| `password` | ✅ | string · min:8 · max:255 |\n| `role` | ✅ | in: owner, cashier, technician, technician_cashier |\n| `branch_id` | — | integer · exists:branches · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"مالك تاني\",\n    \"email\": \"owner3@dawar.test\",\n    \"password\": \"secret123\",\n    \"role\": \"owner\"\n}"
+                            "raw": "{\n    \"name\": \"مالك تاني\",\n    \"username\": \"owner3\",\n    \"email\": \"owner3@dawar.test\",\n    \"password\": \"secret123\",\n    \"role\": \"owner\"\n}"
                         }
                     }
                 },
@@ -5790,10 +5851,10 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل حساب. تغيير كلمة السر بيطلّعه من كل الأجهزة. مايقدرش يغيّر دوره هو.\n\n---\n\n### 🇬🇧 English\n\nUpdate an account. A password change signs it out everywhere. You cannot change your own role.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/users/{user}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `email` | — | email · max:255 · unique:users |\n| `password` | — | string · min:8 · max:255 |\n| `role` | — | in: owner, cashier, technician, technician_cashier |\n| `branch_id` | — | integer · exists:branches · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل حساب، بما فيه `username` و`email`. إرسال `username: null` بيمسحه. تغيير كلمة السر بيطلّعه من كل الأجهزة. مايقدرش يغيّر دوره هو.\n\n---\n\n### 🇬🇧 English\n\nUpdate an account, including `username` and `email`. Sending `username: null` clears it. A password change signs it out everywhere. You cannot change your own role.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/users/{user}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `email` | — | email · max:255 · unique:users |\n| `password` | — | string · min:8 · max:255 |\n| `role` | — | in: owner, cashier, technician, technician_cashier |\n| `branch_id` | — | integer · exists:branches · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"اسم جديد\"\n}"
+                            "raw": "{\n    \"name\": \"اسم جديد\",\n    \"username\": \"new_username\",\n    \"email\": \"new-email@dawar.test\"\n}"
                         }
                     }
                 },

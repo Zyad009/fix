@@ -42,12 +42,14 @@ $descriptions = [
 
 - `subscription_ends_at`: آخر يوم في الاشتراك؛ بعده المركز يبقى **قراءة بس** (أي كتابة → 402).
 - `cashier_max_discount`: أقصى خصم بالجنيه للكاشير.
+- `owner.username`: اختياري، وفريد على مستوى كل المراكز.
 MD,
         'en' => <<<'MD'
 Create a center (no self sign-up). One transaction creates the center, its **owner** account, the **main branch** (`branch_name` optional) and the default product/expense categories.
 
 - `subscription_ends_at`: last day of the subscription; after it the center is **read-only** (writes → 402).
 - `cashier_max_discount`: the cashier's maximum discount in EGP.
+- `owner.username`: optional, and unique across all centers.
 MD,
     ],
     'admin.tenants.show' => [
@@ -117,13 +119,13 @@ MD,
 
     'center.auth.login' => [
         'ar' => <<<'MD'
-دخول مستخدم المركز (5 محاولات في الدقيقة).
+دخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.
 
 **الرد:** `token`, `user` (بالدور)، `tenant`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).
 بيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).
 MD,
         'en' => <<<'MD'
-Center user login (5 attempts per minute).
+Center user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.
 
 **Returns:** `token`, `user` (with role), `tenant`, available `branches`, and `permissions` (for hiding UI actions).
 Rejected if the user or the center is suspended (403 `account_inactive`).
@@ -178,16 +180,16 @@ MD,
         'en' => 'Login accounts (paginated), filterable by role, branch and status.',
     ],
     'center.users.store' => [
-        'ar' => 'إضافة حساب من غير سجل موظف (زي owner إضافي). **حسابات الموظفين تتعمل من `employees` (الحقل `account`).** الكاشير والفني لازم `branch_id`؛ الـ owner مالوش فرع.',
-        'en' => 'Create an account without an employee record (e.g. another owner). **Staff logins are created from `employees` (`account` field).** Cashiers/technicians need `branch_id`; owners have none.',
+        'ar' => 'إضافة حساب من غير سجل موظف (زي owner إضافي). **حسابات الموظفين تتعمل من `employees` (الحقل `account`).** الكاشير والفني لازم `branch_id`؛ الـ owner مالوش فرع. `username` اختياري وفريد على مستوى كل المراكز (حروف إنجليزي وأرقام و`-` و`_`، من 3 لـ 50 حرف).',
+        'en' => 'Create an account without an employee record (e.g. another owner). **Staff logins are created from `employees` (`account` field).** Cashiers/technicians need `branch_id`; owners have none. `username` is optional and unique across all centers (English letters, digits, `-` and `_`, 3 to 50 characters).',
     ],
     'center.users.show' => [
         'ar' => 'تفاصيل حساب.',
         'en' => 'Account details.',
     ],
     'center.users.update' => [
-        'ar' => 'تعديل حساب. تغيير كلمة السر بيطلّعه من كل الأجهزة. مايقدرش يغيّر دوره هو.',
-        'en' => 'Update an account. A password change signs it out everywhere. You cannot change your own role.',
+        'ar' => 'تعديل حساب، بما فيه `username` و`email`. إرسال `username: null` بيمسحه. تغيير كلمة السر بيطلّعه من كل الأجهزة. مايقدرش يغيّر دوره هو.',
+        'en' => 'Update an account, including `username` and `email`. Sending `username: null` clears it. A password change signs it out everywhere. You cannot change your own role.',
     ],
     'center.users.toggle' => [
         'ar' => 'إيقاف/تفعيل حساب (الإيقاف بيطلّعه فوراً). مايقدرش يوقف نفسه.',
@@ -544,14 +546,14 @@ MD,
         'ar' => <<<'MD'
 إضافة موظف (owner)، **ومعاه حساب الدخول لو محتاج** (زي fitZone).
 
-`account`: `{email, password, role}` — الدور `cashier` أو `technician` أو `technician_cashier` (فني وكاشير). **`owner` ممنوع.**
-الحساب بيتعمل في نفس فرع الموظف وبنفس اسمه. الرد فيه `account: {id, email, role, is_active}`.
+`account`: `{username?, email, password, role}` — الدور `cashier` أو `technician` أو `technician_cashier` (فني وكاشير). **`owner` ممنوع.**
+الحساب بيتعمل في نفس فرع الموظف وبنفس اسمه. الرد فيه `account: {id, username, email, role, is_active}`.
 MD,
         'en' => <<<'MD'
 Create an employee (owner), **with a login account when needed** (like fitZone).
 
-`account`: `{email, password, role}` — role `cashier`, `technician` or `technician_cashier`. **`owner` is not allowed.**
-The account is created in the employee's branch with the same name. The response includes `account: {id, email, role, is_active}`.
+`account`: `{username?, email, password, role}` — role `cashier`, `technician` or `technician_cashier`. **`owner` is not allowed.**
+The account is created in the employee's branch with the same name. The response includes `account: {id, username, email, role, is_active}`.
 MD,
     ],
     'center.employees.show' => [
@@ -698,6 +700,13 @@ MD,
 ];
 
 $variants = [
+    'center.auth.login' => [
+        null,
+        [
+            'name' => 'center.auth.login — بالـ username',
+            'body' => ['username' => 'owner3', 'password' => 'password'],
+        ],
+    ],
     'center.vehicles.store' => [
         null,
         [

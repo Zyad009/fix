@@ -21,6 +21,7 @@ class TenantStoreRequest extends AbstractFormRequest
             'branch_name' => ['nullable', 'string', 'max:255'],
             'owner' => ['required', 'array'],
             'owner.name' => ['required', 'string', 'max:255'],
+            'owner.username' => $this->usernameRules(),
             'owner.email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'owner.password' => ['required', 'string', 'min:8', 'max:255'],
         ];

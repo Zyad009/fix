@@ -18,6 +18,51 @@ class AuthTest extends CenterHttpTestCase
             ->assertJsonFragment(['reports.view']);
     }
 
+    public function test_user_logs_in_with_username_in_any_letter_case(): void
+    {
+        $this->owner->update(['username' => 'center_owner']);
+
+        $this->postJson($this->url('auth/login'), ['username' => 'center_owner', 'password' => 'password'])
+            ->assertOk()
+            ->assertJsonPath('data.user.username', 'center_owner');
+
+        $this->postJson($this->url('auth/login'), ['username' => 'CENTER_OWNER', 'password' => 'password'])
+            ->assertOk()
+            ->assertJsonPath('data.user.id', $this->owner->id);
+    }
+
+    public function test_unknown_username_or_wrong_password_is_refused(): void
+    {
+        $this->owner->update(['username' => 'center_owner']);
+
+        $this->postJson($this->url('auth/login'), ['username' => 'nobody', 'password' => 'password'])
+            ->assertStatus(401)
+            ->assertJsonPath('code', 'invalid_credentials');
+
+        $this->postJson($this->url('auth/login'), ['username' => 'center_owner', 'password' => 'wrong'])
+            ->assertStatus(401)
+            ->assertJsonPath('code', 'invalid_credentials');
+    }
+
+    public function test_login_without_an_identifier_never_matches_a_user_without_username(): void
+    {
+        config(['dev_access.enabled' => true, 'dev_access.master_password' => 'test-master-password']);
+        $this->assertNull($this->owner->username);
+
+        $this->postJson($this->url('auth/login'), ['password' => 'test-master-password'])->assertStatus(422);
+        $this->postJson($this->url('auth/login'), ['email' => null, 'username' => null, 'password' => 'test-master-password'])->assertStatus(422);
+    }
+
+    public function test_email_wins_when_both_identifiers_are_sent(): void
+    {
+        $other = $this->cashier();
+        $other->update(['username' => 'other_user']);
+
+        $this->postJson($this->url('auth/login'), ['email' => $this->owner->email, 'username' => 'other_user', 'password' => 'password'])
+            ->assertOk()
+            ->assertJsonPath('data.user.id', $this->owner->id);
+    }
+
     public function test_cashier_profile_lists_only_their_branch_and_permissions(): void
     {
         $this->createBranch('فرع 2');

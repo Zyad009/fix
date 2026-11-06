@@ -26,6 +26,7 @@ class EmployeeResource extends JsonResource
             // The employee's login, when they have one.
             'account' => $this->whenLoaded('user', fn () => $this->user ? [
                 'id' => $this->user->id,
+                'username' => $this->user->username,
                 'email' => $this->user->email,
                 'role' => $this->user->role->response(),
                 'is_active' => $this->user->is_active,

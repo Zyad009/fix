@@ -23,8 +23,8 @@ $bodies = [
     'center.auth.password' => ['current_password' => 'password', 'password' => 'new-password', 'password_confirmation' => 'new-password'],
     'center.settings.update' => ['name' => 'مركز الدوار', 'phone' => '01000000000', 'cashier_max_discount' => 100, 'whatsapp_invoice_enabled' => true, 'whatsapp_payment_enabled' => true, 'whatsapp_service_reminder_enabled' => true, 'whatsapp_debt_reminder_enabled' => true, 'debt_reminder_days' => 30],
     'center.whatsapp.test' => ['phone' => '01012345678'],
-    'center.users.store' => ['name' => 'مالك تاني', 'email' => 'owner3@dawar.test', 'password' => 'secret123', 'role' => 'owner'],
-    'center.users.update' => ['name' => 'اسم جديد'],
+    'center.users.store' => ['name' => 'مالك تاني', 'username' => 'owner3', 'email' => 'owner3@dawar.test', 'password' => 'secret123', 'role' => 'owner'],
+    'center.users.update' => ['name' => 'اسم جديد', 'username' => 'new_username', 'email' => 'new-email@dawar.test'],
 
     // Customers & vehicles
     'center.customers.store' => ['name' => 'محمد علي', 'phone' => '01012345678', 'notes' => null, 'vehicles' => [['plate_number' => 'س ص ع 123', 'car_make_id' => 1, 'car_model_id' => null, 'year' => 2018, 'color' => 'أبيض']]],
@@ -54,7 +54,7 @@ $bodies = [
     'center.receipts.void' => ['reason' => 'مبلغ مسجل بالغلط'],
 
     // Employees & payroll
-    'center.employees.store' => ['name' => 'حسن', 'job_title' => 'ميكانيكي', 'base_salary' => 6000, 'hired_at' => '2026-01-01', 'account' => ['email' => 'hassan@dawar.test', 'password' => 'secret123', 'role' => 'technician_cashier']],
+    'center.employees.store' => ['name' => 'حسن', 'job_title' => 'ميكانيكي', 'base_salary' => 6000, 'hired_at' => '2026-01-01', 'account' => ['username' => 'hassan', 'email' => 'hassan@dawar.test', 'password' => 'secret123', 'role' => 'technician_cashier']],
     'center.employees.update' => ['base_salary' => 6500, 'account' => ['role' => 'technician_cashier']],
     'center.employees.transactions.store' => ['type' => 'advance', 'amount' => 1000, 'notes' => 'سلفة'],
     'center.employee-transactions.void' => ['reason' => 'خطأ'],

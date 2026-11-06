@@ -37,6 +37,28 @@ class TechnicianCashierTest extends CenterHttpTestCase
             ->assertJsonPath('data.user.role.value', 'technician_cashier');
     }
 
+    public function test_employee_account_keeps_its_username_and_can_log_in_with_it(): void
+    {
+        $headers = $this->as($this->owner, $this->branch);
+
+        $response = $this->postJson($this->url('employees'), [
+            'name' => 'حسن', 'base_salary' => 6000,
+            'account' => ['username' => 'hassan', 'email' => 'hassan@dawar.test', 'password' => 'secret123', 'role' => 'technician'],
+        ], $headers)
+            ->assertCreated()
+            ->assertJsonPath('data.account.username', 'hassan');
+
+        $this->putJson($this->url("employees/{$response->json('data.id')}"), ['account' => ['username' => 'hassan2']], $headers)
+            ->assertOk()
+            ->assertJsonPath('data.account.username', 'hassan2');
+
+        $this->getJson($this->url('employees'), $headers)
+            ->assertOk()
+            ->assertJsonPath('data.0.account.username', 'hassan2');
+
+        $this->postJson($this->url('auth/login'), ['username' => 'hassan2', 'password' => 'secret123'])->assertOk();
+    }
+
     public function test_employee_login_cannot_be_an_owner_and_email_is_unique(): void
     {
         $headers = $this->as($this->owner, $this->branch);

@@ -13,7 +13,7 @@
 | الـ Super Admin | جدول `admins` منفصل. هو اللي بينشئ المراكز والفروع، ومفيش self-signup |
 | الفروع | جدول `branches` موجود من الأول (`next_order_no` و `next_receipt_no` عليه). الأوردرات والمدفوعات والإيصالات والمصروفات والموظفين والمخزون كلهم عليهم `branch_id`، والترقيم بقى **لكل فرع** |
 | `tenants` | اتشال منه `next_order_no`، واتضاف `subscription_ends_at` و `cashier_max_discount` (مبلغ) و `timezone` (default `Africa/Cairo`) و `logo_path` |
-| `users` | اتضاف `branch_id` nullable (null يعني الـ owner وده بيشوف كل الفروع) |
+| `users` | اتضاف `branch_id` nullable (null يعني الـ owner وده بيشوف كل الفروع)، و `username` nullable وفريد على مستوى كل المراكز (طريقة دخول بديلة للإيميل) |
 | العربيات | اتضاف `plate_normalized` (للبحث والـ unique)، و `car_make_id` / `car_model_id` (nullable) بدل make/model كنص، وده بيشاور على جداول عامة `car_makes` / `car_models` اللي الأدمن بس يضيف فيها |
 | المخزون | `products.stock_qty` اتنقل لجدول `product_branch_stock (branch_id, product_id, qty)`. بيتخصم عند قفل الأوردر ويرجع عند الإلغاء، ومن غير ما يمنع البيع لو الرصيد مش كفاية |
 | التحصيل | جدول **`payment_receipts`** جديد. كل عملية تحصيل = إيصال واحد برقم متسلسل للفرع، وصفوف `payments` بتشاور عليه بـ `receipt_id` |
@@ -116,6 +116,7 @@ erDiagram
         uuid id PK
         uuid tenant_id FK
         text name
+        text username UK "nullable"
         text email UK
         text password_hash
         text role "owner, cashier, technician"
@@ -279,6 +280,7 @@ CREATE TABLE users (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id      uuid NOT NULL REFERENCES tenants(id),
   name           text NOT NULL,
+  username       text UNIQUE,
   email          text NOT NULL UNIQUE,
   password_hash  text NOT NULL,
   role           text NOT NULL CHECK (role IN ('owner','cashier','technician')),

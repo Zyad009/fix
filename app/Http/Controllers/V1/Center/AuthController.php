@@ -4,7 +4,7 @@ namespace App\Http\Controllers\V1\Center;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\Center\ChangePasswordRequest;
-use App\Http\Requests\V1\LoginRequest;
+use App\Http\Requests\V1\Center\LoginRequest;
 use App\Http\Resources\V1\Center\BranchResource;
 use App\Http\Resources\V1\Center\SettingsResource;
 use App\Http\Resources\V1\Center\UserResource;
@@ -20,7 +20,7 @@ class AuthController extends Controller
     public function login(LoginRequest $request): JsonResponse
     {
         try {
-            $result = $this->authService->login($request->validated('email'), $request->validated('password'));
+            $result = $this->authService->login($request->validated());
 
             return $this->response([
                 'token' => $result['token'],

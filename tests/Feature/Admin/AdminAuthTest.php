@@ -38,6 +38,12 @@ class AdminAuthTest extends CenterHttpTestCase
             ->assertStatus(403);
     }
 
+    public function test_admin_login_still_requires_an_email(): void
+    {
+        $this->postJson('/api/v1/admin/auth/login', ['username' => 'root', 'password' => 'password'])
+            ->assertStatus(422);
+    }
+
     public function test_center_token_cannot_reach_admin_routes(): void
     {
         $this->getJson('/api/v1/admin/tenants', $this->as($this->owner))->assertUnauthorized();

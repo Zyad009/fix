@@ -23,6 +23,7 @@ class UserService
             ->with('branch:id,name')
             ->when($filters['q'] ?? null, fn ($query, $q) => $query->where(fn ($query) => $query
                 ->where('name', 'like', "%{$q}%")
+                ->orWhere('username', 'like', "%{$q}%")
                 ->orWhere('email', 'like', "%{$q}%")))
             ->when($filters['role'] ?? null, fn ($query, $role) => $query->where('role', $role))
             ->when($filters['branch_id'] ?? null, fn ($query, $branchId) => $query->where('branch_id', $branchId))
@@ -92,7 +93,7 @@ class UserService
      */
     private function attributes(array $data): array
     {
-        $attributes = Arr::only($data, ['name', 'email', 'password', 'role', 'branch_id']);
+        $attributes = Arr::only($data, ['name', 'username', 'email', 'password', 'role', 'branch_id']);
         $role = UserRole::from($data['role']);
 
         if (! $role->isBranchBound()) {

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\DB;
 class TenantProvisioningService
 {
     /**
-     * @param  array{name: string, phone?: ?string, address?: ?string, plan?: ?string, subscription_ends_at?: ?string, cashier_max_discount?: numeric-string|int|null, owner: array{name: string, email: string, password: string}, branch_name?: ?string}  $data
+     * @param  array{name: string, phone?: ?string, address?: ?string, plan?: ?string, subscription_ends_at?: ?string, cashier_max_discount?: numeric-string|int|null, owner: array{name: string, username?: ?string, email: string, password: string}, branch_name?: ?string}  $data
      */
     public function provision(array $data): Tenant
     {
@@ -36,7 +36,7 @@ class TenantProvisioningService
                 ]);
 
                 User::query()->create([
-                    ...Arr::only($data['owner'], ['name', 'email', 'password']),
+                    ...Arr::only($data['owner'], ['name', 'username', 'email', 'password']),
                     'role' => UserRole::Owner,
                 ]);
 
