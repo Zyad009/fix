@@ -30,7 +30,7 @@ class SettingsService
         $maintenanceCenter = maintenanceCenterContext()->maintenanceCenter();
         $disk = Storage::disk(config('filesystems.default'));
 
-        $path = $logo->store("tenants/{$maintenanceCenter->id}/logo", config('filesystems.default'));
+        $path = $logo->store("maintenance-centers/{$maintenanceCenter->id}/logo", config('filesystems.default'));
 
         if ($maintenanceCenter->logo_path) {
             $disk->delete($maintenanceCenter->logo_path);

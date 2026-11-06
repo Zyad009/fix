@@ -22,7 +22,7 @@ References: `brief.md` (requirements), `shortdoc.md` (database design). Architec
 - Branch-level models (orders, payments, receipts, expenses, employees, stock) use `BelongsToBranch`. The branch comes from `BranchContext` (`X-Branch-Id` header for owners; pinned to `users.branch_id` otherwise).
 - `exists`/`unique` validation rules must be maintenance-center-scoped (`maintenanceCenterExists()` / `maintenanceCenterUnique()` helpers).
 - Any new endpoint touching maintenance center data needs a cross-center test (IDs from another maintenance center → 404).
-- Old migrations keep the frozen `tenantKey`/`tenantForeign`/`createdBy`/`voidColumns` macros and must never be edited; new tables use `maintenanceCenterKey()`/`maintenanceCenterForeign()`. Foreign key constraint names still contain `tenant_id` (MySQL cannot rename them), and stored files stay under `tenants/{id}/` because the database holds those paths.
+- Old migrations keep the frozen `tenantKey`/`tenantForeign`/`createdBy`/`voidColumns` macros and must never be edited; new tables use `maintenanceCenterKey()`/`maintenanceCenterForeign()`. Foreign key constraint names still contain `tenant_id` (MySQL cannot rename them), New uploads go under `maintenance-centers/{id}/`; files uploaded before the rename stay under `tenants/{id}/`, and the database holds each file's full path.
 
 ## 3) Money & time
 - Money columns: `decimal(12,2)`; casts `decimal:2`. Arithmetic in PHP uses `App\Support\Money` (brick/math). **Never** use float for money.

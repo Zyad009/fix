@@ -186,8 +186,30 @@ class CustomerVehicleTest extends CenterHttpTestCase
         $this->assertNotNull($response->json('data.vin_image_url'));
 
         $path = Vehicle::query()->findOrFail($response->json('data.id'))->vin_image_path;
-        $this->assertStringStartsWith('tenants/'.$this->maintenanceCenter->id.'/vehicles/', $path);
+        $this->assertStringStartsWith('maintenance-centers/'.$this->maintenanceCenter->id.'/vehicles/', $path);
         Storage::disk('public')->assertExists($path);
+    }
+
+    public function test_chassis_image_stored_under_the_old_path_still_works_and_is_replaced(): void
+    {
+        Storage::fake('public');
+        $oldPath = 'tenants/'.$this->maintenanceCenter->id.'/vehicles/old.jpg';
+        Storage::disk('public')->put($oldPath, 'image');
+        $vehicle = $this->vehicle();
+        $vehicle->update(['vin_image_path' => $oldPath]);
+        $headers = $this->as($this->owner) + ['Accept' => 'application/json'];
+
+        $this->getJson($this->url("vehicles/{$vehicle->id}"), $headers)
+            ->assertOk()
+            ->assertJsonPath('data.vin_image_url', Storage::disk('public')->url($oldPath));
+
+        $this->post($this->url("vehicles/{$vehicle->id}"), [
+            '_method' => 'PUT',
+            'vin_image' => UploadedFile::fake()->image('new.jpg'),
+        ], $headers)->assertOk();
+
+        Storage::disk('public')->assertMissing($oldPath);
+        $this->assertStringStartsWith('maintenance-centers/', $vehicle->fresh()->vin_image_path);
     }
 
     public function test_vehicle_without_a_chassis_image_stays_valid(): void
