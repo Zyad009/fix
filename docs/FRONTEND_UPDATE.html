@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تحديثات API ورشة — للفرونت</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e4df;
+    --accent: #0f766e; --accent-soft: #e6f4f2; --new: #1d4ed8; --new-soft: #e8efff;
+    --warn: #b45309; --warn-soft: #fdf3e4; --code-bg: #f1f1ee;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514; --card: #1e1e1c; --text: #ecece8; --muted: #a3a39c; --line: #33332f;
+      --accent: #2dd4bf; --accent-soft: #123330; --new: #93b4ff; --new-soft: #1a2540;
+      --warn: #fbbf24; --warn-soft: #362a12; --code-bg: #262623;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.75 "Segoe UI", Tahoma, "Noto Sans Arabic", system-ui, sans-serif; padding: 0 16px; }
+  main { max-width: 900px; margin: 0 auto; padding-block: 40px 80px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+  h3 { font-size: 1.08rem; margin: 28px 0 8px; }
+  p { margin: 8px 0; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .88em; background: var(--code-bg);
+    padding: 1px 6px; border-radius: 5px; direction: ltr; unicode-bidi: embed; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; direction: ltr; text-align: left; font-size: .86rem; line-height: 1.6; margin: 10px 0; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .grid .card { margin: 0; }
+  .card h3 { margin-top: 0; }
+  .tag { display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 9px; border-radius: 99px; margin-inline-end: 6px; vertical-align: middle; }
+  .t-new { background: var(--new-soft); color: var(--new); }
+  .t-chg { background: var(--warn-soft); color: var(--warn); }
+  .t-none { background: var(--accent-soft); color: var(--accent); }
+  .table-wrap { overflow-x: auto; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: .93rem; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  .note { border-inline-start: 4px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .ok { border-inline-start: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .endpoint { font-family: Consolas, monospace; direction: ltr; display: inline-block; font-size: .92rem; }
+  .m { font-weight: 700; margin-inline-end: 6px; }
+  .m-get { color: var(--accent); } .m-post { color: var(--new); } .m-put { color: var(--warn); }
+  nav ol { margin: 6px 0; padding-inline-start: 22px; }
+  nav a, a { color: var(--new); }
+  ul { padding-inline-start: 22px; margin: 6px 0; }
+  li { margin: 3px 0; }
+  .muted { color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>تحديثات الـ API — للفرونت إند</h1>
+<p class="sub">من إضافة صورة الشاسيه لحد تذكيرات الواتساب · 31 أكتوبر – 3 نوفمبر 2026</p>
+
+<div class="card">
+  <h3>الخلاصة في سطور</h3>
+  <ul>
+    <li><span class="tag t-new">جديد</span> <b>صورة رقم الشاسيه</b> للعربية: رفع وتغيير ومسح من نفس APIs العربيات، وحقل قراءة جديد <code>vin_image_url</code>.</li>
+    <li><span class="tag t-new">جديد</span> <b>تذكيرات واتساب أوتوماتيك</b>: تذكير بمعاد الصيانة، وتذكير بالمديونية. محتاجين 3 حقول جديدة في شاشة الإعدادات.</li>
+    <li><span class="tag t-chg">تغيير</span> <b>سجل رسايل الواتساب</b>: فيه نوعين وحالة جداد، وحقل <code>customer</code> جديد.</li>
+    <li><span class="tag t-none">مفيش breaking change</span> كل الحقول الجديدة إضافية، والشاشات الحالية هتفضل شغالة زي ما هي.</li>
+  </ul>
+</div>
+
+<nav class="card">
+  <b>المحتويات</b>
+  <ol>
+    <li><a href="#vin">صورة رقم الشاسيه</a></li>
+    <li><a href="#settings">إعدادات التذكيرات</a></li>
+    <li><a href="#rules">التذكيرات بتشتغل إزاي</a></li>
+    <li><a href="#log">سجل رسايل الواتساب</a></li>
+    <li><a href="#checklist">المطلوب من الفرونت</a></li>
+  </ol>
+</nav>
+
+<!-- ============ 1 ============ -->
+<h2 id="vin">1. صورة رقم الشاسيه للعربية <span class="tag t-new">جديد</span></h2>
+<p>كل عربية بقى ممكن يكون ليها <b>صورة واحدة اختيارية لرقم الشاسيه</b>. مفيش endpoint جديد: الصورة بتترفع من APIs الإضافة والتعديل الموجودة.</p>
+
+<div class="table-wrap"><table>
+  <tr><th>حقل الرفع</th><td><code>vin_image</code> في <code>multipart/form-data</code></td></tr>
+  <tr><th>حقل القراءة</th><td><code>vin_image_url</code>: رابط كامل أو <code>null</code></td></tr>
+  <tr><th>الأنواع والحجم</th><td>jpg, jpeg, png, webp، بحد أقصى <b>12 ميجا</b>، والسيرفر بيصغّرها لوحده لـ 2000 بكسل ويحفظها JPEG</td></tr>
+  <tr><th>الصلاحية</th><td><code>owner</code> و <code>cashier</code> و <code>technician_cashier</code> (صلاحية <code>customers.manage</code>). الفني ممنوع.</td></tr>
+</table></div>
+
+<h3>إضافة عربية بصورة</h3>
+<p><span class="endpoint"><span class="m m-post">POST</span>/api/v1/center/vehicles</span></p>
+<p>نفس طلب الإضافة الحالي. لو فيه صورة يتبعت <code>multipart/form-data</code>، ومن غير صورة يفضل JSON عادي.</p>
+<pre><code>const form = new FormData();
+form.append('customer_id', '1');
+form.append('plate_number', 'ب ج 456');
+form.append('vin', 'JTDBR32E720123456'); // optional
+form.append('vin_image', file);          // File from &lt;input type="file"&gt;
+
+await fetch(`${API}/center/vehicles`, {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${token}`, Accept: 'application/json', lang: 'ar' },
+  body: form, // don't set Content-Type yourself; the browser adds the boundary
+});</code></pre>
+
+<h3>رفع أو تغيير الصورة لعربية موجودة</h3>
+<p><span class="endpoint"><span class="m m-post">POST</span>/api/v1/center/vehicles/{id}</span> ومعاه <code>_method=PUT</code></p>
+<div class="note"><b>مهم:</b> الطلب لازم يتبعت <code>POST</code> ومعاه حقل <code>_method</code> قيمته <code>PUT</code>. لو اتبعت <code>PUT</code> مباشرة ومعاه ملف، PHP مش هيقرا الملف والصورة مش هتتحفظ.</div>
+<pre><code>const form = new FormData();
+form.append('_method', 'PUT');
+form.append('vin_image', file);
+form.append('color', 'أسود'); // any other update field can go along
+
+await fetch(`${API}/center/vehicles/${id}`, {
+  method: 'POST',
+  headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+  body: form,
+});</code></pre>
+<p>الصورة القديمة بتتمسح من السيرفر أوتوماتيك.</p>
+
+<h3>مسح الصورة</h3>
+<p><span class="endpoint"><span class="m m-put">PUT</span>/api/v1/center/vehicles/{id}</span></p>
+<pre><code>{ "vin_image": null }</code></pre>
+<div class="ok">أي <code>PUT</code> مافيهوش <code>vin_image</code> خالص مابيلمسش الصورة. يعني شاشة التعديل الحالية مش محتاجة تتغير.</div>
+
+<h3>العرض</h3>
+<p><code>vin_image_url</code> بيرجع في كل رد فيه عربية: الإضافة، والتعديل، و <code>GET vehicles/{id}</code>، وقايمة العربيات.</p>
+<pre><code>{
+  "id": 12,
+  "plate_number": "ب ج 456",
+  "vin": "JTDBR32E720123456",
+  "vin_image_url": "https://.../storage/tenants/1/vehicles/AbC123.jpg"
+}</code></pre>
+
+<h3>الأخطاء</h3>
+<div class="table-wrap"><table>
+  <tr><th>الكود</th><th>السبب</th></tr>
+  <tr><td><code>422</code></td><td>الملف مش صورة، أو نوعه مش مسموح، أو أكبر من 12 ميجا</td></tr>
+  <tr><td><code>404</code></td><td>العربية مش موجودة، أو تبع مركز تاني</td></tr>
+  <tr><td><code>403</code></td><td>المستخدم مالوش صلاحية (زي الفني)</td></tr>
+  <tr><td><code>413</code></td><td>الملف أكبر من حد السيرفر نفسه، وساعتها الرد ممكن مايكونش JSON</td></tr>
+</table></div>
+
+<h3>توصيات</h3>
+<ul>
+  <li><b>الضغط بيحصل على السيرفر:</b> الصورة بتتصغّر لـ 2000 بكسل على الضلع الطويل وبتتحفظ JPEG (غالباً أقل من ميجا). ضغطها في الفرونت قبل الرفع اختياري، بس بيسرّع الرفع على النت الضعيف.</li>
+  <li><b>اتحقق من الحجم والنوع في الفرونت</b> قبل الإرسال.</li>
+  <li>على الموبايل استخدم <code>accept="image/*" capture="environment"</code> عشان الكاميرا الخلفية تفتح على طول.</li>
+  <li>في صفحة العربية: اعرض الصورة، ومعاها زرار "تغيير" وزرار "مسح".</li>
+  <li>ابعت <code>Accept: application/json</code> دايماً.</li>
+</ul>
+<p class="muted">مش مدعوم: رفع الصورة من شاشة الفاتورة أو من "إضافة عميل بعربياته"، والصورة بتترفع بعدها من صفحة العربية. صورة واحدة بس لكل عربية.</p>
+
+<!-- ============ 2 ============ -->
+<h2 id="settings">2. إعدادات التذكيرات <span class="tag t-new">جديد</span></h2>
+<p>3 حقول جديدة في نفس endpoints الإعدادات الموجودة:</p>
+<p>
+  <span class="endpoint"><span class="m m-get">GET</span>/api/v1/center/settings</span><br>
+  <span class="endpoint"><span class="m m-put">PUT</span>/api/v1/center/settings</span> <span class="muted">(صلاحية <code>settings.manage</code>، يعني صاحب المركز)</span>
+</p>
+
+<div class="table-wrap"><table>
+  <tr><th>الحقل</th><th>النوع</th><th>الافتراضي</th><th>الوصف</th></tr>
+  <tr><td><code>whatsapp_service_reminder_enabled</code></td><td>boolean</td><td><code>false</code></td><td>تذكير العميل بمعاد الصيانة قبلها بيوم</td></tr>
+  <tr><td><code>whatsapp_debt_reminder_enabled</code></td><td>boolean</td><td><code>false</code></td><td>تذكير العميل بالمديونية اللي عليه</td></tr>
+  <tr><td><code>debt_reminder_days</code></td><td>integer، من 1 لـ 365</td><td><code>30</code></td><td>كل كام يوم يتفكّر العميل بمديونيته</td></tr>
+</table></div>
+
+<h3>مثال تعديل</h3>
+<pre><code>PUT /api/v1/center/settings
+{
+  "whatsapp_service_reminder_enabled": true,
+  "whatsapp_debt_reminder_enabled": true,
+  "debt_reminder_days": 15
+}</code></pre>
+
+<h3>شكل الرد (الحقول الخاصة بالواتساب)</h3>
+<pre><code>{
+  "whatsapp_connected": true,
+  "whatsapp_invoice_enabled": true,
+  "whatsapp_payment_enabled": true,
+  "whatsapp_service_reminder_enabled": true,   // new
+  "whatsapp_debt_reminder_enabled": true,      // new
+  "debt_reminder_days": 15                     // new
+}</code></pre>
+
+<div class="note">
+  <b>اقتراح للـ UI:</b>
+  <ul>
+    <li>حط الحقول التلاتة في قسم الواتساب جنب "إرسال الفاتورة" و"إرسال الإيصال".</li>
+    <li>اقفل حقل <code>debt_reminder_days</code> (disabled) لو تذكير المديونية مقفول.</li>
+    <li>لو <code>whatsapp_connected = false</code>، اعرض تنبيه إن التذكيرات مش هتتبعت لحد ما الواتساب يتربط.</li>
+  </ul>
+</div>
+<p>الأخطاء: <code>422</code> لو <code>debt_reminder_days</code> مش رقم صحيح أو برّه 1–365، و <code>403</code> لغير صاحب المركز.</p>
+
+<!-- ============ 3 ============ -->
+<h2 id="rules">3. التذكيرات بتشتغل إزاي</h2>
+<p>السيرفر هو اللي بيبعتها لوحده <b>كل يوم الساعة 10 الصبح بتوقيت القاهرة</b>، والفرونت مش محتاج يعمل أي حاجة غير الإعدادات. الشرح ده عشان تكتب نص مساعد (hint) صح جنب الحقول.</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>تذكير الصيانة</h3>
+    <ul>
+      <li>بيتبعت <b>قبل</b> <code>next_service_date</code> اللي في آخر فاتورة مقفولة للعربية <b>بيوم</b>.</li>
+      <li>بيروح للمالك الحالي للعربية.</li>
+      <li>بيتبعت مرة واحدة بس لكل فاتورة.</li>
+      <li>يعني الكاشير لازم يدخّل "معاد الصيانة الجاية" في الفاتورة، وإلا مفيش تذكير.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>تذكير المديونية</h3>
+    <ul>
+      <li>بيتبعت لما يعدّي <code>debt_reminder_days</code> يوم من غير أي حركة: لا فاتورة جديدة عليها فلوس، ولا دفعة (حتى لو جزئية)، ولا تذكير سابق.</li>
+      <li>بيتكرر كل نفس الفترة <b>لحد ما يسدد كله</b>.</li>
+      <li>المبلغ في الرسالة هو إجمالي مديونية العميل على كل عربياته، محسوب وقت الإرسال.</li>
+    </ul>
+  </div>
+</div>
+
+<p><b>نص hint مقترح:</b></p>
+<div class="card">
+  <p>• <b>تذكير الصيانة:</b> "هيتبعت للعميل رسالة واتساب قبل معاد الصيانة اللي في الفاتورة بيوم."</p>
+  <p>• <b>تذكير المديونية:</b> "هيتبعت للعميل اللي عليه فلوس رسالة كل X يوم لحد ما يسدد. أي دفعة أو فاتورة جديدة بتبدأ العد من الأول."</p>
+</div>
+
+<h3>شكل الرسايل اللي بتوصل للعميل</h3>
+<pre style="direction:rtl;text-align:right"><code>تذكير من مركز ابناء السنبلاوين 🔧
+معاد صيانة عربيتك (ب ج 456) بكرة 2026-11-04.
+مستنيينك!
+للتواصل: 01xxxxxxxxx</code></pre>
+<pre style="direction:rtl;text-align:right"><code>تذكير من مركز ابناء السنبلاوين
+إجمالي المديونية المستحقة عليك: 1,250.00 جنيه.
+برجاء السداد في أقرب وقت.
+للتواصل: 01xxxxxxxxx</code></pre>
+<p class="muted">سطر "للتواصل" بيظهر بس لو المركز مسجّل رقم تليفون في الإعدادات (<code>phone</code>).</p>
+
+<!-- ============ 4 ============ -->
+<h2 id="log">4. سجل رسايل الواتساب <span class="tag t-chg">تغيير</span></h2>
+<p><span class="endpoint"><span class="m m-get">GET</span>/api/v1/center/whatsapp/messages?type=&amp;status=</span> <span class="muted">(صلاحية <code>settings.manage</code>)</span></p>
+
+<h3>قيم <code>type</code></h3>
+<div class="table-wrap"><table>
+  <tr><th>value</th><th>label (ar)</th><th></th></tr>
+  <tr><td><code>invoice</code></td><td>فاتورة</td><td></td></tr>
+  <tr><td><code>payment</code></td><td>إيصال سداد</td><td></td></tr>
+  <tr><td><code>test</code></td><td>رسالة تجربة</td><td></td></tr>
+  <tr><td><code>service_reminder</code></td><td>تذكير بمعاد الصيانة</td><td><span class="tag t-new">جديد</span></td></tr>
+  <tr><td><code>debt_reminder</code></td><td>تذكير بالمديونية</td><td><span class="tag t-new">جديد</span></td></tr>
+</table></div>
+
+<h3>قيم <code>status</code></h3>
+<div class="table-wrap"><table>
+  <tr><th>value</th><th>label (ar)</th><th></th></tr>
+  <tr><td><code>sent</code></td><td>أُرسلت</td><td></td></tr>
+  <tr><td><code>failed</code></td><td>فشلت</td><td></td></tr>
+  <tr><td><code>skipped_disabled</code></td><td>لم تُرسل: الرسالة موقوفة</td><td></td></tr>
+  <tr><td><code>skipped_no_device</code></td><td>لم تُرسل: واتساب غير مربوط</td><td></td></tr>
+  <tr><td><code>skipped_invalid_phone</code></td><td>لم تُرسل: رقم غير صالح</td><td></td></tr>
+  <tr><td><code>skipped_no_debt</code></td><td>لم تُرسل: المديونية اتسددت قبل الإرسال</td><td><span class="tag t-new">جديد</span></td></tr>
+</table></div>
+<p class="muted">مفيش endpoint بيرجّع القوايم دي، فلو الفلاتر عندكم hardcoded ضيفوا القيم الجديدة. الـ API بيرجّع <code>type</code> و <code>status</code> على شكل <code>{label, value}</code>، فالـ label بييجي جاهز بلغة الـ header <code>lang</code>.</p>
+
+<h3>شكل العنصر</h3>
+<pre><code>{
+  "id": 57,
+  "type":   { "label": "تذكير بالمديونية", "value": "debt_reminder" },
+  "status": { "label": "أُرسلت", "value": "sent" },
+  "recipient": "201001234567",
+  "order": null,
+  "receipt": null,
+  "customer": { "id": 9, "name": "أحمد علي" },   // new
+  "error": null,
+  "sent_at": 1793174400,
+  "created_at": 1793174395
+}</code></pre>
+
+<div class="table-wrap"><table>
+  <tr><th>النوع</th><th><code>order</code></th><th><code>receipt</code></th><th><code>customer</code></th></tr>
+  <tr><td>invoice</td><td>✔</td><td>—</td><td>—</td></tr>
+  <tr><td>payment</td><td>—</td><td>✔</td><td>—</td></tr>
+  <tr><td>service_reminder</td><td>✔ الفاتورة اللي فيها المعاد</td><td>—</td><td>—</td></tr>
+  <tr><td>debt_reminder</td><td>—</td><td>—</td><td>✔</td></tr>
+  <tr><td>test</td><td>—</td><td>—</td><td>—</td></tr>
+</table></div>
+<p>اقتراح: في عمود "المرتبط بـ" اعرض رقم الفاتورة أو رقم الإيصال أو اسم العميل، حسب اللي مش <code>null</code>.</p>
+
+<!-- ============ 5 ============ -->
+<h2 id="checklist">5. المطلوب من الفرونت</h2>
+<div class="table-wrap"><table>
+  <tr><th>الشاشة</th><th>المطلوب</th></tr>
+  <tr><td>إضافة عربية</td><td>input صورة اختياري، ولو فيه صورة ابعت <code>FormData</code>.</td></tr>
+  <tr><td>صفحة العربية / التعديل</td><td>عرض <code>vin_image_url</code>، وزرار "تغيير" (<code>POST</code> + <code>_method=PUT</code>)، وزرار "مسح" (<code>{"vin_image": null}</code>).</td></tr>
+  <tr><td>الإعدادات ← واتساب</td><td>سويتشين للتذكيرين، وحقل رقم <code>debt_reminder_days</code> (1–365)، والـ hints.</td></tr>
+  <tr><td>سجل الرسايل</td><td>فلاتر <code>type</code> و <code>status</code> بالقيم الجديدة، وعرض <code>customer.name</code> لتذكير المديونية.</td></tr>
+  <tr><td>الفاتورة</td><td>مش إجباري، بس يُفضّل توضيح إن حقل "معاد الصيانة الجاية" هو اللي بيشغّل تذكير الصيانة.</td></tr>
+</table></div>
+
+<p class="muted">الـ Postman Collection متحدّث: فيه طلبين لصورة الشاسيه في فولدر العربيات، وشرح الحقول الجديدة في <code>center.settings.update</code> و <code>whatsapp.messages</code>.</p>
+
+</main>
+</body>
+</html>
