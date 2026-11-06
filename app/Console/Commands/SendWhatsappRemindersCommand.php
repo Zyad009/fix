@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Tenant;
+use App\Models\MaintenanceCenter;
 use App\Services\V1\WhatsappReminderService;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,30 +15,30 @@ use Throwable;
  */
 class SendWhatsappRemindersCommand extends Command
 {
-    protected $signature = 'whatsapp:reminders {--tenant= : Run for one tenant id only}';
+    protected $signature = 'whatsapp:reminders {--maintenance-center= : Run for one maintenance center id only}';
 
     protected $description = 'Queue WhatsApp service and debt reminders for every center';
 
     public function handle(WhatsappReminderService $reminders): int
     {
-        $tenants = Tenant::query()
+        $maintenanceCenters = MaintenanceCenter::query()
             ->where('is_active', true)
             ->whereNotNull('whatsapp_device_id')
             ->where(fn (Builder $query) => $query->where('whatsapp_service_reminder_enabled', true)->orWhere('whatsapp_debt_reminder_enabled', true))
-            ->when($this->option('tenant'), fn (Builder $query, string $id) => $query->whereKey($id))
+            ->when($this->option('maintenance-center'), fn (Builder $query, string $id) => $query->whereKey($id))
             ->get()
-            ->reject(fn (Tenant $tenant): bool => $tenant->isSubscriptionExpired());
+            ->reject(fn (MaintenanceCenter $maintenanceCenter): bool => $maintenanceCenter->isSubscriptionExpired());
 
         $failed = 0;
 
-        foreach ($tenants as $tenant) {
+        foreach ($maintenanceCenters as $maintenanceCenter) {
             try {
-                $sent = tenantContext()->run($tenant, fn (): array => $reminders->run());
-                $this->info("{$tenant->id} {$tenant->name}: {$sent['service']} service, {$sent['debt']} debt");
+                $sent = maintenanceCenterContext()->run($maintenanceCenter, fn (): array => $reminders->run());
+                $this->info("{$maintenanceCenter->id} {$maintenanceCenter->name}: {$sent['service']} service, {$sent['debt']} debt");
             } catch (Throwable $th) {
                 $failed++;
                 report($th);
-                $this->error("{$tenant->id} {$tenant->name}: {$th->getMessage()}");
+                $this->error("{$maintenanceCenter->id} {$maintenanceCenter->name}: {$th->getMessage()}");
             }
         }
 

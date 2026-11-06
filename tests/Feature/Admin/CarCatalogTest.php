@@ -41,7 +41,7 @@ class CarCatalogTest extends CenterHttpTestCase
         $this->putJson("/api/v1/admin/car-makes/{$makeId}", ['name_ar' => 'تسلا', 'logo_url' => null], $admin)->assertOk()->assertJsonPath('data.logo_url', null);
 
         $this->seed(CarCatalogSeeder::class);
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $vehicle = $this->vehicle();
         $vehicle->update(['car_make_id' => CarMake::query()->where('name_en', 'Mercedes-Benz')->value('id'), 'year' => 2020]);
 

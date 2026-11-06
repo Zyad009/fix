@@ -2,15 +2,15 @@
 
 use App\Http\Controllers\V1\Admin\BranchController;
 use App\Http\Controllers\V1\Admin\CarMakeController;
-use App\Http\Controllers\V1\Admin\TenantController;
+use App\Http\Controllers\V1\Admin\MaintenanceCenterController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth:sanctum', 'admin.only'])->group(function (): void {
-    Route::apiResource('tenants', TenantController::class)->except('destroy');
-    Route::toggleActive('tenants', TenantController::class);
-    Route::patch('tenants/{tenant}/subscription', [TenantController::class, 'subscription'])->name('tenants.subscription');
+    Route::apiResource('maintenance-centers', MaintenanceCenterController::class)->except('destroy');
+    Route::toggleActive('maintenance-centers', MaintenanceCenterController::class);
+    Route::patch('maintenance-centers/{maintenance_center}/subscription', [MaintenanceCenterController::class, 'subscription'])->name('maintenance-centers.subscription');
 
-    Route::prefix('tenants/{tenant}/branches')->name('tenants.branches.')->controller(BranchController::class)->group(function (): void {
+    Route::prefix('maintenance-centers/{maintenance_center}/branches')->name('maintenance-centers.branches.')->controller(BranchController::class)->group(function (): void {
         Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
         Route::put('{branch}', 'update')->name('update');

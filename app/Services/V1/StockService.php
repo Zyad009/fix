@@ -96,7 +96,7 @@ class StockService
         $now = now();
 
         DB::table('product_branch_stock')->insertOrIgnore(array_map(fn (int $productId): array => [
-            'tenant_id' => tenantContext()->id(),
+            'maintenance_center_id' => maintenanceCenterContext()->id(),
             'branch_id' => $branchId,
             'product_id' => $productId,
             'qty' => 0,

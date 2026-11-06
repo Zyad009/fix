@@ -13,7 +13,7 @@
 | المرحلة | المحتوى | الحالة |
 |---|---|---|
 | 0 | الأساس: الـ packages، شكل الـ response، الأخطاء، اللغة، الفلوس، الـ tests | ✅ |
-| 1 | المراكز (Tenants)، الفروع، الدخول، الـ Super Admin، المستخدمين، الصلاحيات، العزل | ✅ |
+| 1 | المراكز (Maintenance Centers)، الفروع، الدخول، الـ Super Admin، المستخدمين، الصلاحيات، العزل | ✅ |
 | 2 | العملاء، العربيات، الماركات والموديلات، البحث السريع | ✅ |
 | 3 | الكتالوج (تصنيفات ومنتجات وخدمات)، المخزون لكل فرع | ✅ |
 | 4 | الأوردرات / الفواتير (الـ POS) | ✅ |
@@ -68,7 +68,7 @@ app/
 │                             (كل enum فيه LABELS عربي/إنجليزي، و ->response() بترجع {label, value})
 ├── Exceptions/
 │   ├── BusinessRuleException       أي خطأ بيزنس: رسالة للمستخدم + HTTP code
-│   └── MissingTenantContextException  حماية: query على داتا مركز من غير ما يكون المركز متحدد
+│   └── MissingMaintenanceCenterContextException  حماية: query على داتا مركز من غير ما يكون المركز متحدد
 ├── Exports/ArrayExport.php   تصدير Excel عام (RTL)
 ├── Http/
 │   ├── Controllers/Controller.php    الأساس: response() و paginate() و failed() و excel()
@@ -77,9 +77,9 @@ app/
 │   ├── Middleware/                   العزل، الصلاحيات، الاشتراك، اللغة
 │   ├── Requests/                     الـ validation (AbstractFormRequest و IndexRequest)
 │   ├── Resources/V1/...              شكل الـ JSON الراجع
-│   └── Helpers/helpers.php           دوال عامة: actor(), tenantContext(), money(), tenantExists() ...
+│   └── Helpers/helpers.php           دوال عامة: actor(), maintenanceCenterContext(), money(), maintenanceCenterExists() ...
 ├── Models/
-│   └── Concerns/                     BelongsToTenant, BelongsToBranch, Voidable
+│   └── Concerns/                     BelongsToMaintenanceCenter, BelongsToBranch, Voidable
 ├── Services/V1/                      ★ كل الـ business logic هنا
 │   └── Admin/                        خدمات الأدمن (إنشاء مركز، الفروع، ...)
 ├── Support/
@@ -87,8 +87,8 @@ app/
 │   ├── Period.php                    تحويل "من يوم لـ يوم" بتوقيت القاهرة لحدود UTC
 │   ├── PlateNormalizer.php           توحيد شكل اللوحة
 │   ├── PhoneNormalizer.php           توحيد شكل التليفون
-│   ├── Tenancy/TenantContext.php     "المركز الحالي"
-│   └── Tenancy/BranchContext.php     "الفرع الحالي"
+│   ├── MaintenanceCenter/MaintenanceCenterContext.php     "المركز الحالي"
+│   └── MaintenanceCenter/BranchContext.php     "الفرع الحالي"
 │   └── Traits/ResponseTrait, EnumTrait
 config/rbac.php                       ★ الصلاحيات لكل دور
 config/dawar.php                      بيانات الأدمن الأولاني
@@ -103,10 +103,10 @@ postman/                              Collection + Environment
 
 ```mermaid
 flowchart LR
-    A[Request] --> B[ResetTenancyContext<br/>تصفير المركز والفرع]
+    A[Request] --> B[ResetMaintenanceCenterContext<br/>تصفير المركز والفرع]
     B --> C[SetLang<br/>header lang]
     C --> D[auth:sanctum<br/>مين صاحب التوكن]
-    D --> E[tenant<br/>تحديد المركز من التوكن]
+    D --> E[maintenance_center<br/>تحديد المركز من التوكن]
     E --> F[branch<br/>تحديد الفرع]
     F --> G[subscription<br/>الاشتراك منتهي؟ يبقى قراءة بس]
     G --> H[permission:x<br/>صلاحية الدور]
@@ -132,13 +132,13 @@ flowchart LR
 
 ## 4. العزل بين المراكز والفروع (أهم جزء أمنياً)
 
-### المركز (Tenant)
-1. أي user مربوط بمركز (`users.tenant_id`). أول ما الـ request يعدّي من الـ auth، الـ middleware `tenant` بياخد المركز **من صاحب التوكن**. **عمر ما المركز بييجي من الـ body ولا من header.**
-2. أي model بتاع مركز عليه `BelongsToTenant`، وده بيعمل 3 حاجات:
-   - بيضيف `where tenant_id = المركز الحالي` تلقائي على **كل** query.
-   - بيحط `tenant_id` تلقائي عند الإنشاء (ومش موجود في `fillable` أصلاً).
+### المركز (Maintenance Center)
+1. أي user مربوط بمركز (`users.maintenance_center_id`). أول ما الـ request يعدّي من الـ auth، الـ middleware `maintenance_center` بياخد المركز **من صاحب التوكن**. **عمر ما المركز بييجي من الـ body ولا من header.**
+2. أي model بتاع مركز عليه `BelongsToMaintenanceCenter`، وده بيعمل 3 حاجات:
+   - بيضيف `where maintenance_center_id = المركز الحالي` تلقائي على **كل** query.
+   - بيحط `maintenance_center_id` تلقائي عند الإنشاء (ومش موجود في `fillable` أصلاً).
    - لو حصل query من غير ما يكون فيه مركز متحدد، بيرمي exception بدل ما يرجع داتا كل المراكز (fail-closed).
-3. **في الداتابيز نفسها:** كل جدول عليه `UNIQUE(tenant_id, id)`، وكل علاقة FK مركبة `(tenant_id, x_id)`. يعني مستحيل أوردر في مركز A يشاور على عميل في مركز B حتى لو الكود غلط.
+3. **في الداتابيز نفسها:** كل جدول عليه `UNIQUE(maintenance_center_id, id)`، وكل علاقة FK مركبة `(maintenance_center_id, x_id)`. يعني مستحيل أوردر في مركز A يشاور على عميل في مركز B حتى لو الكود غلط.
 4. لو حد بعت ID من مركز تاني، النتيجة **404**.
 
 ### الفرع (Branch)
@@ -194,11 +194,11 @@ flowchart LR
 
 ```mermaid
 erDiagram
-    tenants ||--o{ branches : has
-    tenants ||--o{ users : has
-    tenants ||--o{ customers : has
-    tenants ||--o{ categories : has
-    tenants ||--o{ expense_categories : has
+    maintenance_centers ||--o{ branches : has
+    maintenance_centers ||--o{ users : has
+    maintenance_centers ||--o{ customers : has
+    maintenance_centers ||--o{ categories : has
+    maintenance_centers ||--o{ expense_categories : has
     branches ||--o{ users : "staff of"
     branches ||--o{ employees : employs
     branches ||--o{ orders : hosts
@@ -236,7 +236,7 @@ erDiagram
 | الجدول | الغرض |
 |---|---|
 | `admins` | حسابات الـ Super Admin |
-| `tenants` | المراكز. فيها الاسم، اللوجو، الـ plan، `subscription_ends_at`، `cashier_max_discount`، `timezone` (default `Africa/Cairo`)، `is_active` |
+| `maintenance_centers` | المراكز. فيها الاسم، اللوجو، الـ plan، `subscription_ends_at`، `cashier_max_discount`، `timezone` (default `Africa/Cairo`)، `is_active` |
 | `car_makes` / `car_models` | ماركات وموديلات العربيات. فيها seed بـ 30 ماركة منتشرة في مصر **بلوجوهاتها** (`logo_url`)، والأدمن بس هو اللي يضيف. والفرونت ياخد الماركات من `GET /center/car-makes` عشان الإدخال يبقى موحّد |
 | `personal_access_tokens` | توكنات Sanctum (للأدمن والـ users) |
 
@@ -297,7 +297,7 @@ erDiagram
 ## 7. الـ Flows خطوة بخطوة
 
 ### 7.1 إنشاء مركز جديد (الأدمن)
-`POST /api/v1/admin/tenants`. الـ `TenantProvisioningService` بيعمل كله في **transaction واحدة**:
+`POST /api/v1/admin/maintenance-centers`. الـ `MaintenanceCenterProvisioningService` بيعمل كله في **transaction واحدة**:
 1. ينشئ المركز.
 2. ينشئ "الفرع الرئيسي" (`is_default`).
 3. ينشئ حساب الـ Owner.
@@ -518,8 +518,8 @@ sequenceDiagram
 | المجموعة | Endpoints |
 |---|---|
 | الدخول | `auth/login`، `auth/logout`، `auth/me` |
-| المراكز | `tenants` (index, store, show, update)، `tenants/toggle/{id}`، `tenants/{id}/subscription` |
-| الفروع | `tenants/{id}/branches` (index, store, update, toggle) |
+| المراكز | `maintenance-centers` (index, store, show, update)، `maintenance-centers/toggle/{id}`، `maintenance-centers/{id}/subscription` |
+| الفروع | `maintenance-centers/{id}/branches` (index, store, update, toggle) |
 | الماركات والموديلات | `car-makes` (index, store, update, toggle)، `car-makes/{id}/models`، `car-models/{id}`، `car-models/toggle/{id}` |
 
 **المركز** (`/api/v1/center`):
@@ -554,7 +554,7 @@ sequenceDiagram
 
 | الملف | بيختبر |
 |---|---|
-| `TenancyIsolationTest` | IDs من مركز تاني بترجع 404، و `tenant_id` في الـ body بيتجاهل، والفروع متقفلة على أصحابها |
+| `MaintenanceCenterIsolationTest` | IDs من مركز تاني بترجع 404، و `maintenance_center_id` في الـ body بيتجاهل، والفروع متقفلة على أصحابها |
 | `AccessControlTest`، `AuthTest` | الصلاحيات، والاشتراك المنتهي، والدخول، والـ throttle |
 | `CustomerVehicleTest` | التليفون واللوحة (بأي شكل كتابة)، والبحث، ونقل الملكية، والحذف مع الدين |
 | `CatalogTest` | الكتالوج، وإخفاء التكلفة، والمخزون لكل فرع |

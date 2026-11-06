@@ -12,14 +12,14 @@ class BranchRequest extends AbstractFormRequest
      */
     public function rules(): array
     {
-        $tenant = $this->route('tenant');
+        $maintenanceCenter = $this->route('maintenance_center');
 
         return [
             'name' => [
                 $this->isMethod('post') ? 'required' : 'sometimes',
                 'string',
                 'max:255',
-                Rule::unique('branches', 'name')->where('tenant_id', $tenant->id)->ignore($this->route('branch')),
+                Rule::unique('branches', 'name')->where('maintenance_center_id', $maintenanceCenter->id)->ignore($this->route('branch')),
             ],
             'phone' => ['nullable', 'string', 'max:30'],
             'address' => ['nullable', 'string', 'max:255'],

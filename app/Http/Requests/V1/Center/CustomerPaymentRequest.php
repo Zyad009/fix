@@ -34,7 +34,7 @@ class CustomerPaymentRequest extends PaymentRequest
         return [
             ...parent::rules(),
             'allocation' => ['required', Rule::in([self::ALLOCATION_OLDEST, self::ALLOCATION_MANUAL])],
-            'vehicle_id' => [$isManual ? 'prohibited' : 'nullable', 'integer', tenantExists('vehicles')],
+            'vehicle_id' => [$isManual ? 'prohibited' : 'nullable', 'integer', maintenanceCenterExists('vehicles')],
             'orders' => [$isManual ? 'required' : 'prohibited', 'array', 'min:1', 'max:100'],
             'orders.*.order_id' => ['required', 'integer', 'distinct'],
             'orders.*.amount' => ['required', 'decimal:0,2', 'gt:0', 'max:9999999999'],

@@ -31,11 +31,11 @@ $descriptions = [
         'ar' => 'بيانات الأدمن الحالي.',
         'en' => 'The signed-in admin.',
     ],
-    'admin.tenants.index' => [
+    'admin.maintenance-centers.index' => [
         'ar' => 'قايمة المراكز (paginated). `q` بحث بالاسم/التليفون، `is_active`، و `expired=1` للي اشتراكهم خلص.',
         'en' => 'Centers list (paginated). `q` searches name/phone; `is_active`; `expired=1` for ended subscriptions.',
     ],
-    'admin.tenants.store' => [
+    'admin.maintenance-centers.store' => [
         'ar' => <<<'MD'
 إنشاء مركز جديد (مفيش تسجيل ذاتي). في transaction واحدة بيعمل:
 المركز + حساب الـ **owner** + **الفرع الرئيسي** (`branch_name` اختياري) + التصنيفات الافتراضية للمنتجات والمصروفات.
@@ -52,35 +52,35 @@ Create a center (no self sign-up). One transaction creates the center, its **own
 - `owner.username`: optional, and unique across all centers.
 MD,
     ],
-    'admin.tenants.show' => [
+    'admin.maintenance-centers.show' => [
         'ar' => 'تفاصيل مركز.',
         'en' => 'Center details.',
     ],
-    'admin.tenants.update' => [
+    'admin.maintenance-centers.update' => [
         'ar' => 'تعديل بيانات مركز (الاسم، التليفون، العنوان، حد خصم الكاشير، المنطقة الزمنية، و `whatsapp_device_id` رقم واتساب اللي بيبعت منه على GOWA). الاشتراك له endpoint لوحده.',
         'en' => 'Update a center (name, phone, address, cashier discount limit, timezone, and `whatsapp_device_id`, its sending WhatsApp device on GOWA). The subscription has its own endpoint.',
     ],
-    'admin.tenants.toggle' => [
+    'admin.maintenance-centers.toggle' => [
         'ar' => 'إيقاف/تفعيل مركز. الإيقاف بيمسح توكنات كل مستخدميه فوراً ويمنع الدخول.',
         'en' => 'Suspend/activate a center. Suspending revokes all its users\' tokens and blocks login.',
     ],
-    'admin.tenants.subscription' => [
+    'admin.maintenance-centers.subscription' => [
         'ar' => 'تجديد/تغيير الاشتراك: `plan` و `subscription_ends_at` (`null` = مفتوح).',
         'en' => 'Renew/change the subscription: `plan` and `subscription_ends_at` (`null` = no end date).',
     ],
-    'admin.tenants.branches.index' => [
+    'admin.maintenance-centers.branches.index' => [
         'ar' => 'فروع مركز.',
         'en' => 'A center\'s branches.',
     ],
-    'admin.tenants.branches.store' => [
+    'admin.maintenance-centers.branches.store' => [
         'ar' => 'إضافة فرع لمركز (الفروع بيعملها الأدمن بس). كل فرع له ترقيم فواتير وإيصالات مستقل.',
         'en' => 'Add a branch to a center (admin only). Each branch numbers its own invoices and receipts.',
     ],
-    'admin.tenants.branches.update' => [
+    'admin.maintenance-centers.branches.update' => [
         'ar' => 'تعديل بيانات فرع.',
         'en' => 'Update a branch.',
     ],
-    'admin.tenants.branches.toggle' => [
+    'admin.maintenance-centers.branches.toggle' => [
         'ar' => 'إيقاف/تفعيل فرع. الفرع الرئيسي مايتوقفش.',
         'en' => 'Deactivate/activate a branch. The main branch cannot be deactivated.',
     ],
@@ -121,13 +121,13 @@ MD,
         'ar' => <<<'MD'
 دخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.
 
-**الرد:** `token`, `user` (بالدور)، `tenant`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).
+**الرد:** `token`, `user` (بالدور)، `maintenance_center`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).
 بيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).
 MD,
         'en' => <<<'MD'
 Center user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.
 
-**Returns:** `token`, `user` (with role), `tenant`, available `branches`, and `permissions` (for hiding UI actions).
+**Returns:** `token`, `user` (with role), `maintenance_center`, available `branches`, and `permissions` (for hiding UI actions).
 Rejected if the user or the center is suspended (403 `account_inactive`).
 MD,
     ],
@@ -810,7 +810,7 @@ $paging = ['page', 'per_page'];
 
 $fieldsOnly = [
     'center.whatsapp.messages' => ['type', 'status', 'from', 'to', ...$paging],
-    'admin.tenants.index' => ['q', 'is_active', 'expired', ...$paging],
+    'admin.maintenance-centers.index' => ['q', 'is_active', 'expired', ...$paging],
     'center.users.index' => ['q', 'role', 'branch_id', 'is_active', ...$paging],
     'center.audit-logs.index' => ['auditable_type', 'auditable_id', 'event', 'user_id', 'from', 'to', ...$paging],
     'center.search' => ['q'],

@@ -99,7 +99,7 @@ class ReportService
         $paginator = VehicleBalance::query()
             ->toBase()
             ->selectRaw('customer_id, SUM(balance) AS total, MIN(oldest_due_at) AS oldest_due_at, COUNT(*) AS vehicles_count')
-            ->where('tenant_id', tenantContext()->id())
+            ->where('maintenance_center_id', maintenanceCenterContext()->id())
             ->groupBy('customer_id')
             ->when(($filters['sort'] ?? 'amount') === 'oldest',
                 fn ($query) => $query->orderBy('oldest_due_at'),
@@ -217,7 +217,7 @@ class ReportService
      */
     public function serviceDue(array $filters): LengthAwarePaginator
     {
-        $timezone = tenantContext()->tenant()->timezone;
+        $timezone = maintenanceCenterContext()->maintenanceCenter()->timezone;
         $today = CarbonImmutable::now($timezone)->startOfDay();
         $until = $today->addDays((int) ($filters['days'] ?? 7))->toDateString();
 

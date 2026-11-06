@@ -16,17 +16,18 @@ References: `brief.md` (requirements), `shortdoc.md` (database design). Architec
 - **Resources** (`app/Http/Resources/V1/{Admin,Center}`) format all output; use `whenLoaded()`, enums as `->response()`, money via `formatNumber()`, timestamps as unix ints.
 - Domain errors: throw `App\Exceptions\BusinessRuleException` (message + HTTP code); never build JSON responses inside services.
 
-## 2) Tenancy & branch isolation (security critical)
-- Every tenant table has `tenant_id`, `UNIQUE(tenant_id, id)` and composite foreign keys `(tenant_id, x_id) → parent(tenant_id, id)`.
-- Tenant models use the `BelongsToTenant` trait (global scope + auto-fill). `tenant_id` is **never** fillable and **never** read from the request.
+## 2) Maintenance center & branch isolation (security critical)
+- Every maintenance center table has `maintenance_center_id`, `UNIQUE(maintenance_center_id, id)` and composite foreign keys `(maintenance_center_id, x_id) → parent(maintenance_center_id, id)`.
+- Maintenance center models use the `BelongsToMaintenanceCenter` trait (global scope + auto-fill). `maintenance_center_id` is **never** fillable and **never** read from the request.
 - Branch-level models (orders, payments, receipts, expenses, employees, stock) use `BelongsToBranch`. The branch comes from `BranchContext` (`X-Branch-Id` header for owners; pinned to `users.branch_id` otherwise).
-- `exists`/`unique` validation rules must be tenant-scoped (`tenantExists()` / `tenantUnique()` helpers).
-- Any new endpoint touching tenant data needs a cross-tenant test (IDs from another tenant → 404).
+- `exists`/`unique` validation rules must be maintenance-center-scoped (`maintenanceCenterExists()` / `maintenanceCenterUnique()` helpers).
+- Any new endpoint touching maintenance center data needs a cross-center test (IDs from another maintenance center → 404).
+- Old migrations keep the frozen `tenantKey`/`tenantForeign`/`createdBy`/`voidColumns` macros and must never be edited; new tables use `maintenanceCenterKey()`/`maintenanceCenterForeign()`. Foreign key constraint names still contain `tenant_id` (MySQL cannot rename them), and stored files stay under `tenants/{id}/` because the database holds those paths.
 
 ## 3) Money & time
 - Money columns: `decimal(12,2)`; casts `decimal:2`. Arithmetic in PHP uses `App\Support\Money` (brick/math). **Never** use float for money.
 - Denormalized `orders.subtotal/total/paid` are recalculated from source rows (not incremented) inside the same `DB::transaction`.
-- Store UTC. Day boundaries in reports use the tenant timezone (`tenants.timezone`, default `Africa/Cairo`) converted to UTC; filter with `whereBetween(start, end)`, never `whereDate()` or a bare `<= date`.
+- Store UTC. Day boundaries in reports use the maintenance center timezone (`maintenance_centers.timezone`, default `Africa/Cairo`) converted to UTC; filter with `whereBetween(start, end)`, never `whereDate()` or a bare `<= date`.
 
 ## 4) Financial records
 - Every financial operation (order, payment, receipt, refund, salary, expense) runs inside `DB::transaction` with `lockForUpdate` on the rows it changes.
@@ -49,7 +50,7 @@ References: `brief.md` (requirements), `shortdoc.md` (database design). Architec
 
 ## 7) Testing
 - PHPUnit feature tests on MySQL `dawar_test` (the base TestCase refuses any database not ending in `_test`).
-- Mandatory coverage (brief §9): tenant isolation, order totals, bulk payment allocation, employee balance after advances, invoice item snapshot.
+- Mandatory coverage (brief §9): maintenance center isolation, order totals, bulk payment allocation, employee balance after advances, invoice item snapshot.
 - Run `php artisan test --compact` and `vendor/bin/pint --dirty --format agent` before finishing a task.
 
 ## 8) Git

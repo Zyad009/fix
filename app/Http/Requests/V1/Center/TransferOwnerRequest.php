@@ -12,7 +12,7 @@ class TransferOwnerRequest extends AbstractFormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => ['required', 'integer', tenantExists('customers', withoutTrashed: true)],
+            'customer_id' => ['required', 'integer', maintenanceCenterExists('customers', withoutTrashed: true)],
         ];
     }
 }

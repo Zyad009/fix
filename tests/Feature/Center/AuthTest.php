@@ -11,9 +11,9 @@ class AuthTest extends CenterHttpTestCase
     {
         $this->postJson($this->url('auth/login'), ['email' => $this->owner->email, 'password' => 'password'])
             ->assertOk()
-            ->assertJsonStructure(['data' => ['token', 'user', 'tenant', 'branches', 'permissions']])
+            ->assertJsonStructure(['data' => ['token', 'user', 'maintenance_center', 'branches', 'permissions']])
             ->assertJsonPath('data.user.role.value', 'owner')
-            ->assertJsonPath('data.tenant.name', 'مركز أ')
+            ->assertJsonPath('data.maintenance_center.name', 'مركز أ')
             ->assertJsonPath('data.branches.0.id', $this->branch->id)
             ->assertJsonFragment(['reports.view']);
     }

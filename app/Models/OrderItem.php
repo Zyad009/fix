@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ProductKind;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['order_id', 'product_id', 'name', 'kind', 'qty', 'unit_price', 'unit_cost', 'created_by'])]
 class OrderItem extends Model
 {
-    use BelongsToTenant;
+    use BelongsToMaintenanceCenter;
 
     /**
      * @return array<string, string>

@@ -2,11 +2,11 @@
 
 namespace App\Http\Resources\V1\Center;
 
-use App\Models\Tenant;
+use App\Models\MaintenanceCenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin Tenant */
+/** @mixin MaintenanceCenter */
 class SettingsResource extends JsonResource
 {
     /**

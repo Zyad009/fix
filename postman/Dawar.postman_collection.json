@@ -502,10 +502,10 @@
             ]
         },
         {
-            "name": "admin / tenants",
+            "name": "admin / maintenance-centers",
             "item": [
                 {
-                    "name": "admin.tenants.index",
+                    "name": "admin.maintenance-centers.index",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -520,13 +520,13 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants",
+                            "raw": "{{base_url}}/admin/maintenance-centers",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants"
+                                "maintenance-centers"
                             ],
                             "query": [],
                             "variable": []
@@ -541,11 +541,11 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nقايمة المراكز (paginated). `q` بحث بالاسم/التليفون، `is_active`، و `expired=1` للي اشتراكهم خلص.\n\n---\n\n### 🇬🇧 English\n\nCenters list (paginated). `q` searches name/phone; `is_active`; `expired=1` for ended subscriptions.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/admin/tenants` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `q` | — | string · max:100 · nullable |\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n| `is_active` | — | boolean · nullable |\n| `expired` | — | boolean · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
+                        "description": "### 🇪🇬 العربية\n\nقايمة المراكز (paginated). `q` بحث بالاسم/التليفون، `is_active`، و `expired=1` للي اشتراكهم خلص.\n\n---\n\n### 🇬🇧 English\n\nCenters list (paginated). `q` searches name/phone; `is_active`; `expired=1` for ended subscriptions.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/admin/maintenance-centers` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `q` | — | string · max:100 · nullable |\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n| `is_active` | — | boolean · nullable |\n| `expired` | — | boolean · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 },
                 {
-                    "name": "admin.tenants.store",
+                    "name": "admin.maintenance-centers.store",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -564,13 +564,13 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants",
+                            "raw": "{{base_url}}/admin/maintenance-centers",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants"
+                                "maintenance-centers"
                             ],
                             "query": [],
                             "variable": []
@@ -585,7 +585,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإنشاء مركز جديد (مفيش تسجيل ذاتي). في transaction واحدة بيعمل:\nالمركز + حساب الـ **owner** + **الفرع الرئيسي** (`branch_name` اختياري) + التصنيفات الافتراضية للمنتجات والمصروفات.\n\n- `subscription_ends_at`: آخر يوم في الاشتراك؛ بعده المركز يبقى **قراءة بس** (أي كتابة → 402).\n- `cashier_max_discount`: أقصى خصم بالجنيه للكاشير.\n- `owner.username`: اختياري، وفريد على مستوى كل المراكز.\n\n---\n\n### 🇬🇧 English\n\nCreate a center (no self sign-up). One transaction creates the center, its **owner** account, the **main branch** (`branch_name` optional) and the default product/expense categories.\n\n- `subscription_ends_at`: last day of the subscription; after it the center is **read-only** (writes → 402).\n- `cashier_max_discount`: the cashier's maximum discount in EGP.\n- `owner.username`: optional, and unique across all centers.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/admin/tenants` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `plan` | — | string · max:50 · nullable |\n| `subscription_ends_at` | — | date · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `branch_name` | — | string · max:255 · nullable |\n| `owner` | ✅ | array |\n| `owner.name` | ✅ | string · max:255 |\n| `owner.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `owner.email` | ✅ | email · max:255 · unique:users |\n| `owner.password` | ✅ | string · min:8 · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإنشاء مركز جديد (مفيش تسجيل ذاتي). في transaction واحدة بيعمل:\nالمركز + حساب الـ **owner** + **الفرع الرئيسي** (`branch_name` اختياري) + التصنيفات الافتراضية للمنتجات والمصروفات.\n\n- `subscription_ends_at`: آخر يوم في الاشتراك؛ بعده المركز يبقى **قراءة بس** (أي كتابة → 402).\n- `cashier_max_discount`: أقصى خصم بالجنيه للكاشير.\n- `owner.username`: اختياري، وفريد على مستوى كل المراكز.\n\n---\n\n### 🇬🇧 English\n\nCreate a center (no self sign-up). One transaction creates the center, its **owner** account, the **main branch** (`branch_name` optional) and the default product/expense categories.\n\n- `subscription_ends_at`: last day of the subscription; after it the center is **read-only** (writes → 402).\n- `cashier_max_discount`: the cashier's maximum discount in EGP.\n- `owner.username`: optional, and unique across all centers.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/admin/maintenance-centers` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `plan` | — | string · max:50 · nullable |\n| `subscription_ends_at` | — | date · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `branch_name` | — | string · max:255 · nullable |\n| `owner` | ✅ | array |\n| `owner.name` | ✅ | string · max:255 |\n| `owner.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `owner.email` | ✅ | email · max:255 · unique:users |\n| `owner.password` | ✅ | string · min:8 · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"مركز الأمل\",\n    \"phone\": \"01000000000\",\n    \"address\": \"الإسكندرية\",\n    \"plan\": \"pro\",\n    \"subscription_ends_at\": \"2027-12-31\",\n    \"cashier_max_discount\": 100,\n    \"branch_name\": \"الفرع الرئيسي\",\n    \"owner\": {\n        \"name\": \"أحمد\",\n        \"email\": \"owner@amal.test\",\n        \"password\": \"secret123\"\n    }\n}"
@@ -593,7 +593,7 @@
                     }
                 },
                 {
-                    "name": "admin.tenants.show",
+                    "name": "admin.maintenance-centers.show",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -608,19 +608,19 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants/:tenant",
+                            "raw": "{{base_url}}/admin/maintenance-centers/:maintenance_center",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants",
-                                ":tenant"
+                                "maintenance-centers",
+                                ":maintenance_center"
                             ],
                             "query": [],
                             "variable": [
                                 {
-                                    "key": "tenant",
+                                    "key": "maintenance_center",
                                     "value": "1"
                                 }
                             ]
@@ -635,11 +635,11 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتفاصيل مركز.\n\n---\n\n### 🇬🇧 English\n\nCenter details.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/admin/tenants/{tenant}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                        "description": "### 🇪🇬 العربية\n\nتفاصيل مركز.\n\n---\n\n### 🇬🇧 English\n\nCenter details.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/admin/maintenance-centers/{maintenance_center}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
                     }
                 },
                 {
-                    "name": "admin.tenants.update",
+                    "name": "admin.maintenance-centers.update",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -658,19 +658,19 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants/:tenant",
+                            "raw": "{{base_url}}/admin/maintenance-centers/:maintenance_center",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants",
-                                ":tenant"
+                                "maintenance-centers",
+                                ":maintenance_center"
                             ],
                             "query": [],
                             "variable": [
                                 {
-                                    "key": "tenant",
+                                    "key": "maintenance_center",
                                     "value": "1"
                                 }
                             ]
@@ -685,7 +685,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل بيانات مركز (الاسم، التليفون، العنوان، حد خصم الكاشير، المنطقة الزمنية، و `whatsapp_device_id` رقم واتساب اللي بيبعت منه على GOWA). الاشتراك له endpoint لوحده.\n\n---\n\n### 🇬🇧 English\n\nUpdate a center (name, phone, address, cashier discount limit, timezone, and `whatsapp_device_id`, its sending WhatsApp device on GOWA). The subscription has its own endpoint.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/admin/tenants/{tenant}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `timezone` | — | timezone:all |\n| `whatsapp_device_id` | — | string · max:255 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل بيانات مركز (الاسم، التليفون، العنوان، حد خصم الكاشير، المنطقة الزمنية، و `whatsapp_device_id` رقم واتساب اللي بيبعت منه على GOWA). الاشتراك له endpoint لوحده.\n\n---\n\n### 🇬🇧 English\n\nUpdate a center (name, phone, address, cashier discount limit, timezone, and `whatsapp_device_id`, its sending WhatsApp device on GOWA). The subscription has its own endpoint.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/admin/maintenance-centers/{maintenance_center}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `timezone` | — | timezone:all |\n| `whatsapp_device_id` | — | string · max:255 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"مركز الأمل\",\n    \"cashier_max_discount\": 150,\n    \"whatsapp_device_id\": \"device-1\"\n}"
@@ -693,7 +693,7 @@
                     }
                 },
                 {
-                    "name": "admin.tenants.toggle",
+                    "name": "admin.maintenance-centers.toggle",
                     "request": {
                         "method": "PATCH",
                         "header": [
@@ -708,13 +708,13 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants/toggle/:id",
+                            "raw": "{{base_url}}/admin/maintenance-centers/toggle/:id",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants",
+                                "maintenance-centers",
                                 "toggle",
                                 ":id"
                             ],
@@ -736,11 +736,11 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإيقاف/تفعيل مركز. الإيقاف بيمسح توكنات كل مستخدميه فوراً ويمنع الدخول.\n\n---\n\n### 🇬🇧 English\n\nSuspend/activate a center. Suspending revokes all its users' tokens and blocks login.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PATCH /api/v1/admin/tenants/toggle/{id}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n_لا يوجد / none_"
+                        "description": "### 🇪🇬 العربية\n\nإيقاف/تفعيل مركز. الإيقاف بيمسح توكنات كل مستخدميه فوراً ويمنع الدخول.\n\n---\n\n### 🇬🇧 English\n\nSuspend/activate a center. Suspending revokes all its users' tokens and blocks login.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PATCH /api/v1/admin/maintenance-centers/toggle/{id}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n_لا يوجد / none_"
                     }
                 },
                 {
-                    "name": "admin.tenants.subscription",
+                    "name": "admin.maintenance-centers.subscription",
                     "request": {
                         "method": "PATCH",
                         "header": [
@@ -759,20 +759,20 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants/:tenant/subscription",
+                            "raw": "{{base_url}}/admin/maintenance-centers/:maintenance_center/subscription",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants",
-                                ":tenant",
+                                "maintenance-centers",
+                                ":maintenance_center",
                                 "subscription"
                             ],
                             "query": [],
                             "variable": [
                                 {
-                                    "key": "tenant",
+                                    "key": "maintenance_center",
                                     "value": "1"
                                 }
                             ]
@@ -787,7 +787,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتجديد/تغيير الاشتراك: `plan` و `subscription_ends_at` (`null` = مفتوح).\n\n---\n\n### 🇬🇧 English\n\nRenew/change the subscription: `plan` and `subscription_ends_at` (`null` = no end date).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PATCH /api/v1/admin/tenants/{tenant}/subscription` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `plan` | — | string · max:50 |\n| `subscription_ends_at` | — | date · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتجديد/تغيير الاشتراك: `plan` و `subscription_ends_at` (`null` = مفتوح).\n\n---\n\n### 🇬🇧 English\n\nRenew/change the subscription: `plan` and `subscription_ends_at` (`null` = no end date).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PATCH /api/v1/admin/maintenance-centers/{maintenance_center}/subscription` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `plan` | — | string · max:50 |\n| `subscription_ends_at` | — | date · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"plan\": \"pro\",\n    \"subscription_ends_at\": \"2027-12-31\"\n}"
@@ -795,7 +795,7 @@
                     }
                 },
                 {
-                    "name": "admin.tenants.branches.index",
+                    "name": "admin.maintenance-centers.branches.index",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -810,20 +810,20 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants/:tenant/branches",
+                            "raw": "{{base_url}}/admin/maintenance-centers/:maintenance_center/branches",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants",
-                                ":tenant",
+                                "maintenance-centers",
+                                ":maintenance_center",
                                 "branches"
                             ],
                             "query": [],
                             "variable": [
                                 {
-                                    "key": "tenant",
+                                    "key": "maintenance_center",
                                     "value": "1"
                                 }
                             ]
@@ -838,11 +838,11 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nفروع مركز.\n\n---\n\n### 🇬🇧 English\n\nA center's branches.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/admin/tenants/{tenant}/branches` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                        "description": "### 🇪🇬 العربية\n\nفروع مركز.\n\n---\n\n### 🇬🇧 English\n\nA center's branches.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/admin/maintenance-centers/{maintenance_center}/branches` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
                     }
                 },
                 {
-                    "name": "admin.tenants.branches.store",
+                    "name": "admin.maintenance-centers.branches.store",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -861,20 +861,20 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants/:tenant/branches",
+                            "raw": "{{base_url}}/admin/maintenance-centers/:maintenance_center/branches",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants",
-                                ":tenant",
+                                "maintenance-centers",
+                                ":maintenance_center",
                                 "branches"
                             ],
                             "query": [],
                             "variable": [
                                 {
-                                    "key": "tenant",
+                                    "key": "maintenance_center",
                                     "value": "1"
                                 }
                             ]
@@ -889,7 +889,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإضافة فرع لمركز (الفروع بيعملها الأدمن بس). كل فرع له ترقيم فواتير وإيصالات مستقل.\n\n---\n\n### 🇬🇧 English\n\nAdd a branch to a center (admin only). Each branch numbers its own invoices and receipts.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/admin/tenants/{tenant}/branches` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 · unique:branches |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإضافة فرع لمركز (الفروع بيعملها الأدمن بس). كل فرع له ترقيم فواتير وإيصالات مستقل.\n\n---\n\n### 🇬🇧 English\n\nAdd a branch to a center (admin only). Each branch numbers its own invoices and receipts.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/admin/maintenance-centers/{maintenance_center}/branches` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 · unique:branches |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"فرع المعادي\",\n    \"phone\": \"01000000001\",\n    \"address\": \"القاهرة - المعادي\"\n}"
@@ -897,7 +897,7 @@
                     }
                 },
                 {
-                    "name": "admin.tenants.branches.update",
+                    "name": "admin.maintenance-centers.branches.update",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -916,21 +916,21 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants/:tenant/branches/:branch",
+                            "raw": "{{base_url}}/admin/maintenance-centers/:maintenance_center/branches/:branch",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants",
-                                ":tenant",
+                                "maintenance-centers",
+                                ":maintenance_center",
                                 "branches",
                                 ":branch"
                             ],
                             "query": [],
                             "variable": [
                                 {
-                                    "key": "tenant",
+                                    "key": "maintenance_center",
                                     "value": "1"
                                 },
                                 {
@@ -949,7 +949,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل بيانات فرع.\n\n---\n\n### 🇬🇧 English\n\nUpdate a branch.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/admin/tenants/{tenant}/branches/{branch}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 · unique:branches |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل بيانات فرع.\n\n---\n\n### 🇬🇧 English\n\nUpdate a branch.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/admin/maintenance-centers/{maintenance_center}/branches/{branch}` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 · unique:branches |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"فرع المعادي الجديد\"\n}"
@@ -957,7 +957,7 @@
                     }
                 },
                 {
-                    "name": "admin.tenants.branches.toggle",
+                    "name": "admin.maintenance-centers.branches.toggle",
                     "request": {
                         "method": "PATCH",
                         "header": [
@@ -972,14 +972,14 @@
                             }
                         ],
                         "url": {
-                            "raw": "{{base_url}}/admin/tenants/:tenant/branches/:branch/toggle",
+                            "raw": "{{base_url}}/admin/maintenance-centers/:maintenance_center/branches/:branch/toggle",
                             "host": [
                                 "{{base_url}}"
                             ],
                             "path": [
                                 "admin",
-                                "tenants",
-                                ":tenant",
+                                "maintenance-centers",
+                                ":maintenance_center",
                                 "branches",
                                 ":branch",
                                 "toggle"
@@ -987,7 +987,7 @@
                             "query": [],
                             "variable": [
                                 {
-                                    "key": "tenant",
+                                    "key": "maintenance_center",
                                     "value": "1"
                                 },
                                 {
@@ -1006,7 +1006,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإيقاف/تفعيل فرع. الفرع الرئيسي مايتوقفش.\n\n---\n\n### 🇬🇧 English\n\nDeactivate/activate a branch. The main branch cannot be deactivated.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PATCH /api/v1/admin/tenants/{tenant}/branches/{branch}/toggle` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n_لا يوجد / none_"
+                        "description": "### 🇪🇬 العربية\n\nإيقاف/تفعيل فرع. الفرع الرئيسي مايتوقفش.\n\n---\n\n### 🇬🇧 English\n\nDeactivate/activate a branch. The main branch cannot be deactivated.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PATCH /api/v1/admin/maintenance-centers/{maintenance_center}/branches/{branch}/toggle` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n_لا يوجد / none_"
                     }
                 }
             ]
@@ -1106,7 +1106,7 @@
                         "auth": {
                             "type": "noauth"
                         },
-                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\n\n**الرد:** `token`, `user` (بالدور)، `tenant`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\n\n**Returns:** `token`, `user` (with role), `tenant`, available `branches`, and `permissions` (for hiding UI actions).\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\n\n**الرد:** `token`, `user` (بالدور)، `maintenance_center`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\n\n**Returns:** `token`, `user` (with role), `maintenance_center`, available `branches`, and `permissions` (for hiding UI actions).\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"email\": \"owner@dawar.test\",\n    \"password\": \"password\"\n}"
@@ -1167,7 +1167,7 @@
                         "auth": {
                             "type": "noauth"
                         },
-                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\n\n**الرد:** `token`, `user` (بالدور)، `tenant`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\n\n**Returns:** `token`, `user` (with role), `tenant`, available `branches`, and `permissions` (for hiding UI actions).\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\n\n**الرد:** `token`, `user` (بالدور)، `maintenance_center`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\n\n**Returns:** `token`, `user` (with role), `maintenance_center`, available `branches`, and `permissions` (for hiding UI actions).\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"username\": \"owner3\",\n    \"password\": \"password\"\n}"

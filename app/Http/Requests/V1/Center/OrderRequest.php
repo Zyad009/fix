@@ -27,7 +27,7 @@ class OrderRequest extends AbstractFormRequest
         $isCreate = $this->isMethod('post');
 
         return [
-            'vehicle_id' => [$isCreate ? 'required_without:vehicle' : 'prohibited', 'nullable', 'integer', tenantExists('vehicles', withoutTrashed: true)],
+            'vehicle_id' => [$isCreate ? 'required_without:vehicle' : 'prohibited', 'nullable', 'integer', maintenanceCenterExists('vehicles', withoutTrashed: true)],
             'odometer' => ['nullable', 'integer', 'min:0', 'max:9999999'],
             'technician_id' => ['nullable', 'integer'],
             'discount' => ['nullable', 'decimal:0,2', 'min:0', 'max:9999999999'],
@@ -69,7 +69,7 @@ class OrderRequest extends AbstractFormRequest
             'vehicle' => ['sometimes', 'array', 'prohibits:vehicle_id'],
             ...$vehicleRules,
             'customer' => ['required_with:vehicle', 'exclude_without:vehicle', 'array'],
-            'customer.id' => ['exclude_without:vehicle', 'nullable', 'integer', tenantExists('customers', withoutTrashed: true)],
+            'customer.id' => ['exclude_without:vehicle', 'nullable', 'integer', maintenanceCenterExists('customers', withoutTrashed: true)],
             'customer.name' => ['exclude_without:vehicle', 'required_without:customer.id', 'nullable', 'string', 'max:255'],
             'customer.phone' => ['exclude_without:vehicle', 'required_without:customer.id', 'nullable', 'string', 'min:7', 'max:15'],
         ];

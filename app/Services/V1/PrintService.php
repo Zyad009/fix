@@ -3,9 +3,9 @@
 namespace App\Services\V1;
 
 use App\Enums\ProductKind;
+use App\Models\MaintenanceCenter;
 use App\Models\Order;
 use App\Models\PaymentReceipt;
-use App\Models\Tenant;
 use App\Support\Money;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Storage;
@@ -34,10 +34,10 @@ class PrintService
     public function invoiceData(Order $order): array
     {
         $order = $this->orders->load($order);
-        $tenant = tenantContext()->tenant();
+        $maintenanceCenter = maintenanceCenterContext()->maintenanceCenter();
 
         return [
-            'center' => $this->centerData($tenant, $order->branch?->name),
+            'center' => $this->centerData($maintenanceCenter, $order->branch?->name),
             'invoice' => [
                 'id' => $order->id,
                 'order_no' => $order->order_no,
@@ -95,7 +95,7 @@ class PrintService
         $receipt->load(['branch:id,name', 'customer:id,name,phone', 'vehicle:id,plate_number', 'receiver:id,name', 'payments.order:id,order_no,total,paid']);
 
         return [
-            'center' => $this->centerData(tenantContext()->tenant(), $receipt->branch?->name),
+            'center' => $this->centerData(maintenanceCenterContext()->maintenanceCenter(), $receipt->branch?->name),
             'receipt' => [
                 'id' => $receipt->id,
                 'receipt_no' => $receipt->receipt_no,
@@ -154,25 +154,25 @@ class PrintService
     /**
      * @return array<string, mixed>
      */
-    private function centerData(Tenant $tenant, ?string $branchName): array
+    private function centerData(MaintenanceCenter $maintenanceCenter, ?string $branchName): array
     {
-        $logoPath = $tenant->logo_path && Storage::disk(config('filesystems.default'))->exists($tenant->logo_path)
-            ? Storage::disk(config('filesystems.default'))->path($tenant->logo_path)
+        $logoPath = $maintenanceCenter->logo_path && Storage::disk(config('filesystems.default'))->exists($maintenanceCenter->logo_path)
+            ? Storage::disk(config('filesystems.default'))->path($maintenanceCenter->logo_path)
             : null;
 
         return [
-            'name' => $tenant->name,
+            'name' => $maintenanceCenter->name,
             'branch' => $branchName,
-            'phone' => $tenant->phone,
-            'address' => $tenant->address,
-            'logo_url' => $tenant->logoUrl(),
+            'phone' => $maintenanceCenter->phone,
+            'address' => $maintenanceCenter->address,
+            'logo_url' => $maintenanceCenter->logoUrl(),
             'logo_path' => $logoPath,
         ];
     }
 
     private function localTime(?CarbonInterface $time): ?string
     {
-        return $time?->copy()->setTimezone(tenantContext()->tenant()->timezone)->format('Y-m-d H:i');
+        return $time?->copy()->setTimezone(maintenanceCenterContext()->maintenanceCenter()->timezone)->format('Y-m-d H:i');
     }
 
     /**

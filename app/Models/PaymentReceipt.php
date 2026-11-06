@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Enums\PaymentMethod;
 use App\Models\Concerns\BelongsToBranch;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use App\Models\Concerns\Voidable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +28,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['branch_id', 'receipt_no', 'customer_id', 'vehicle_id', 'amount', 'method', 'received_by', 'received_at', 'notes'])]
 class PaymentReceipt extends Model
 {
-    use BelongsToBranch, BelongsToTenant, Voidable;
+    use BelongsToBranch, BelongsToMaintenanceCenter, Voidable;
 
     /**
      * @return array<string, string>

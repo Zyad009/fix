@@ -8,11 +8,11 @@
 $bodies = [
     // Admin
     'admin.auth.login' => ['email' => 'admin@dawar.test', 'password' => 'password'],
-    'admin.tenants.store' => ['name' => 'مركز الأمل', 'phone' => '01000000000', 'address' => 'الإسكندرية', 'plan' => 'pro', 'subscription_ends_at' => '2027-12-31', 'cashier_max_discount' => 100, 'branch_name' => 'الفرع الرئيسي', 'owner' => ['name' => 'أحمد', 'email' => 'owner@amal.test', 'password' => 'secret123']],
-    'admin.tenants.update' => ['name' => 'مركز الأمل', 'cashier_max_discount' => 150, 'whatsapp_device_id' => 'device-1'],
-    'admin.tenants.subscription' => ['plan' => 'pro', 'subscription_ends_at' => '2027-12-31'],
-    'admin.tenants.branches.store' => ['name' => 'فرع المعادي', 'phone' => '01000000001', 'address' => 'القاهرة - المعادي'],
-    'admin.tenants.branches.update' => ['name' => 'فرع المعادي الجديد'],
+    'admin.maintenance-centers.store' => ['name' => 'مركز الأمل', 'phone' => '01000000000', 'address' => 'الإسكندرية', 'plan' => 'pro', 'subscription_ends_at' => '2027-12-31', 'cashier_max_discount' => 100, 'branch_name' => 'الفرع الرئيسي', 'owner' => ['name' => 'أحمد', 'email' => 'owner@amal.test', 'password' => 'secret123']],
+    'admin.maintenance-centers.update' => ['name' => 'مركز الأمل', 'cashier_max_discount' => 150, 'whatsapp_device_id' => 'device-1'],
+    'admin.maintenance-centers.subscription' => ['plan' => 'pro', 'subscription_ends_at' => '2027-12-31'],
+    'admin.maintenance-centers.branches.store' => ['name' => 'فرع المعادي', 'phone' => '01000000001', 'address' => 'القاهرة - المعادي'],
+    'admin.maintenance-centers.branches.update' => ['name' => 'فرع المعادي الجديد'],
     'admin.car-makes.store' => ['name_ar' => 'تسلا', 'name_en' => 'Tesla', 'logo_url' => 'https://cdn.jsdelivr.net/gh/filippofilip95/car-logos-dataset@e334a4d2e8742108ba164c629dff5636576d3808/logos/optimized/tesla.png'],
     'admin.car-makes.update' => ['name_ar' => 'تسلا', 'logo_url' => null],
     'admin.car-models.store' => ['name_ar' => 'موديل 3', 'name_en' => 'Model 3'],

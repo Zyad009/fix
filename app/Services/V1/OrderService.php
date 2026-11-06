@@ -353,7 +353,7 @@ class OrderService
             throw new BusinessRuleException(__('messages.discount_forbidden'), 403);
         }
 
-        $limit = tenantContext()->tenant()->cashier_max_discount;
+        $limit = maintenanceCenterContext()->maintenanceCenter()->cashier_max_discount;
 
         if (! $user->hasPermission('orders.discount_unlimited') && $discount->isGreaterThan($limit)) {
             throw new BusinessRuleException(__('messages.discount_exceeds_limit', ['limit' => (string) Money::of($limit)]), 422);

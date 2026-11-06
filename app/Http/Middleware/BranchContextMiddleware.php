@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Exceptions\BusinessRuleException;
 use App\Models\Branch;
-use App\Support\Tenancy\BranchContext;
+use App\Support\MaintenanceCenter\BranchContext;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Resolves the acting branch. Staff are pinned to their own branch; owners
  * may pick one with `X-Branch-Id` (or none, meaning every branch).
- * Must run after `tenant`.
+ * Must run after `maintenance_center`.
  */
 class BranchContextMiddleware
 {

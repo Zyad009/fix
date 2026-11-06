@@ -41,7 +41,7 @@ class CustomerAccountTest extends CenterHttpTestCase
         $this->assertSame([1000, 1300, 1700, 600], array_column($response->json('data.entries'), 'balance'));
         $this->assertSame('cash', $response->json('data.entries.3.method.value'));
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(600.0, app(BalanceService::class)->customerBalance($customer->id)->toFloat());
     }
 
@@ -184,7 +184,7 @@ class CustomerAccountTest extends CenterHttpTestCase
         $this->postJson($this->url("customers/{$customer->id}/payments"), ['amount' => 100, 'allocation' => 'manual'], $headers)
             ->assertStatus(422);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(0, PaymentReceipt::query()->withoutGlobalScope('branch')->count());
         $this->assertSame('0.00', $this->freshOrder($invoice)->paid);
     }
@@ -201,7 +201,7 @@ class CustomerAccountTest extends CenterHttpTestCase
         $this->postJson($this->url("vehicles/{$vehicle->id}/payments"), ['amount' => 100], $headers)->assertJsonPath('data.method.value', 'cash');
         $this->postJson($this->url("customers/{$customer->id}/payments"), ['amount' => 100], $headers)->assertJsonPath('data.method.value', 'cash');
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(['cash'], PaymentReceipt::query()->withoutGlobalScope('branch')->pluck('method')->map->value->unique()->values()->all());
     }
 
@@ -221,7 +221,7 @@ class CustomerAccountTest extends CenterHttpTestCase
         $this->getJson($this->url("customers/{$this->customer()->id}/orders/{$order}"), $headers)->assertNotFound();
     }
 
-    public function test_permissions_and_tenant_isolation(): void
+    public function test_permissions_and_maintenance_center_isolation(): void
     {
         $customer = $this->customer();
         $technician = $this->as($this->technician());
@@ -230,7 +230,7 @@ class CustomerAccountTest extends CenterHttpTestCase
         $this->getJson($this->url("customers/{$customer->id}/unpaid-orders"), $technician)->assertForbidden();
         $this->postJson($this->url("customers/{$customer->id}/payments"), ['amount' => 1], $technician)->assertForbidden();
 
-        [, $otherOwner] = $this->createTenant('مركز ب');
+        [, $otherOwner] = $this->createMaintenanceCenter('مركز ب');
         $this->getJson($this->url("customers/{$customer->id}/statement"), $this->as($otherOwner))->assertNotFound();
         $this->getJson($this->url("customers/{$customer->id}/unpaid-orders"), $this->as($otherOwner))->assertNotFound();
     }
@@ -247,7 +247,7 @@ class CustomerAccountTest extends CenterHttpTestCase
             ->json('data.order.id');
 
         $this->postJson($this->url("orders/{$id}/complete"), [], $headers)->assertOk();
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
 
         return $id;
     }

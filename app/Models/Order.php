@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Enums\OrderStatus;
 use App\Enums\ProductKind;
 use App\Models\Concerns\BelongsToBranch;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use App\Support\Money;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -43,7 +43,7 @@ use Illuminate\Support\Carbon;
 ])]
 class Order extends Model
 {
-    use BelongsToBranch, BelongsToTenant;
+    use BelongsToBranch, BelongsToMaintenanceCenter;
 
     /** @var array<string, mixed> */
     protected $attributes = [

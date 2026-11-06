@@ -4,7 +4,7 @@ namespace Tests\Feature\Center;
 
 use App\Enums\WhatsappMessageStatus;
 use App\Jobs\SendWhatsappMessageJob;
-use App\Models\Tenant;
+use App\Models\MaintenanceCenter;
 use App\Models\WhatsappMessage;
 use App\Services\V1\BalanceService;
 use App\Services\V1\DocumentImageService;
@@ -25,7 +25,7 @@ class WhatsappTest extends CenterHttpTestCase
         parent::setUp();
 
         Queue::fake();
-        $this->tenant->update(['whatsapp_device_id' => 'device-1']);
+        $this->maintenanceCenter->update(['whatsapp_device_id' => 'device-1']);
     }
 
     /**
@@ -117,18 +117,18 @@ class WhatsappTest extends CenterHttpTestCase
     {
         $vehicle = $this->vehicle($this->customer('عميل', '01012345678'));
 
-        $this->tenant->update(['whatsapp_invoice_enabled' => false]);
+        $this->maintenanceCenter->update(['whatsapp_invoice_enabled' => false]);
         $this->invoice($vehicle, '100');
 
-        $this->tenant->update(['whatsapp_invoice_enabled' => true, 'whatsapp_device_id' => null]);
+        $this->maintenanceCenter->update(['whatsapp_invoice_enabled' => true, 'whatsapp_device_id' => null]);
         $this->invoice($vehicle, '100');
 
-        $this->tenant->update(['whatsapp_device_id' => 'device-1']);
+        $this->maintenanceCenter->update(['whatsapp_device_id' => 'device-1']);
         $this->invoice($this->vehicle($this->customer('رقم قصير', '0101')), '100');
 
         $this->assertCount(0, $this->jobs());
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(
             [WhatsappMessageStatus::SkippedDisabled, WhatsappMessageStatus::SkippedNoDevice, WhatsappMessageStatus::SkippedInvalidPhone],
             WhatsappMessage::query()->orderBy('id')->pluck('status')->all(),
@@ -150,7 +150,7 @@ class WhatsappTest extends CenterHttpTestCase
 
         $this->assertFileDoesNotExist($image);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $message = WhatsappMessage::query()->sole();
         $this->assertSame(WhatsappMessageStatus::Sent, $message->status);
         $this->assertSame('wa-1', $message->provider_message_id);
@@ -177,7 +177,7 @@ class WhatsappTest extends CenterHttpTestCase
 
         $job->failed($exception);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $message = WhatsappMessage::query()->sole();
         $this->assertSame(WhatsappMessageStatus::Failed, $message->status);
         $this->assertSame('device offline', $message->error);
@@ -191,7 +191,7 @@ class WhatsappTest extends CenterHttpTestCase
         $receipt = $this->postJson($this->url("orders/{$order}/payments"), ['amount' => 50], $this->as($this->owner, $this->branch))->json('data.id');
         $before = count($this->jobs());
 
-        $this->tenant->update(['whatsapp_invoice_enabled' => false]);
+        $this->maintenanceCenter->update(['whatsapp_invoice_enabled' => false]);
 
         $this->postJson($this->url("orders/{$order}/whatsapp"), [], $this->as($this->cashier()))->assertOk();
         $this->postJson($this->url("receipts/{$receipt}/whatsapp"), [], $this->as($this->cashier()))->assertOk();
@@ -203,7 +203,7 @@ class WhatsappTest extends CenterHttpTestCase
         $this->patchJson($this->url("receipts/{$receipt}/void"), ['reason' => 'خطأ'], $this->as($this->owner, $this->branch))->assertOk();
         $this->postJson($this->url("receipts/{$receipt}/whatsapp"), [], $this->as($this->owner, $this->branch))->assertStatus(422);
 
-        $this->tenant->update(['whatsapp_device_id' => null]);
+        $this->maintenanceCenter->update(['whatsapp_device_id' => null]);
         $this->postJson($this->url("orders/{$order}/whatsapp"), [], $this->as($this->owner, $this->branch))
             ->assertStatus(422)
             ->assertJsonPath('msg', __('messages.whatsapp_not_connected'));
@@ -222,22 +222,22 @@ class WhatsappTest extends CenterHttpTestCase
             ->assertJsonPath('data.whatsapp_connected', true)
             ->assertJsonMissingPath('data.whatsapp_device_id');
 
-        $this->assertSame('device-1', Tenant::query()->findOrFail($this->tenant->id)->whatsapp_device_id);
+        $this->assertSame('device-1', MaintenanceCenter::query()->findOrFail($this->maintenanceCenter->id)->whatsapp_device_id);
     }
 
     public function test_admin_sets_the_device(): void
     {
-        $this->putJson("/api/v1/admin/tenants/{$this->tenant->id}", ['whatsapp_device_id' => 'device-9'], $this->asAdmin())
+        $this->putJson("/api/v1/admin/maintenance-centers/{$this->maintenanceCenter->id}", ['whatsapp_device_id' => 'device-9'], $this->asAdmin())
             ->assertOk()
             ->assertJsonPath('data.whatsapp_device_id', 'device-9');
     }
 
-    public function test_log_and_tenant_isolation(): void
+    public function test_log_and_maintenance_center_isolation(): void
     {
-        $this->tenant->update(['whatsapp_device_id' => null]);
+        $this->maintenanceCenter->update(['whatsapp_device_id' => null]);
         $order = $this->invoice($this->vehicle(), '100');
 
-        [, $otherOwner] = $this->createTenant('مركز ب');
+        [, $otherOwner] = $this->createMaintenanceCenter('مركز ب');
         $other = $this->as($otherOwner);
 
         $this->postJson($this->url("orders/{$order}/whatsapp"), [], $other)->assertNotFound();

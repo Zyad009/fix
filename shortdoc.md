@@ -8,12 +8,13 @@
 
 | الموضوع | التعديل |
 |---|---|
-| الداتابيز | **MySQL 8** بدل PostgreSQL، فمفيش RLS. العزل بقى بـ Global Scope في Eloquent + Composite FKs `(tenant_id, id)` + tests عزل إجبارية |
+| الداتابيز | **MySQL 8** بدل PostgreSQL، فمفيش RLS. العزل بقى بـ Global Scope في Eloquent + Composite FKs `(maintenance_center_id, id)` + tests عزل إجبارية |
 | الـ IDs | `bigint` auto-increment بدل uuid |
 | الـ Super Admin | جدول `admins` منفصل. هو اللي بينشئ المراكز والفروع، ومفيش self-signup |
 | الفروع | جدول `branches` موجود من الأول (`next_order_no` و `next_receipt_no` عليه). الأوردرات والمدفوعات والإيصالات والمصروفات والموظفين والمخزون كلهم عليهم `branch_id`، والترقيم بقى **لكل فرع** |
-| `tenants` | اتشال منه `next_order_no`، واتضاف `subscription_ends_at` و `cashier_max_discount` (مبلغ) و `timezone` (default `Africa/Cairo`) و `logo_path` |
+| `maintenance_centers` | اتشال منه `next_order_no`، واتضاف `subscription_ends_at` و `cashier_max_discount` (مبلغ) و `timezone` (default `Africa/Cairo`) و `logo_path` |
 | `users` | اتضاف `branch_id` nullable (null يعني الـ owner وده بيشوف كل الفروع)، و `username` nullable وفريد على مستوى كل المراكز (طريقة دخول بديلة للإيميل) |
+| إعادة التسمية (نوفمبر 2026) | `tenants` بقى `maintenance_centers` و `tenant_id` بقى `maintenance_center_id` في كل الجداول. أسماء الـ FK constraints فضلت فيها `tenant_id` لأن MySQL مابيعملش rename ليها |
 | العربيات | اتضاف `plate_normalized` (للبحث والـ unique)، و `car_make_id` / `car_model_id` (nullable) بدل make/model كنص، وده بيشاور على جداول عامة `car_makes` / `car_models` اللي الأدمن بس يضيف فيها |
 | المخزون | `products.stock_qty` اتنقل لجدول `product_branch_stock (branch_id, product_id, qty)`. بيتخصم عند قفل الأوردر ويرجع عند الإلغاء، ومن غير ما يمنع البيع لو الرصيد مش كفاية |
 | التحصيل | جدول **`payment_receipts`** جديد. كل عملية تحصيل = إيصال واحد برقم متسلسل للفرع، وصفوف `payments` بتشاور عليه بـ `receipt_id` |
@@ -22,13 +23,13 @@
 | العربون | الدفع على أوردر `open` مسموح، والمديونية بتتحسب من الأوردرات `completed` بس |
 | الفاتورة المقفولة | الـ owner بيعدلها مباشرة، والـ totals والمخزون بيتظبطوا، وكل ده بيتسجل في `audit_logs` |
 | حركات الموظف | كلها كاش (مفيش عمود method). والمرتب مايتكررش لنفس الموظف في نفس الشهر، إلا لو المرتب الأول اتعمله void |
-| Audit | جدول `audit_logs` (tenant_id, user_id, auditable, event, old/new values, reason, ip) |
+| Audit | جدول `audit_logs` (maintenance_center_id, user_id, auditable, event, old/new values, reason, ip) |
 | الوقت | التخزين UTC، والتقارير بتحسب حدود اليوم بتوقيت المركز |
 | خارج الـ MVP | VAT. وفكرة إن الـ branches تتأجل لـ "المرحلة التانية" اتلغت، لأنها اتنفذت من الأول |
 | الأدوار (أكتوبر 2026) | دور جديد `technician_cashier` ("فني وكاشير") للورش المتوسطة: صلاحيات الكاشير، ومربوط بموظف بيتحط هو الفني الافتراضي على أوردراته. وحساب الدخول بيتعمل من صفحة الموظف (`employees.user_id`) |
-| تذكيرات واتساب (نوفمبر 2026) | `tenants`: `whatsapp_service_reminder_enabled` و `whatsapp_debt_reminder_enabled` و `debt_reminder_days`. `orders.service_reminder_sent_at`، و `customers.debt_reminded_at`، و `whatsapp_messages.customer_id` |
+| تذكيرات واتساب (نوفمبر 2026) | `maintenance_centers`: `whatsapp_service_reminder_enabled` و `whatsapp_debt_reminder_enabled` و `debt_reminder_days`. `orders.service_reminder_sent_at`، و `customers.debt_reminded_at`، و `whatsapp_messages.customer_id` |
 | صورة الشاسيه (أكتوبر 2026) | `vehicles`: اتضاف `vin_image_path` |
-| واتساب (أكتوبر 2026) | `tenants`: اتضاف `whatsapp_device_id` و `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`. وجدول `whatsapp_messages` جديد لسجل الرسائل |
+| واتساب (أكتوبر 2026) | `maintenance_centers`: اتضاف `whatsapp_device_id` و `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`. وجدول `whatsapp_messages` جديد لسجل الرسائل |
 | `products` (أكتوبر 2026) | اتضاف `barcode` nullable و unique جوه المركز (المنتج المحذوف بيحرره) |
 
 ## 1. نظرة عامة
@@ -36,7 +37,7 @@
 نظام SaaS لإدارة مراكز صيانة السيارات، بمعمارية **Multi-tenant / Single Database** على PostgreSQL.
 
 ### نطاق الـ MVP
-- المراكز (Tenants) والمستخدمين والصلاحيات
+- المراكز (Maintenance Centers) والمستخدمين والصلاحيات
 - العملاء والعربيات (العميل الواحد ممكن يكون ليه أكتر من عربية)
 - الأوردرات / الفواتير مع خصم على إجمالي الفاتورة
 - Mini POS: تصنيفات، منتجات وخدمات، و"صنف حر"
@@ -69,9 +70,9 @@
 
 **الدفعة المجمّعة:** لو العميل دفع مبلغ واحد، الـ backend بيوزعه على الأوردرات المفتوحة من الأقدم للأحدث، ويعمل `payment` row لكل أوردر.
 
-### 2.4 عزل الـ Tenants
-- `tenant_id` موجود في كل جدول.
-- **Composite Foreign Keys** من نوع `(tenant_id, id)`، فيبقى مستحيل على مستوى الداتابيز إن أوردر في مركز يشاور على عميل في مركز تاني.
+### 2.4 عزل المراكز
+- `maintenance_center_id` موجود في كل جدول.
+- **Composite Foreign Keys** من نوع `(maintenance_center_id, id)`، فيبقى مستحيل على مستوى الداتابيز إن أوردر في مركز يشاور على عميل في مركز تاني.
 - **Row Level Security (RLS)** كطبقة حماية تانية.
 
 ### 2.5 الـ Snapshot في بنود الفاتورة
@@ -101,7 +102,7 @@
 
 ```mermaid
 erDiagram
-    tenants {
+    maintenance_centers {
         uuid id PK
         text name
         text phone
@@ -114,7 +115,7 @@ erDiagram
     }
     users {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         text name
         text username UK "nullable"
         text email UK
@@ -124,17 +125,17 @@ erDiagram
     }
     customers {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         text name
-        text phone "unique per tenant"
+        text phone "unique per maintenance center"
         text notes
         timestamptz deleted_at
     }
     vehicles {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid customer_id FK
-        text plate_number "unique per tenant"
+        text plate_number "unique per maintenance center"
         text vin "chassis no"
         text make
         text model
@@ -146,14 +147,14 @@ erDiagram
     }
     categories {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         text name
         int sort_order
         bool is_active
     }
     products {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid category_id FK
         text name
         text kind "part, service"
@@ -166,7 +167,7 @@ erDiagram
     }
     employees {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid user_id FK
         text name
         text phone
@@ -177,7 +178,7 @@ erDiagram
     }
     orders {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         int order_no
         uuid customer_id FK
         uuid vehicle_id FK
@@ -197,7 +198,7 @@ erDiagram
     }
     order_items {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid order_id FK
         uuid product_id FK "NULL = free item"
         text name "snapshot"
@@ -208,7 +209,7 @@ erDiagram
     }
     payments {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid order_id FK
         numeric amount
         text method
@@ -217,7 +218,7 @@ erDiagram
     }
     employee_transactions {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid employee_id FK
         text type
         numeric amount
@@ -226,23 +227,23 @@ erDiagram
     }
     expense_categories {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         text name
     }
     expenses {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid category_id FK
         numeric amount
         text method
         date spent_at
         uuid created_by FK
     }
-    tenants ||--o{ users : has
-    tenants ||--o{ customers : has
-    tenants ||--o{ categories : has
-    tenants ||--o{ employees : has
-    tenants ||--o{ expense_categories : has
+    maintenance_centers ||--o{ users : has
+    maintenance_centers ||--o{ customers : has
+    maintenance_centers ||--o{ categories : has
+    maintenance_centers ||--o{ employees : has
+    maintenance_centers ||--o{ expense_categories : has
     customers ||--o{ vehicles : owns
     customers ||--o{ orders : "pays for"
     vehicles ||--o{ orders : "serviced in"
@@ -256,15 +257,15 @@ erDiagram
     expense_categories ||--o{ expenses : classifies
 ```
 
-> ملحوظة: كل الجداول فيها `tenant_id` حتى لو الخط مش مرسوم لـ `tenants`، والخطوط اترسمت للجداول الجذرية بس عشان الرسمة تفضل واضحة.
+> ملحوظة: كل الجداول فيها `maintenance_center_id` حتى لو الخط مش مرسوم لـ `maintenance_centers`، والخطوط اترسمت للجداول الجذرية بس عشان الرسمة تفضل واضحة.
 
 ---
 
 ## 4. الـ Schema (PostgreSQL)
 
 ```sql
--- ================= Tenancy & Users =================
-CREATE TABLE tenants (
+-- ================= Maintenance Centers & Users =================
+CREATE TABLE maintenance_centers (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name             text NOT NULL,
   phone            text,
@@ -278,7 +279,7 @@ CREATE TABLE tenants (
 
 CREATE TABLE users (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id      uuid NOT NULL REFERENCES tenants(id),
+  maintenance_center_id      uuid NOT NULL REFERENCES maintenance_centers(id),
   name           text NOT NULL,
   username       text UNIQUE,
   email          text NOT NULL UNIQUE,
@@ -286,25 +287,25 @@ CREATE TABLE users (
   role           text NOT NULL CHECK (role IN ('owner','cashier','technician')),
   is_active      boolean NOT NULL DEFAULT true,
   created_at     timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (tenant_id, id)
+  UNIQUE (maintenance_center_id, id)
 );
 
 -- ================= Customers & Vehicles =================
 CREATE TABLE customers (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id   uuid NOT NULL REFERENCES tenants(id),
+  maintenance_center_id   uuid NOT NULL REFERENCES maintenance_centers(id),
   name        text NOT NULL,
   phone       text,
   notes       text,
   created_at  timestamptz NOT NULL DEFAULT now(),
   deleted_at  timestamptz,
-  UNIQUE (tenant_id, id),
-  UNIQUE (tenant_id, phone)
+  UNIQUE (maintenance_center_id, id),
+  UNIQUE (maintenance_center_id, phone)
 );
 
 CREATE TABLE vehicles (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id      uuid NOT NULL,
+  maintenance_center_id      uuid NOT NULL,
   customer_id    uuid NOT NULL,
   plate_number   text NOT NULL,
   vin            text,
@@ -317,26 +318,26 @@ CREATE TABLE vehicles (
   notes          text,
   created_at     timestamptz NOT NULL DEFAULT now(),
   deleted_at     timestamptz,
-  UNIQUE (tenant_id, id),
-  UNIQUE (tenant_id, plate_number),
-  UNIQUE (tenant_id, vin),
-  FOREIGN KEY (tenant_id, customer_id) REFERENCES customers(tenant_id, id)
+  UNIQUE (maintenance_center_id, id),
+  UNIQUE (maintenance_center_id, plate_number),
+  UNIQUE (maintenance_center_id, vin),
+  FOREIGN KEY (maintenance_center_id, customer_id) REFERENCES customers(maintenance_center_id, id)
 );
 
 -- ================= Catalog (Mini POS) =================
 CREATE TABLE categories (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id   uuid NOT NULL REFERENCES tenants(id),
+  maintenance_center_id   uuid NOT NULL REFERENCES maintenance_centers(id),
   name        text NOT NULL,
   sort_order  int  NOT NULL DEFAULT 0,
   is_active   boolean NOT NULL DEFAULT true,
-  UNIQUE (tenant_id, id),
-  UNIQUE (tenant_id, name)
+  UNIQUE (maintenance_center_id, id),
+  UNIQUE (maintenance_center_id, name)
 );
 
 CREATE TABLE products (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id    uuid NOT NULL,
+  maintenance_center_id    uuid NOT NULL,
   category_id  uuid,
   name         text NOT NULL,
   kind         text NOT NULL DEFAULT 'part' CHECK (kind IN ('part','service')),
@@ -347,14 +348,14 @@ CREATE TABLE products (
   stock_qty    numeric(12,2) NOT NULL DEFAULT 0,
   is_active    boolean NOT NULL DEFAULT true,
   created_at   timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (tenant_id, id),
-  FOREIGN KEY (tenant_id, category_id) REFERENCES categories(tenant_id, id)
+  UNIQUE (maintenance_center_id, id),
+  FOREIGN KEY (maintenance_center_id, category_id) REFERENCES categories(maintenance_center_id, id)
 );
 
 -- ================= Employees =================
 CREATE TABLE employees (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id    uuid NOT NULL REFERENCES tenants(id),
+  maintenance_center_id    uuid NOT NULL REFERENCES maintenance_centers(id),
   user_id      uuid,
   name         text NOT NULL,
   phone        text,
@@ -362,13 +363,13 @@ CREATE TABLE employees (
   base_salary  numeric(12,2) NOT NULL DEFAULT 0,
   hired_at     date,
   is_active    boolean NOT NULL DEFAULT true,
-  UNIQUE (tenant_id, id)
+  UNIQUE (maintenance_center_id, id)
 );
 
 -- ================= Orders (= Invoices) =================
 CREATE TABLE orders (
   id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id              uuid NOT NULL,
+  maintenance_center_id              uuid NOT NULL,
   order_no               int  NOT NULL,
   customer_id            uuid NOT NULL,
   vehicle_id             uuid NOT NULL,
@@ -387,18 +388,18 @@ CREATE TABLE orders (
   created_by             uuid,
   created_at             timestamptz NOT NULL DEFAULT now(),
   completed_at           timestamptz,
-  UNIQUE (tenant_id, id),
-  UNIQUE (tenant_id, order_no),
+  UNIQUE (maintenance_center_id, id),
+  UNIQUE (maintenance_center_id, order_no),
   CHECK (discount >= 0 AND discount <= subtotal),
   CHECK (paid >= 0),
-  FOREIGN KEY (tenant_id, customer_id)   REFERENCES customers(tenant_id, id),
-  FOREIGN KEY (tenant_id, vehicle_id)    REFERENCES vehicles(tenant_id, id),
-  FOREIGN KEY (tenant_id, technician_id) REFERENCES employees(tenant_id, id)
+  FOREIGN KEY (maintenance_center_id, customer_id)   REFERENCES customers(maintenance_center_id, id),
+  FOREIGN KEY (maintenance_center_id, vehicle_id)    REFERENCES vehicles(maintenance_center_id, id),
+  FOREIGN KEY (maintenance_center_id, technician_id) REFERENCES employees(maintenance_center_id, id)
 );
 
 CREATE TABLE order_items (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id   uuid NOT NULL,
+  maintenance_center_id   uuid NOT NULL,
   order_id    uuid NOT NULL,
   product_id  uuid,
   name        text NOT NULL,
@@ -406,13 +407,13 @@ CREATE TABLE order_items (
   unit_price  numeric(12,2) NOT NULL,
   unit_cost   numeric(12,2),
   line_total  numeric(12,2) GENERATED ALWAYS AS (qty * unit_price) STORED,
-  FOREIGN KEY (tenant_id, order_id)   REFERENCES orders(tenant_id, id) ON DELETE CASCADE,
-  FOREIGN KEY (tenant_id, product_id) REFERENCES products(tenant_id, id)
+  FOREIGN KEY (maintenance_center_id, order_id)   REFERENCES orders(maintenance_center_id, id) ON DELETE CASCADE,
+  FOREIGN KEY (maintenance_center_id, product_id) REFERENCES products(maintenance_center_id, id)
 );
 
 CREATE TABLE payments (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id    uuid NOT NULL,
+  maintenance_center_id    uuid NOT NULL,
   order_id     uuid NOT NULL,
   amount       numeric(12,2) NOT NULL CHECK (amount > 0),
   method       text NOT NULL DEFAULT 'cash'
@@ -420,13 +421,13 @@ CREATE TABLE payments (
   paid_at      timestamptz NOT NULL DEFAULT now(),
   received_by  uuid,
   notes        text,
-  FOREIGN KEY (tenant_id, order_id) REFERENCES orders(tenant_id, id)
+  FOREIGN KEY (maintenance_center_id, order_id) REFERENCES orders(maintenance_center_id, id)
 );
 
 -- ================= Payroll Ledger =================
 CREATE TABLE employee_transactions (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id    uuid NOT NULL,
+  maintenance_center_id    uuid NOT NULL,
   employee_id  uuid NOT NULL,
   type         text NOT NULL CHECK (type IN
                ('salary','bonus','deduction','advance','payment')),
@@ -435,38 +436,38 @@ CREATE TABLE employee_transactions (
   occurred_at  date NOT NULL DEFAULT current_date,
   notes        text,
   created_by   uuid,
-  FOREIGN KEY (tenant_id, employee_id) REFERENCES employees(tenant_id, id)
+  FOREIGN KEY (maintenance_center_id, employee_id) REFERENCES employees(maintenance_center_id, id)
 );
 
 -- ================= Expenses =================
 CREATE TABLE expense_categories (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id  uuid NOT NULL REFERENCES tenants(id),
+  maintenance_center_id  uuid NOT NULL REFERENCES maintenance_centers(id),
   name       text NOT NULL,
-  UNIQUE (tenant_id, id),
-  UNIQUE (tenant_id, name)
+  UNIQUE (maintenance_center_id, id),
+  UNIQUE (maintenance_center_id, name)
 );
 
 CREATE TABLE expenses (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id    uuid NOT NULL,
+  maintenance_center_id    uuid NOT NULL,
   category_id  uuid NOT NULL,
   amount       numeric(12,2) NOT NULL CHECK (amount > 0),
   method       text NOT NULL DEFAULT 'cash',
   spent_at     date NOT NULL DEFAULT current_date,
   notes        text,
   created_by   uuid,
-  FOREIGN KEY (tenant_id, category_id) REFERENCES expense_categories(tenant_id, id)
+  FOREIGN KEY (maintenance_center_id, category_id) REFERENCES expense_categories(maintenance_center_id, id)
 );
 
 -- ================= Indexes =================
-CREATE INDEX ON orders   (tenant_id, vehicle_id, created_at DESC);
-CREATE INDEX ON orders   (tenant_id, customer_id);
-CREATE INDEX ON orders   (tenant_id, created_at DESC);
-CREATE INDEX ON payments (tenant_id, order_id);
-CREATE INDEX ON expenses (tenant_id, spent_at);
-CREATE INDEX ON employee_transactions (tenant_id, employee_id);
-CREATE INDEX ON vehicles (tenant_id, customer_id);
+CREATE INDEX ON orders   (maintenance_center_id, vehicle_id, created_at DESC);
+CREATE INDEX ON orders   (maintenance_center_id, customer_id);
+CREATE INDEX ON orders   (maintenance_center_id, created_at DESC);
+CREATE INDEX ON payments (maintenance_center_id, order_id);
+CREATE INDEX ON expenses (maintenance_center_id, spent_at);
+CREATE INDEX ON employee_transactions (maintenance_center_id, employee_id);
+CREATE INDEX ON vehicles (maintenance_center_id, customer_id);
 ```
 
 ### 4.1 Views
@@ -474,36 +475,36 @@ CREATE INDEX ON vehicles (tenant_id, customer_id);
 ```sql
 -- مديونية كل عربية
 CREATE VIEW vehicle_balances AS
-SELECT tenant_id, customer_id, vehicle_id,
+SELECT maintenance_center_id, customer_id, vehicle_id,
        SUM(total - paid) AS balance
 FROM orders
 WHERE status = 'completed'
-GROUP BY tenant_id, customer_id, vehicle_id
+GROUP BY maintenance_center_id, customer_id, vehicle_id
 HAVING SUM(total - paid) <> 0;
 
 -- رصيد الموظف
 CREATE VIEW employee_balances AS
-SELECT tenant_id, employee_id,
+SELECT maintenance_center_id, employee_id,
   SUM(CASE WHEN type IN ('salary','bonus') THEN amount ELSE -amount END) AS balance
 FROM employee_transactions
-GROUP BY tenant_id, employee_id;
+GROUP BY maintenance_center_id, employee_id;
 ```
 
 ### 4.2 Row Level Security
 
 ```sql
 ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
-CREATE POLICY tenant_isolation ON orders
-  USING (tenant_id = current_setting('app.tenant_id')::uuid);
+CREATE POLICY maintenance_center_isolation ON orders
+  USING (maintenance_center_id = current_setting('app.maintenance_center_id')::uuid);
 -- تتكرر على كل الجداول
--- وفي بداية كل request:  SET app.tenant_id = '<tenant uuid>';
+-- وفي بداية كل request:  SET app.maintenance_center_id = '<maintenance center uuid>';
 ```
 
 ### 4.3 ترقيم الأوردرات لكل مركز
 
 ```sql
--- آمن مع الـ concurrency (row lock على الـ tenant)
-UPDATE tenants SET next_order_no = next_order_no + 1
+-- آمن مع الـ concurrency (row lock على الـ maintenance center)
+UPDATE maintenance_centers SET next_order_no = next_order_no + 1
 WHERE id = $1
 RETURNING next_order_no - 1 AS order_no;
 ```
@@ -558,20 +559,20 @@ RETURNING next_order_no - 1 AS order_no;
 erDiagram
     branches {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         text name
         text address
         int next_order_no
     }
     suppliers {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         text name
         text phone
     }
     purchases {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid branch_id FK
         uuid supplier_id FK
         text supplier_invoice_no
@@ -595,7 +596,7 @@ erDiagram
     }
     stock_movements {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid branch_id FK
         uuid product_id FK
         numeric qty_change
@@ -605,7 +606,7 @@ erDiagram
     }
     service_reminders {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid vehicle_id FK
         uuid order_id FK
         date due_date
@@ -627,7 +628,7 @@ erDiagram
     }
     cash_shifts {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid branch_id FK
         uuid opened_by FK
         numeric opening_cash
@@ -638,7 +639,7 @@ erDiagram
     }
     audit_logs {
         uuid id PK
-        uuid tenant_id FK
+        uuid maintenance_center_id FK
         uuid user_id FK
         text entity
         uuid entity_id

@@ -69,7 +69,7 @@ class CatalogTest extends CenterHttpTestCase
         $this->getJson($this->url("products/{$product->id}"), $this->as($this->owner, $second))->assertJsonPath('data.stock', 9);
         $this->getJson($this->url("products/{$product->id}"), $this->as($this->owner))->assertJsonPath('data.stock', 14);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(2, ProductBranchStock::query()->count());
     }
 
@@ -84,7 +84,7 @@ class CatalogTest extends CenterHttpTestCase
         $this->deleteJson($this->url("categories/{$empty->id}"), [], $this->as($this->owner))->assertOk();
     }
 
-    public function test_category_names_are_unique_per_tenant(): void
+    public function test_category_names_are_unique_per_maintenance_center(): void
     {
         $this->postJson($this->url('categories'), ['name' => 'زيوت'], $this->as($this->owner))->assertStatus(422);
         $this->postJson($this->url('categories'), ['name' => 'إكسسوارات'], $this->as($this->owner))->assertCreated();

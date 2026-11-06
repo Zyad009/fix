@@ -25,7 +25,7 @@ class InvoiceScreenTest extends CenterHttpTestCase
             'items' => [['name' => 'مصنعية', 'qty' => 1, 'unit_price' => 300]],
         ], $this->as($this->cashier()))->assertCreated();
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $customer = Customer::query()->where('phone', '01012345678')->firstOrFail();
         $vehicle = Vehicle::query()->where('plate_normalized', 'ابج1234')->firstOrFail();
 
@@ -48,7 +48,7 @@ class InvoiceScreenTest extends CenterHttpTestCase
             ->assertJsonPath('data.order.vehicle.id', $vehicle->id)
             ->assertJsonPath('data.order.customer.name', 'قديم');
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(1, Customer::query()->count());
         $this->assertSame(1, Vehicle::query()->count());
     }
@@ -62,7 +62,7 @@ class InvoiceScreenTest extends CenterHttpTestCase
             'vehicle' => ['plate_number' => 'ك ل 77'],
         ], $this->as($this->cashier()))->assertStatus(422);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(1, Customer::query()->count());
         $this->assertSame(0, Order::query()->count());
     }
@@ -113,7 +113,7 @@ class InvoiceScreenTest extends CenterHttpTestCase
             ->assertJsonPath('data.order.paid', 300)
             ->assertJsonPath('data.order.remaining', 480);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame('9.00', ProductBranchStock::query()->where('product_id', $oil->id)->value('qty'));
     }
 
@@ -127,7 +127,7 @@ class InvoiceScreenTest extends CenterHttpTestCase
             'payments' => [['amount' => 150, 'method' => 'cash']],
         ], $this->as($this->cashier()))->assertStatus(422);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(0, Order::query()->count());
         $this->assertSame(0, Customer::query()->count());
         $this->assertSame(1, $this->branch->refresh()->next_order_no);
@@ -161,7 +161,7 @@ class InvoiceScreenTest extends CenterHttpTestCase
 
         $this->getJson($this->url('pos/catalog?q=زيت'), $headers)->assertJsonCount(2, 'data.categories.0.products');
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->openOrder($this->vehicle());
         $this->getJson($this->url('pos/catalog'), $headers)->assertJsonPath('data.next_order_no', 2);
     }
@@ -177,22 +177,22 @@ class InvoiceScreenTest extends CenterHttpTestCase
 
         $this->getJson($this->url('products?q=111'), $headers)->assertJsonPath('data.0.id', $id);
 
-        [, $otherOwner] = $this->createTenant('مركز ب');
+        [, $otherOwner] = $this->createMaintenanceCenter('مركز ب');
         $this->postJson($this->url('products'), $payload, $this->as($otherOwner))->assertCreated();
     }
 
-    public function test_inline_ids_of_another_tenant_are_rejected(): void
+    public function test_inline_ids_of_another_maintenance_center_are_rejected(): void
     {
-        [$otherTenant] = $this->createTenant('مركز ب');
-        $foreignCustomer = tenantContext()->run($otherTenant, fn () => $this->customer('غريب', '01077778888'));
-        $this->inTenant($this->tenant);
+        [$otherMaintenanceCenter] = $this->createMaintenanceCenter('مركز ب');
+        $foreignCustomer = maintenanceCenterContext()->run($otherMaintenanceCenter, fn () => $this->customer('غريب', '01077778888'));
+        $this->inMaintenanceCenter($this->maintenanceCenter);
 
         $this->postJson($this->url('orders'), [
             'customer' => ['id' => $foreignCustomer->id],
             'vehicle' => ['plate_number' => 'م ن 9'],
         ], $this->as($this->cashier()))->assertStatus(422);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(0, Vehicle::query()->count());
     }
 }

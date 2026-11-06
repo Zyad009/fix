@@ -46,7 +46,7 @@ class AdminAuthTest extends CenterHttpTestCase
 
     public function test_center_token_cannot_reach_admin_routes(): void
     {
-        $this->getJson('/api/v1/admin/tenants', $this->as($this->owner))->assertUnauthorized();
+        $this->getJson('/api/v1/admin/maintenance-centers', $this->as($this->owner))->assertUnauthorized();
     }
 
     public function test_admin_token_cannot_reach_center_routes(): void

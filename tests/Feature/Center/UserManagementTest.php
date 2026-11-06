@@ -90,7 +90,7 @@ class UserManagementTest extends CenterHttpTestCase
 
     public function test_username_must_be_unique_across_centers_in_any_letter_case(): void
     {
-        [, $otherOwner] = $this->createTenant('مركز ب');
+        [, $otherOwner] = $this->createMaintenanceCenter('مركز ب');
         $otherOwner->update(['username' => 'taken_name']);
         $cashier = $this->cashier();
         $headers = $this->as($this->owner);
@@ -101,7 +101,7 @@ class UserManagementTest extends CenterHttpTestCase
 
     public function test_user_of_another_center_cannot_be_updated(): void
     {
-        [, $otherOwner] = $this->createTenant('مركز ب');
+        [, $otherOwner] = $this->createMaintenanceCenter('مركز ب');
 
         $this->putJson($this->url("users/{$otherOwner->id}"), ['username' => 'hijacked'], $this->as($this->owner))
             ->assertNotFound();

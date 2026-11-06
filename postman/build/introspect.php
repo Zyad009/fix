@@ -6,7 +6,7 @@
  * generated docs can never drift from the API.
  */
 
-use App\Models\Tenant;
+use App\Models\MaintenanceCenter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Routing\Route;
@@ -41,7 +41,7 @@ function requestClassFor(Route $route): ?string
 
 /**
  * Field => rules of the endpoint's FormRequest, built as the real request
- * would be (same HTTP method, route bound, a placeholder tenant in context).
+ * would be (same HTTP method, route bound, a placeholder maintenance center in context).
  *
  * @param  array<string, mixed>  $input  input that switches conditional rules on
  * @return array<string, list<mixed>>
@@ -61,10 +61,10 @@ function requestRules(Route $route, array $input = []): array
     bindPlaceholderModels($route);
     $request->setRouteResolver(fn () => $route);
 
-    if (! tenantContext()->check()) {
-        $tenant = new Tenant;
-        $tenant->id = 0;
-        tenantContext()->set($tenant);
+    if (! maintenanceCenterContext()->check()) {
+        $maintenanceCenter = new MaintenanceCenter;
+        $maintenanceCenter->id = 0;
+        maintenanceCenterContext()->set($maintenanceCenter);
     }
 
     $rules = $request->rules();
@@ -74,7 +74,7 @@ function requestRules(Route $route, array $input = []): array
 
 /**
  * Route-model parameters become empty models (rules may read them, e.g. the
- * parent tenant of a branch), instead of the raw "{placeholder}" text.
+ * parent maintenance center of a branch), instead of the raw "{placeholder}" text.
  */
 function bindPlaceholderModels(Route $route): void
 {

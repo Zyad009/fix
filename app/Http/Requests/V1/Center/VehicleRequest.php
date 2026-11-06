@@ -26,10 +26,10 @@ class VehicleRequest extends AbstractFormRequest
         $vehicle = $this->route('vehicle');
 
         return [
-            'customer_id' => [$isCreate ? 'required' : 'prohibited', 'integer', tenantExists('customers', withoutTrashed: true)],
+            'customer_id' => [$isCreate ? 'required' : 'prohibited', 'integer', maintenanceCenterExists('customers', withoutTrashed: true)],
             ...self::vehicleRules('', $isCreate),
-            'plate_normalized' => [$isCreate ? 'required' : 'sometimes', 'string', 'min:2', tenantUnique('vehicles', 'plate_active')->ignore($vehicle)],
-            'vin' => ['nullable', 'string', 'max:50', tenantUnique('vehicles', 'vin_active')->ignore($vehicle)],
+            'plate_normalized' => [$isCreate ? 'required' : 'sometimes', 'string', 'min:2', maintenanceCenterUnique('vehicles', 'plate_active')->ignore($vehicle)],
+            'vin' => ['nullable', 'string', 'max:50', maintenanceCenterUnique('vehicles', 'vin_active')->ignore($vehicle)],
             'vin_image' => ['sometimes', 'nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:12288'],
         ];
     }

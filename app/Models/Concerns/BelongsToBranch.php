@@ -3,7 +3,7 @@
 namespace App\Models\Concerns;
 
 use App\Models\Branch;
-use App\Support\Tenancy\BranchContext;
+use App\Support\MaintenanceCenter\BranchContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

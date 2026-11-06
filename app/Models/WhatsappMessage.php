@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Enums\WhatsappMessageStatus;
 use App\Enums\WhatsappMessageType;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,7 +27,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['type', 'order_id', 'receipt_id', 'customer_id', 'recipient', 'status', 'provider_message_id', 'error', 'sent_at'])]
 class WhatsappMessage extends Model
 {
-    use BelongsToTenant;
+    use BelongsToMaintenanceCenter;
 
     /**
      * @return array<string, string>

@@ -10,11 +10,11 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Employee;
 use App\Models\ExpenseCategory;
+use App\Models\MaintenanceCenter;
 use App\Models\Product;
-use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vehicle;
-use App\Services\V1\Admin\TenantProvisioningService;
+use App\Services\V1\Admin\MaintenanceCenterProvisioningService;
 use App\Services\V1\EmployeeService;
 use App\Services\V1\ExpenseService;
 use App\Services\V1\OpeningBalanceService;
@@ -52,7 +52,7 @@ class DemoSeeder extends Seeder
             return;
         }
 
-        $tenant = app(TenantProvisioningService::class)->provision([
+        $maintenanceCenter = app(MaintenanceCenterProvisioningService::class)->provision([
             'name' => 'مركز الدوار التجريبي',
             'phone' => '01000000000',
             'address' => 'القاهرة - مدينة نصر',
@@ -62,7 +62,7 @@ class DemoSeeder extends Seeder
             'owner' => ['name' => 'صاحب المركز', 'email' => 'owner@dawar.test', 'password' => self::PASSWORD],
         ]);
 
-        tenantContext()->run($tenant, fn () => $this->seedCenter($tenant));
+        maintenanceCenterContext()->run($maintenanceCenter, fn () => $this->seedCenter($maintenanceCenter));
     }
 
     /**
@@ -77,7 +77,7 @@ class DemoSeeder extends Seeder
             return;
         }
 
-        app(TenantProvisioningService::class)->provision([
+        app(MaintenanceCenterProvisioningService::class)->provision([
             'name' => 'مركز النور',
             'phone' => '01100000000',
             'address' => 'الجيزة - الهرم',
@@ -89,10 +89,10 @@ class DemoSeeder extends Seeder
 
     private function accountExists(string $email): bool
     {
-        return User::query()->withoutGlobalScope('tenant')->where('email', $email)->exists();
+        return User::query()->withoutGlobalScope('maintenance_center')->where('email', $email)->exists();
     }
 
-    private function seedCenter(Tenant $tenant): void
+    private function seedCenter(MaintenanceCenter $maintenanceCenter): void
     {
         $main = Branch::query()->where('is_default', true)->firstOrFail();
         branchContext()->set($main);

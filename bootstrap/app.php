@@ -4,10 +4,10 @@ use App\Exceptions\BusinessRuleException;
 use App\Http\Middleware\AdminOnlyMiddleware;
 use App\Http\Middleware\BranchContextMiddleware;
 use App\Http\Middleware\EnsureSubscriptionActive;
+use App\Http\Middleware\MaintenanceCenterContextMiddleware;
 use App\Http\Middleware\PermissionMiddleware;
-use App\Http\Middleware\ResetTenancyContext;
+use App\Http\Middleware\ResetMaintenanceCenterContext;
 use App\Http\Middleware\SetLangMiddleware;
-use App\Http\Middleware\TenantContextMiddleware;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -30,20 +30,20 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: env('TRUSTED_PROXIES', '*'));
         // Global (not just the api group) so that unmatched-route 404s are localized too.
-        $middleware->prepend([ResetTenancyContext::class, SetLangMiddleware::class]);
+        $middleware->prepend([ResetMaintenanceCenterContext::class, SetLangMiddleware::class]);
 
         $middleware->alias([
             'admin.only' => AdminOnlyMiddleware::class,
-            'tenant' => TenantContextMiddleware::class,
+            'maintenance_center' => MaintenanceCenterContextMiddleware::class,
             'branch' => BranchContextMiddleware::class,
             'subscription' => EnsureSubscriptionActive::class,
             'permission' => PermissionMiddleware::class,
         ]);
 
-        // Tenant/branch context must exist before route-model binding runs,
-        // so bound models are resolved through the tenant and branch scopes.
+        // Maintenance center/branch context must exist before route-model binding runs,
+        // so bound models are resolved through the maintenance center and branch scopes.
         // (Each is inserted right before SubstituteBindings, in this order.)
-        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: TenantContextMiddleware::class);
+        $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: MaintenanceCenterContextMiddleware::class);
         $middleware->prependToPriorityList(before: SubstituteBindings::class, prepend: BranchContextMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -50,11 +50,11 @@ class PrintTest extends CenterHttpTestCase
             ->assertHeader('content-type', 'application/pdf');
     }
 
-    public function test_invoice_of_another_tenant_cannot_be_printed(): void
+    public function test_invoice_of_another_maintenance_center_cannot_be_printed(): void
     {
         $orderId = $this->invoice($this->vehicle(), '100');
-        [$other] = $this->createTenant('مركز ب');
-        $otherOwner = tenantContext()->run($other, fn () => User::query()->firstOrFail());
+        [$other] = $this->createMaintenanceCenter('مركز ب');
+        $otherOwner = maintenanceCenterContext()->run($other, fn () => User::query()->firstOrFail());
 
         $this->getJson($this->url("orders/{$orderId}/print"), $this->as($otherOwner))->assertNotFound();
     }

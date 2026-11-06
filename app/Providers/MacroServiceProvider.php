@@ -18,12 +18,35 @@ class MacroServiceProvider extends ServiceProvider
     }
 
     /**
-     * Tenancy building blocks shared by every tenant table:
-     * `tenant_id` + UNIQUE(tenant_id, id) so children can reference
-     * (tenant_id, x_id) and a row can never point at another tenant's row.
+     * Isolation building blocks shared by every maintenance center table:
+     * `maintenance_center_id` + UNIQUE(maintenance_center_id, id) so children can
+     * reference (maintenance_center_id, x_id) and a row can never point at another
+     * center's row. New tables use `maintenanceCenterKey` and
+     * `maintenanceCenterForeign`.
+     *
+     * `tenantKey`, `tenantForeign`, `createdBy` and `voidColumns` are frozen: only
+     * migrations that ran before the rename call them, and they must keep building
+     * the old `tenant_id` schema for a fresh install to migrate from zero.
      */
     private function registerSchemaMacros(): void
     {
+        Blueprint::macro('maintenanceCenterKey', function (): void {
+            /** @var Blueprint $this */
+            $this->foreignId('maintenance_center_id')->constrained('maintenance_centers');
+            $this->unique(['maintenance_center_id', 'id']);
+        });
+
+        Blueprint::macro('maintenanceCenterForeign', function (string $column, string $parentTable, bool $nullable = false, ?string $onDelete = null): void {
+            /** @var Blueprint $this */
+            $this->unsignedBigInteger($column)->nullable($nullable);
+
+            $foreign = $this->foreign(['maintenance_center_id', $column])->references(['maintenance_center_id', 'id'])->on($parentTable);
+
+            if ($onDelete) {
+                $foreign->onDelete($onDelete);
+            }
+        });
+
         Blueprint::macro('tenantKey', function (): void {
             /** @var Blueprint $this */
             $this->foreignId('tenant_id')->constrained('tenants');

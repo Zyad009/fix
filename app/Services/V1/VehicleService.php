@@ -105,7 +105,7 @@ class VehicleService
     private function replaceVinImage(Vehicle $vehicle, ?UploadedFile $vinImage): void
     {
         $disk = config('filesystems.default');
-        $path = $vinImage ? $this->images->store($vinImage, 'tenants/'.tenantContext()->id().'/vehicles', $disk) : null;
+        $path = $vinImage ? $this->images->store($vinImage, 'tenants/'.maintenanceCenterContext()->id().'/vehicles', $disk) : null;
 
         if ($vehicle->vin_image_path) {
             Storage::disk($disk)->delete($vehicle->vin_image_path);

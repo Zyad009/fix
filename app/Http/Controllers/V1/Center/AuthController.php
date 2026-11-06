@@ -73,7 +73,7 @@ class AuthController extends Controller
 
         return [
             'user' => new UserResource($user->load('branch')),
-            'tenant' => new SettingsResource($user->tenant),
+            'maintenance_center' => new SettingsResource($user->maintenanceCenter),
             'branches' => BranchResource::collection($branches),
             'permissions' => $user->permissions(),
         ];

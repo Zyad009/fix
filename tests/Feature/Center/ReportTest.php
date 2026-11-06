@@ -181,7 +181,7 @@ class ReportTest extends CenterHttpTestCase
 
     private function expense(string $amount, string $method = 'cash'): void
     {
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
 
         $this->postJson($this->url('expenses'), [
             'category_id' => ExpenseCategory::query()->firstOrFail()->id,

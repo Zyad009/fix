@@ -34,7 +34,7 @@ class OrderItemRequest extends AbstractFormRequest
     public static function lineRules(string $prefix = ''): array
     {
         return [
-            $prefix.'product_id' => ['nullable', 'integer', tenantExists('products', withoutTrashed: true)],
+            $prefix.'product_id' => ['nullable', 'integer', maintenanceCenterExists('products', withoutTrashed: true)],
             $prefix.'name' => ['required_without:'.$prefix.'product_id', 'nullable', 'string', 'max:255'],
             $prefix.'kind' => ['nullable', Rule::enum(ProductKind::class)],
             $prefix.'qty' => ['required', 'decimal:0,2', 'gt:0', 'max:99999999'],

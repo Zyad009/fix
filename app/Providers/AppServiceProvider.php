@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use App\Models;
-use App\Support\Tenancy\BranchContext;
-use App\Support\Tenancy\TenantContext;
+use App\Support\MaintenanceCenter\BranchContext;
+use App\Support\MaintenanceCenter\MaintenanceCenterContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
@@ -13,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->scoped(TenantContext::class);
+        $this->app->scoped(MaintenanceCenterContext::class);
         $this->app->scoped(BranchContext::class);
     }
 
@@ -24,7 +24,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'admin' => Models\Admin::class,
             'user' => Models\User::class,
-            'tenant' => Models\Tenant::class,
+            'maintenance_center' => Models\MaintenanceCenter::class,
             'branch' => Models\Branch::class,
             'customer' => Models\Customer::class,
             'vehicle' => Models\Vehicle::class,

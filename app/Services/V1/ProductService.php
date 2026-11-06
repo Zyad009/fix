@@ -94,7 +94,7 @@ class ProductService
     public function updateImage(Product $product, UploadedFile $image): Product
     {
         $disk = config('filesystems.default');
-        $path = $image->store('tenants/'.tenantContext()->id().'/products', $disk);
+        $path = $image->store('tenants/'.maintenanceCenterContext()->id().'/products', $disk);
 
         if ($product->image_path) {
             Storage::disk($disk)->delete($product->image_path);

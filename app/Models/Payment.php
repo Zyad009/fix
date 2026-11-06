@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentType;
 use App\Models\Concerns\BelongsToBranch;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use App\Models\Concerns\Voidable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -26,7 +26,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['branch_id', 'receipt_id', 'order_id', 'type', 'amount', 'method', 'paid_at', 'received_by', 'notes'])]
 class Payment extends Model
 {
-    use BelongsToBranch, BelongsToTenant, Voidable;
+    use BelongsToBranch, BelongsToMaintenanceCenter, Voidable;
 
     /**
      * @return array<string, string>

@@ -7,9 +7,9 @@ use App\Models\Branch;
 use App\Models\CarMake;
 use App\Models\Customer;
 use App\Models\Employee;
+use App\Models\MaintenanceCenter;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\DemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,17 +33,17 @@ class DemoSeederTest extends TestCase
         $this->assertSame(1, Admin::query()->count());
         $this->assertSame(0, CarMake::query()->whereNull('logo_url')->count());
 
-        $demo = Tenant::query()->where('name', 'مركز الدوار التجريبي')->sole();
-        $empty = Tenant::query()->where('name', 'مركز النور')->sole();
+        $demo = MaintenanceCenter::query()->where('name', 'مركز الدوار التجريبي')->sole();
+        $empty = MaintenanceCenter::query()->where('name', 'مركز النور')->sole();
 
-        tenantContext()->run($demo, function (): void {
+        maintenanceCenterContext()->run($demo, function (): void {
             $this->assertSame(1, Branch::query()->count());
             $this->assertSame(4, User::query()->count());
             $this->assertGreaterThan(0, Customer::query()->count());
             $this->assertGreaterThan(0, Order::query()->withoutGlobalScope('branch')->count());
         });
 
-        tenantContext()->run($empty, function (): void {
+        maintenanceCenterContext()->run($empty, function (): void {
             $this->assertSame(1, Branch::query()->count());
             $this->assertSame(['owner2@dawar.test'], User::query()->pluck('email')->all());
             $this->assertSame(0, Customer::query()->count());

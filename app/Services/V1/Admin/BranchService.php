@@ -4,7 +4,7 @@ namespace App\Services\V1\Admin;
 
 use App\Exceptions\BusinessRuleException;
 use App\Models\Branch;
-use App\Models\Tenant;
+use App\Models\MaintenanceCenter;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 
@@ -17,25 +17,25 @@ class BranchService
     /**
      * @return Collection<int, Branch>
      */
-    public function list(Tenant $tenant): Collection
+    public function list(MaintenanceCenter $maintenanceCenter): Collection
     {
-        return tenantContext()->run($tenant, fn () => Branch::query()->orderBy('id')->get());
+        return maintenanceCenterContext()->run($maintenanceCenter, fn () => Branch::query()->orderBy('id')->get());
     }
 
     /**
      * @param  array<string, mixed>  $data
      */
-    public function store(Tenant $tenant, array $data): Branch
+    public function store(MaintenanceCenter $maintenanceCenter, array $data): Branch
     {
-        return tenantContext()->run($tenant, fn () => Branch::query()->create(Arr::only($data, ['name', 'phone', 'address'])));
+        return maintenanceCenterContext()->run($maintenanceCenter, fn () => Branch::query()->create(Arr::only($data, ['name', 'phone', 'address'])));
     }
 
     /**
      * @param  array<string, mixed>  $data
      */
-    public function update(Tenant $tenant, int $branchId, array $data): Branch
+    public function update(MaintenanceCenter $maintenanceCenter, int $branchId, array $data): Branch
     {
-        return tenantContext()->run($tenant, function () use ($branchId, $data): Branch {
+        return maintenanceCenterContext()->run($maintenanceCenter, function () use ($branchId, $data): Branch {
             $branch = Branch::query()->findOrFail($branchId);
             $branch->update(Arr::only($data, ['name', 'phone', 'address']));
 
@@ -43,9 +43,9 @@ class BranchService
         });
     }
 
-    public function toggle(Tenant $tenant, int $branchId): Branch
+    public function toggle(MaintenanceCenter $maintenanceCenter, int $branchId): Branch
     {
-        return tenantContext()->run($tenant, function () use ($branchId): Branch {
+        return maintenanceCenterContext()->run($maintenanceCenter, function () use ($branchId): Branch {
             $branch = Branch::query()->findOrFail($branchId);
 
             if ($branch->is_default && $branch->is_active) {

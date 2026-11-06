@@ -16,9 +16,9 @@ class ProductRequest extends AbstractFormRequest
         $required = $this->isMethod('post') ? 'required' : 'sometimes';
 
         return [
-            'category_id' => ['nullable', 'integer', tenantExists('categories')],
+            'category_id' => ['nullable', 'integer', maintenanceCenterExists('categories')],
             'name' => [$required, 'string', 'max:255'],
-            'barcode' => ['nullable', 'string', 'max:64', tenantUnique('products', 'barcode_active')->ignore($this->route('product'))],
+            'barcode' => ['nullable', 'string', 'max:64', maintenanceCenterUnique('products', 'barcode_active')->ignore($this->route('product'))],
             'kind' => [$required, Rule::enum(ProductKind::class)],
             'sale_price' => [$required, 'decimal:0,2', 'min:0', 'max:9999999999'],
             'cost_price' => ['nullable', 'decimal:0,2', 'min:0', 'max:9999999999'],

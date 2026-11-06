@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ProductKind;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[Fillable(['category_id', 'name', 'barcode', 'kind', 'sale_price', 'cost_price', 'image_path', 'track_stock', 'is_active', 'created_by'])]
 class Product extends Model
 {
-    use BelongsToTenant, SoftDeletes;
+    use BelongsToMaintenanceCenter, SoftDeletes;
 
     /** @var array<string, mixed> */
     protected $attributes = [

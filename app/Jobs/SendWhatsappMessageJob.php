@@ -4,9 +4,9 @@ namespace App\Jobs;
 
 use App\Enums\WhatsappMessageStatus;
 use App\Enums\WhatsappMessageType;
+use App\Models\MaintenanceCenter;
 use App\Models\Order;
 use App\Models\PaymentReceipt;
-use App\Models\Tenant;
 use App\Models\WhatsappMessage;
 use App\Services\V1\BalanceService;
 use App\Services\V1\DocumentImageService;
@@ -22,7 +22,7 @@ use Throwable;
 
 /**
  * Renders the invoice/receipt image at send time and delivers it. Carries only
- * scalars; the tenant context is rebuilt here because a worker has no request.
+ * scalars; the maintenance center context is rebuilt here because a worker has no request.
  */
 class SendWhatsappMessageJob implements ShouldQueue
 {
@@ -36,7 +36,7 @@ class SendWhatsappMessageJob implements ShouldQueue
     public int $timeout = 120;
 
     public function __construct(
-        public readonly int $tenantId,
+        public readonly int $maintenanceCenterId,
         public readonly string $type,
         public readonly string $recipient,
         public readonly string $deviceId,
@@ -51,7 +51,7 @@ class SendWhatsappMessageJob implements ShouldQueue
     {
         app()->setLocale('ar');
 
-        $this->inTenant(function () use ($gowa, $images, $balances): void {
+        $this->inMaintenanceCenter(function () use ($gowa, $images, $balances): void {
             $type = WhatsappMessageType::from($this->type);
             $debt = $type === WhatsappMessageType::DebtReminder ? $balances->customerBalance((int) $this->customerId) : null;
 
@@ -62,12 +62,12 @@ class SendWhatsappMessageJob implements ShouldQueue
             }
 
             $messageId = match ($type) {
-                WhatsappMessageType::Test => $gowa->sendText($this->recipient, __('messages.whatsapp_test_body', ['center' => tenantContext()->tenant()->name]), $this->deviceId),
+                WhatsappMessageType::Test => $gowa->sendText($this->recipient, __('messages.whatsapp_test_body', ['center' => maintenanceCenterContext()->maintenanceCenter()->name]), $this->deviceId),
                 WhatsappMessageType::Invoice => $this->sendInvoice($gowa, $images),
                 WhatsappMessageType::Payment => $this->sendReceipt($gowa, $images),
                 WhatsappMessageType::ServiceReminder => $gowa->sendText($this->recipient, $this->serviceReminderText(), $this->deviceId),
                 WhatsappMessageType::DebtReminder => $gowa->sendText($this->recipient, __('messages.whatsapp_debt_reminder_body', [
-                    'center' => tenantContext()->tenant()->name,
+                    'center' => maintenanceCenterContext()->maintenanceCenter()->name,
                     'amount' => number_format($debt->toFloat(), 2),
                     'contact' => $this->contactLine(),
                 ]), $this->deviceId),
@@ -79,10 +79,10 @@ class SendWhatsappMessageJob implements ShouldQueue
 
     public function failed(Throwable $exception): void
     {
-        $this->inTenant(fn () => $this->record(WhatsappMessageStatus::Failed, ['error' => mb_substr($exception->getMessage(), 0, 500)]));
+        $this->inMaintenanceCenter(fn () => $this->record(WhatsappMessageStatus::Failed, ['error' => mb_substr($exception->getMessage(), 0, 500)]));
 
         Log::channel('whatsapp')->error('WhatsApp message failed permanently', [
-            'tenant_id' => $this->tenantId,
+            'maintenance_center_id' => $this->maintenanceCenterId,
             'type' => $this->type,
             'recipient' => PhoneNormalizer::mask($this->recipient),
             'error' => $exception->getMessage(),
@@ -94,7 +94,7 @@ class SendWhatsappMessageJob implements ShouldQueue
         $order = Order::query()->withoutGlobalScope('branch')->findOrFail($this->orderId);
 
         return $this->sendImage($gowa, $images->invoice($order), __('messages.whatsapp_invoice_caption', [
-            'center' => tenantContext()->tenant()->name,
+            'center' => maintenanceCenterContext()->maintenanceCenter()->name,
             'number' => $order->order_no,
             'total' => formatNumber($order->total),
             'paid' => formatNumber($order->paid),
@@ -107,7 +107,7 @@ class SendWhatsappMessageJob implements ShouldQueue
         $receipt = PaymentReceipt::query()->withoutGlobalScope('branch')->findOrFail($this->receiptId);
 
         return $this->sendImage($gowa, $images->receipt($receipt), __('messages.whatsapp_payment_caption', [
-            'center' => tenantContext()->tenant()->name,
+            'center' => maintenanceCenterContext()->maintenanceCenter()->name,
             'number' => $receipt->receipt_no,
             'amount' => formatNumber($receipt->amount),
             'debt' => $images->customerDebt($receipt),
@@ -119,7 +119,7 @@ class SendWhatsappMessageJob implements ShouldQueue
         $order = Order::query()->withoutGlobalScope('branch')->with('vehicle:id,plate_number')->findOrFail($this->orderId);
 
         return __('messages.whatsapp_service_reminder_body', [
-            'center' => tenantContext()->tenant()->name,
+            'center' => maintenanceCenterContext()->maintenanceCenter()->name,
             'plate' => $order->vehicle?->plate_number,
             'date' => $order->next_service_date?->toDateString(),
             'contact' => $this->contactLine(),
@@ -128,7 +128,7 @@ class SendWhatsappMessageJob implements ShouldQueue
 
     private function contactLine(): string
     {
-        $phone = tenantContext()->tenant()->phone;
+        $phone = maintenanceCenterContext()->maintenanceCenter()->phone;
 
         return filled($phone) ? __('messages.whatsapp_contact_line', ['phone' => $phone]) : '';
     }
@@ -163,8 +163,8 @@ class SendWhatsappMessageJob implements ShouldQueue
         ]);
     }
 
-    private function inTenant(Closure $callback): void
+    private function inMaintenanceCenter(Closure $callback): void
     {
-        tenantContext()->run(Tenant::query()->findOrFail($this->tenantId), $callback);
+        maintenanceCenterContext()->run(MaintenanceCenter::query()->findOrFail($this->maintenanceCenterId), $callback);
     }
 }

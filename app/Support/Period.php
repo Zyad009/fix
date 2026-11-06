@@ -6,7 +6,7 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 
 /**
- * A reporting window expressed in the tenant's local days and converted to
+ * A reporting window expressed in the maintenance center's local days and converted to
  * UTC bounds for querying stored (UTC) timestamps.
  */
 final class Period
@@ -24,7 +24,7 @@ final class Period
      */
     public static function fromFilters(array $filters): self
     {
-        $timezone = tenantContext()->check() ? tenantContext()->tenant()->timezone : config('app.timezone');
+        $timezone = maintenanceCenterContext()->check() ? maintenanceCenterContext()->maintenanceCenter()->timezone : config('app.timezone');
         $today = CarbonImmutable::now($timezone)->toDateString();
 
         $from = CarbonImmutable::parse($filters['from'] ?? $today, $timezone)->startOfDay();

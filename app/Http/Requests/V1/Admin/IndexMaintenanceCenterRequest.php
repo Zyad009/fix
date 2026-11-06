@@ -4,7 +4,7 @@ namespace App\Http\Requests\V1\Admin;
 
 use App\Http\Requests\IndexRequest;
 
-class IndexTenantRequest extends IndexRequest
+class IndexMaintenanceCenterRequest extends IndexRequest
 {
     protected function filters(): array
     {

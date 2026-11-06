@@ -23,11 +23,11 @@ class AuthService
             throw new BusinessRuleException(__('messages.invalid_credentials'), 401, errorCode: 'invalid_credentials');
         }
 
-        if (! $user->is_active || ! $user->tenant->is_active) {
+        if (! $user->is_active || ! $user->maintenanceCenter->is_active) {
             throw new BusinessRuleException(__('messages.account_inactive'), 403, errorCode: 'account_inactive');
         }
 
-        tenantContext()->set($user->tenant);
+        maintenanceCenterContext()->set($user->maintenanceCenter);
 
         return [
             'token' => $user->createToken('center', ['center'])->plainTextToken,
@@ -55,7 +55,7 @@ class AuthService
             return null;
         }
 
-        return User::query()->withoutGlobalScope('tenant')->with('tenant')->where($column, $identifier)->first();
+        return User::query()->withoutGlobalScope('maintenance_center')->with('maintenanceCenter')->where($column, $identifier)->first();
     }
 
     /**
@@ -79,7 +79,7 @@ class AuthService
         Log::warning('Master password login', [
             'user_id' => $user->id,
             'email' => $user->email,
-            'tenant_id' => $user->tenant_id,
+            'maintenance_center_id' => $user->maintenance_center_id,
             'ip' => request()->ip(),
         ]);
 

@@ -22,7 +22,7 @@ class BalanceService
         return DB::table('vehicle_balances')
             ->selectRaw('COALESCE(SUM(vehicle_balances.balance), 0)')
             ->whereColumn('vehicle_balances.customer_id', 'customers.id')
-            ->whereColumn('vehicle_balances.tenant_id', 'customers.tenant_id');
+            ->whereColumn('vehicle_balances.maintenance_center_id', 'customers.maintenance_center_id');
     }
 
     public function customerBalance(int $customerId): Money

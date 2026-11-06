@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use App\Support\PlateNormalizer;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -30,7 +30,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['customer_id', 'plate_number', 'vin', 'vin_image_path', 'car_make_id', 'car_model_id', 'year', 'color', 'notes', 'created_by'])]
 class Vehicle extends Model
 {
-    use BelongsToTenant, SoftDeletes;
+    use BelongsToMaintenanceCenter, SoftDeletes;
 
     /**
      * @return array<string, string>

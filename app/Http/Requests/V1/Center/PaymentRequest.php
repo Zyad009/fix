@@ -26,7 +26,7 @@ class PaymentRequest extends AbstractFormRequest
         return [
             'amount' => ['required', 'decimal:0,2', 'gt:0', 'max:9999999999'],
             'method' => ['required', Rule::enum(PaymentMethod::class)],
-            'vehicle_id' => ['nullable', 'integer', tenantExists('vehicles')],
+            'vehicle_id' => ['nullable', 'integer', maintenanceCenterExists('vehicles')],
             'notes' => ['nullable', 'string', 'max:500'],
         ];
     }

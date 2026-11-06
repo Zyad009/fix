@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['name', 'sort_order', 'is_active'])]
 class Category extends Model
 {
-    use BelongsToTenant;
+    use BelongsToMaintenanceCenter;
 
     /** @var list<string> */
     public const DEFAULTS = ['زيوت', 'فلاتر', 'كاوتش', 'بطاريات', 'عمالة / مصنعية'];

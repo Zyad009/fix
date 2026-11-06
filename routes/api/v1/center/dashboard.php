@@ -17,7 +17,7 @@ use App\Http\Controllers\V1\Center\VehicleController;
 use App\Http\Controllers\V1\Center\WhatsappController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', 'tenant', 'branch', 'subscription'])->group(function (): void {
+Route::middleware(['auth:sanctum', 'maintenance_center', 'branch', 'subscription'])->group(function (): void {
     // Center settings & users
     Route::get('settings', [SettingsController::class, 'show'])->name('settings.show');
     Route::put('settings', [SettingsController::class, 'update'])->name('settings.update');

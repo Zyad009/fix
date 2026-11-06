@@ -28,7 +28,7 @@ use Illuminate\Support\Carbon;
  * @property bool $is_active
  */
 #[Fillable(['name', 'phone', 'address', 'logo_path', 'plan', 'subscription_ends_at', 'cashier_max_discount', 'timezone', 'whatsapp_device_id', 'whatsapp_invoice_enabled', 'whatsapp_payment_enabled', 'whatsapp_service_reminder_enabled', 'whatsapp_debt_reminder_enabled', 'debt_reminder_days', 'is_active'])]
-class Tenant extends Model
+class MaintenanceCenter extends Model
 {
     /** @var array<string, mixed> Mirrors the column defaults so fresh models are complete. */
     protected $attributes = [

@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -29,7 +29,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use BelongsToTenant, HasApiTokens, HasFactory;
+    use BelongsToMaintenanceCenter, HasApiTokens, HasFactory;
 
     /** @var array<string, mixed> */
     protected $attributes = [
@@ -49,9 +49,9 @@ class User extends Authenticatable
     }
 
     /**
-     * Sanctum resolves token owners before any tenant is in context.
+     * Sanctum resolves token owners before any maintenance center is in context.
      */
-    protected static function requiresTenantContext(): bool
+    protected static function requiresMaintenanceCenterContext(): bool
     {
         return false;
     }

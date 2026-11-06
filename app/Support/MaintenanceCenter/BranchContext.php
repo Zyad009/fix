@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support\Tenancy;
+namespace App\Support\MaintenanceCenter;
 
 use App\Exceptions\BusinessRuleException;
 use App\Models\Branch;

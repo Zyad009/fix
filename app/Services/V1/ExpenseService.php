@@ -88,7 +88,7 @@ class ExpenseService
         $expense = Expense::query()->create([
             ...Arr::only($data, ['category_id', 'amount', 'notes']),
             'method' => $data['method'] ?? PaymentMethod::Cash->value,
-            'spent_at' => $data['spent_at'] ?? now(tenantContext()->tenant()->timezone)->toDateString(),
+            'spent_at' => $data['spent_at'] ?? now(maintenanceCenterContext()->maintenanceCenter()->timezone)->toDateString(),
             'created_by' => actor()?->id,
         ]);
 

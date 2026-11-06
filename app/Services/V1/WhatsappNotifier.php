@@ -7,9 +7,9 @@ use App\Enums\WhatsappMessageType;
 use App\Exceptions\BusinessRuleException;
 use App\Jobs\SendWhatsappMessageJob;
 use App\Models\Customer;
+use App\Models\MaintenanceCenter;
 use App\Models\Order;
 use App\Models\PaymentReceipt;
-use App\Models\Tenant;
 use App\Models\WhatsappMessage;
 use App\Support\Period;
 use App\Support\PhoneNormalizer;
@@ -31,12 +31,12 @@ class WhatsappNotifier
             return;
         }
 
-        $this->automatic(WhatsappMessageType::Invoice, tenantContext()->tenant()->whatsapp_invoice_enabled, $order->customer_id, orderId: $order->id);
+        $this->automatic(WhatsappMessageType::Invoice, maintenanceCenterContext()->maintenanceCenter()->whatsapp_invoice_enabled, $order->customer_id, orderId: $order->id);
     }
 
     public function paymentCollected(PaymentReceipt $receipt): void
     {
-        $this->automatic(WhatsappMessageType::Payment, tenantContext()->tenant()->whatsapp_payment_enabled, $receipt->customer_id, receiptId: $receipt->id);
+        $this->automatic(WhatsappMessageType::Payment, maintenanceCenterContext()->maintenanceCenter()->whatsapp_payment_enabled, $receipt->customer_id, receiptId: $receipt->id);
     }
 
     /**
@@ -45,7 +45,7 @@ class WhatsappNotifier
      */
     public function serviceReminder(Order $order, int $ownerId): void
     {
-        $this->automatic(WhatsappMessageType::ServiceReminder, tenantContext()->tenant()->whatsapp_service_reminder_enabled, $ownerId, orderId: $order->id);
+        $this->automatic(WhatsappMessageType::ServiceReminder, maintenanceCenterContext()->maintenanceCenter()->whatsapp_service_reminder_enabled, $ownerId, orderId: $order->id);
     }
 
     /**
@@ -54,7 +54,7 @@ class WhatsappNotifier
      */
     public function debtReminder(Customer $customer): void
     {
-        $this->automatic(WhatsappMessageType::DebtReminder, tenantContext()->tenant()->whatsapp_debt_reminder_enabled, $customer->id);
+        $this->automatic(WhatsappMessageType::DebtReminder, maintenanceCenterContext()->maintenanceCenter()->whatsapp_debt_reminder_enabled, $customer->id);
     }
 
     public function resendInvoice(Order $order): void
@@ -100,12 +100,12 @@ class WhatsappNotifier
 
     private function automatic(WhatsappMessageType $type, bool $enabled, ?int $customerId, ?int $orderId = null, ?int $receiptId = null): void
     {
-        $tenant = tenantContext()->tenant();
+        $maintenanceCenter = maintenanceCenterContext()->maintenanceCenter();
         $recipient = PhoneNormalizer::toWhatsapp($this->customerPhone($customerId));
 
         $skip = match (true) {
             ! $enabled => WhatsappMessageStatus::SkippedDisabled,
-            blank($tenant->whatsapp_device_id) => WhatsappMessageStatus::SkippedNoDevice,
+            blank($maintenanceCenter->whatsapp_device_id) => WhatsappMessageStatus::SkippedNoDevice,
             $recipient === null => WhatsappMessageStatus::SkippedInvalidPhone,
             default => null,
         };
@@ -124,14 +124,14 @@ class WhatsappNotifier
         }
 
         // After commit, and a queue outage is only reported: the sale is already saved.
-        DB::afterCommit(fn () => rescue(fn () => $this->dispatch($tenant, $type, $recipient, $orderId, $receiptId, $customerId)));
+        DB::afterCommit(fn () => rescue(fn () => $this->dispatch($maintenanceCenter, $type, $recipient, $orderId, $receiptId, $customerId)));
     }
 
     private function manual(WhatsappMessageType $type, ?string $phone, ?int $orderId = null, ?int $receiptId = null): void
     {
-        $tenant = tenantContext()->tenant();
+        $maintenanceCenter = maintenanceCenterContext()->maintenanceCenter();
 
-        if (blank($tenant->whatsapp_device_id)) {
+        if (blank($maintenanceCenter->whatsapp_device_id)) {
             throw new BusinessRuleException(__('messages.whatsapp_not_connected'), 422);
         }
 
@@ -141,16 +141,16 @@ class WhatsappNotifier
             throw new BusinessRuleException(__('messages.whatsapp_invalid_phone'), 422);
         }
 
-        $this->dispatch($tenant, $type, $recipient, $orderId, $receiptId);
+        $this->dispatch($maintenanceCenter, $type, $recipient, $orderId, $receiptId);
     }
 
-    private function dispatch(Tenant $tenant, WhatsappMessageType $type, string $recipient, ?int $orderId, ?int $receiptId, ?int $customerId = null): void
+    private function dispatch(MaintenanceCenter $maintenanceCenter, WhatsappMessageType $type, string $recipient, ?int $orderId, ?int $receiptId, ?int $customerId = null): void
     {
         SendWhatsappMessageJob::dispatch(
-            $tenant->id,
+            $maintenanceCenter->id,
             $type->value,
             $recipient,
-            (string) $tenant->whatsapp_device_id,
+            (string) $maintenanceCenter->whatsapp_device_id,
             $orderId,
             $receiptId,
             $customerId,

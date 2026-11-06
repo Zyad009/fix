@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Enums\EmployeeTransactionType;
 use App\Models\Concerns\BelongsToBranch;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use App\Models\Concerns\Voidable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -23,7 +23,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['branch_id', 'employee_id', 'type', 'amount', 'period', 'occurred_at', 'notes', 'created_by'])]
 class EmployeeTransaction extends Model
 {
-    use BelongsToBranch, BelongsToTenant, Voidable;
+    use BelongsToBranch, BelongsToMaintenanceCenter, Voidable;
 
     /**
      * @return array<string, string>

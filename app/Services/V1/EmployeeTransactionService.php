@@ -42,7 +42,7 @@ class EmployeeTransactionService
                 'type' => $type,
                 'amount' => $data['amount'],
                 'period' => isset($data['period']) ? self::periodStart($data['period']) : null,
-                'occurred_at' => $data['occurred_at'] ?? now(tenantContext()->tenant()->timezone)->toDateString(),
+                'occurred_at' => $data['occurred_at'] ?? now(maintenanceCenterContext()->maintenanceCenter()->timezone)->toDateString(),
                 'notes' => $data['notes'] ?? null,
                 'created_by' => actor()?->id,
             ])->load('creator:id,name');

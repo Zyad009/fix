@@ -130,7 +130,7 @@ class PaymentTest extends CenterHttpTestCase
             ->assertOk()
             ->assertJsonPath('data.paid', 0);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $refunds = Payment::query()->where('type', 'refund')->orderBy('method')->pluck('amount', 'method')->all();
         $this->assertSame(['cash' => '300.00', 'instapay' => '100.00'], $refunds);
 

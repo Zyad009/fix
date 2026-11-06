@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AuditEvent;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 #[Fillable(['user_id', 'auditable_type', 'auditable_id', 'event', 'old_values', 'new_values', 'reason', 'ip', 'user_agent'])]
 class AuditLog extends Model
 {
-    use BelongsToTenant;
+    use BelongsToMaintenanceCenter;
 
     public const UPDATED_AT = null;
 

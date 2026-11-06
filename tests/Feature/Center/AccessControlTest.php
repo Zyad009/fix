@@ -23,7 +23,7 @@ class AccessControlTest extends CenterHttpTestCase
 
     public function test_expired_subscription_is_read_only(): void
     {
-        $this->tenant->update(['subscription_ends_at' => now()->subDay()]);
+        $this->maintenanceCenter->update(['subscription_ends_at' => now()->subDay()]);
 
         $this->getJson($this->url('settings'), $this->as($this->owner))->assertOk();
 
@@ -48,7 +48,7 @@ class AccessControlTest extends CenterHttpTestCase
             ->json('data.logo_url');
 
         $this->assertNotNull($path);
-        Storage::disk('public')->assertExists($this->tenant->fresh()->logo_path);
+        Storage::disk('public')->assertExists($this->maintenanceCenter->fresh()->logo_path);
     }
 
     public function test_user_management_rules(): void

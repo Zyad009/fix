@@ -12,7 +12,7 @@ class CategoryRequest extends AbstractFormRequest
     public function rules(): array
     {
         return [
-            'name' => [$this->isMethod('post') ? 'required' : 'sometimes', 'string', 'max:100', tenantUnique('categories', 'name')->ignore($this->route('category'))],
+            'name' => [$this->isMethod('post') ? 'required' : 'sometimes', 'string', 'max:100', maintenanceCenterUnique('categories', 'name')->ignore($this->route('category'))],
             'sort_order' => ['sometimes', 'integer', 'min:0', 'max:9999'],
         ];
     }

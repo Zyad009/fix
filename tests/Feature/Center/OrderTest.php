@@ -39,7 +39,7 @@ class OrderTest extends CenterHttpTestCase
             ->assertJsonPath('data.order.paid', 600)
             ->assertJsonPath('data.order.remaining', 150);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $vehicle->refresh();
         $this->assertSame(52000, $vehicle->last_odometer);
         $this->assertNotNull($vehicle->last_visit_at);
@@ -81,7 +81,7 @@ class OrderTest extends CenterHttpTestCase
 
         $this->putJson($this->url("products/{$product->id}"), ['name' => 'زيت جديد', 'sale_price' => 999, 'cost_price' => 800], $this->as($this->owner))->assertOk();
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $order = Order::query()->whereKeyNot($orderId)->with('items')->firstOrFail();
 
         $this->assertSame('زيت قديم', $order->items[0]->name);
@@ -92,7 +92,7 @@ class OrderTest extends CenterHttpTestCase
 
     public function test_discount_rules_by_role(): void
     {
-        $this->tenant->update(['cashier_max_discount' => 50]);
+        $this->maintenanceCenter->update(['cashier_max_discount' => 50]);
         $cashier = $this->cashier();
         $technician = $this->technician();
         $vehicle = $this->vehicle();
@@ -266,7 +266,7 @@ class OrderTest extends CenterHttpTestCase
 
     private function stockOf(int $productId): string
     {
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
 
         return ProductBranchStock::query()->where('product_id', $productId)->value('qty');
     }

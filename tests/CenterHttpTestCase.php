@@ -6,17 +6,17 @@ use App\Models\Admin;
 use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Employee;
+use App\Models\MaintenanceCenter;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Tenant;
 use App\Models\User;
 use App\Models\Vehicle;
-use App\Services\V1\Admin\TenantProvisioningService;
+use App\Services\V1\Admin\MaintenanceCenterProvisioningService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /**
  * Full-stack HTTP tests for the center API: every test starts with one
- * provisioned tenant ("A") whose owner, default branch and context are ready.
+ * provisioned maintenance center ("A") whose owner, default branch and context are ready.
  */
 abstract class CenterHttpTestCase extends TestCase
 {
@@ -25,7 +25,7 @@ abstract class CenterHttpTestCase extends TestCase
     /** The schema has SQL views (vehicle_balances, employee_balances). */
     protected bool $dropViews = true;
 
-    protected Tenant $tenant;
+    protected MaintenanceCenter $maintenanceCenter;
 
     protected Branch $branch;
 
@@ -38,52 +38,52 @@ abstract class CenterHttpTestCase extends TestCase
     {
         parent::setUp();
 
-        [$this->tenant, $this->owner, $this->branch] = $this->createTenant('مركز أ');
-        $this->inTenant($this->tenant);
+        [$this->maintenanceCenter, $this->owner, $this->branch] = $this->createMaintenanceCenter('مركز أ');
+        $this->inMaintenanceCenter($this->maintenanceCenter);
     }
 
     /**
-     * Provision a tenant through the real provisioning service.
+     * Provision a maintenance center through the real provisioning service.
      *
-     * @return array{Tenant, User, Branch}
+     * @return array{MaintenanceCenter, User, Branch}
      */
-    protected function createTenant(string $name = 'مركز', array $overrides = []): array
+    protected function createMaintenanceCenter(string $name = 'مركز', array $overrides = []): array
     {
-        $tenant = app(TenantProvisioningService::class)->provision([
+        $maintenanceCenter = app(MaintenanceCenterProvisioningService::class)->provision([
             'name' => $name,
             'owner' => ['name' => "مالك {$name}", 'email' => fake()->unique()->safeEmail(), 'password' => 'password'],
             ...$overrides,
         ]);
 
-        return tenantContext()->run($tenant, fn () => [$tenant, User::query()->firstOrFail(), Branch::query()->firstOrFail()]);
+        return maintenanceCenterContext()->run($maintenanceCenter, fn () => [$maintenanceCenter, User::query()->firstOrFail(), Branch::query()->firstOrFail()]);
     }
 
     /**
-     * Act (for direct model reads/writes in the test) as the given tenant.
+     * Act (for direct model reads/writes in the test) as the given maintenance center.
      */
-    protected function inTenant(Tenant $tenant): void
+    protected function inMaintenanceCenter(MaintenanceCenter $maintenanceCenter): void
     {
-        tenantContext()->set($tenant);
+        maintenanceCenterContext()->set($maintenanceCenter);
         branchContext()->set(null);
     }
 
-    protected function createBranch(string $name = 'فرع 2', ?Tenant $tenant = null): Branch
+    protected function createBranch(string $name = 'فرع 2', ?MaintenanceCenter $maintenanceCenter = null): Branch
     {
-        return tenantContext()->run($tenant ?? $this->tenant, fn () => Branch::query()->create(['name' => $name]));
+        return maintenanceCenterContext()->run($maintenanceCenter ?? $this->maintenanceCenter, fn () => Branch::query()->create(['name' => $name]));
     }
 
     protected function cashier(?Branch $branch = null): User
     {
         $branch ??= $this->branch;
 
-        return tenantContext()->run($this->tenantOf($branch), fn () => User::factory()->cashier($branch->id)->create());
+        return maintenanceCenterContext()->run($this->maintenanceCenterOf($branch), fn () => User::factory()->cashier($branch->id)->create());
     }
 
     protected function technician(?Branch $branch = null): User
     {
         $branch ??= $this->branch;
 
-        return tenantContext()->run($this->tenantOf($branch), fn () => User::factory()->technician($branch->id)->create());
+        return maintenanceCenterContext()->run($this->maintenanceCenterOf($branch), fn () => User::factory()->technician($branch->id)->create());
     }
 
     /**
@@ -93,7 +93,7 @@ abstract class CenterHttpTestCase extends TestCase
     {
         $branch ??= $this->branch;
 
-        return tenantContext()->run($this->tenantOf($branch), function () use ($branch): User {
+        return maintenanceCenterContext()->run($this->maintenanceCenterOf($branch), function () use ($branch): User {
             $user = User::factory()->technicianCashier($branch->id)->create();
             Employee::query()->create(['branch_id' => $branch->id, 'user_id' => $user->id, 'name' => $user->name, 'base_salary' => '0']);
 
@@ -194,20 +194,20 @@ abstract class CenterHttpTestCase extends TestCase
         $order = $this->openOrder($vehicle, [['name' => 'خدمة', 'qty' => 1, 'unit_price' => $amount]], as: $as);
 
         $this->postJson($this->url("orders/{$order['id']}/complete"), [], $this->as($as ?? $this->owner, $this->branch))->assertOk();
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
 
         return $order['id'];
     }
 
     protected function freshOrder(int $orderId): Order
     {
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
 
         return Order::query()->findOrFail($orderId);
     }
 
-    private function tenantOf(Branch $branch): Tenant
+    private function maintenanceCenterOf(Branch $branch): MaintenanceCenter
     {
-        return Tenant::query()->findOrFail($branch->tenant_id);
+        return MaintenanceCenter::query()->findOrFail($branch->maintenance_center_id);
     }
 }

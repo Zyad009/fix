@@ -4,7 +4,7 @@ namespace App\Http\Requests\V1\Admin;
 
 use App\Http\Requests\AbstractFormRequest;
 
-class TenantUpdateRequest extends AbstractFormRequest
+class MaintenanceCenterUpdateRequest extends AbstractFormRequest
 {
     /**
      * @return array<string, mixed>

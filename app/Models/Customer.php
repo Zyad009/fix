@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use App\Support\PhoneNormalizer;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['name', 'phone', 'notes', 'created_by'])]
 class Customer extends Model
 {
-    use BelongsToTenant, SoftDeletes;
+    use BelongsToMaintenanceCenter, SoftDeletes;
 
     /**
      * @return array<string, string>

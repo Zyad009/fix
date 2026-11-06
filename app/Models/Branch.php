@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 #[Fillable(['name', 'phone', 'address', 'is_default', 'is_active'])]
 class Branch extends Model
 {
-    use BelongsToTenant;
+    use BelongsToMaintenanceCenter;
 
     /** @var array<string, mixed> */
     protected $attributes = [

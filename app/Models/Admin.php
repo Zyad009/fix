@@ -10,7 +10,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * Platform super admin (us). Lives outside every tenant.
+ * Platform super admin (us). Lives outside every maintenance center.
  */
 #[Fillable(['name', 'email', 'password', 'is_active'])]
 #[Hidden(['password'])]

@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Center users. Create them inside a tenant context
- * (`tenantContext()->run($tenant, ...)`): `tenant_id` is stamped from it.
+ * Center users. Create them inside a maintenance center context
+ * (`maintenanceCenterContext()->run($maintenanceCenter, ...)`): `maintenance_center_id` is stamped from it.
  *
  * @extends Factory<User>
  */

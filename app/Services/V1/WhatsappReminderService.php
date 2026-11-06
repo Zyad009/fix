@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Picks who gets a WhatsApp reminder today, for the current tenant.
+ * Picks who gets a WhatsApp reminder today, for the current maintenance center.
  *
  * Service: the day before the next service date of a vehicle's latest invoice.
  * Debt: when the customer's newest unpaid invoice, last payment and last debt
@@ -26,10 +26,10 @@ class WhatsappReminderService
      */
     public function run(): array
     {
-        $tenant = tenantContext()->tenant();
+        $maintenanceCenter = maintenanceCenterContext()->maintenanceCenter();
         $sent = ['service' => 0, 'debt' => 0];
 
-        if ($tenant->whatsapp_service_reminder_enabled) {
+        if ($maintenanceCenter->whatsapp_service_reminder_enabled) {
             foreach ($this->dueServiceOrders() as $order) {
                 $this->notifier->serviceReminder($order, $order->vehicle->customer_id);
                 Order::query()->withoutGlobalScope('branch')->whereKey($order->id)->toBase()->update(['service_reminder_sent_at' => now()]);
@@ -37,8 +37,8 @@ class WhatsappReminderService
             }
         }
 
-        if ($tenant->whatsapp_debt_reminder_enabled) {
-            foreach ($this->dueDebtors($tenant->debt_reminder_days) as $customer) {
+        if ($maintenanceCenter->whatsapp_debt_reminder_enabled) {
+            foreach ($this->dueDebtors($maintenanceCenter->debt_reminder_days) as $customer) {
                 $this->notifier->debtReminder($customer);
                 Customer::query()->whereKey($customer->id)->toBase()->update(['debt_reminded_at' => now()]);
                 $sent['debt']++;
@@ -53,7 +53,7 @@ class WhatsappReminderService
      */
     public function dueServiceOrders(): Collection
     {
-        $tomorrow = CarbonImmutable::now(tenantContext()->tenant()->timezone)->addDay()->toDateString();
+        $tomorrow = CarbonImmutable::now(maintenanceCenterContext()->maintenanceCenter()->timezone)->addDay()->toDateString();
 
         $latestPerVehicle = Order::query()->withoutGlobalScope('branch')
             ->selectRaw('MAX(id)')
@@ -79,11 +79,11 @@ class WhatsappReminderService
      */
     public function dueDebtors(int $days): Collection
     {
-        $cutoff = CarbonImmutable::now(tenantContext()->tenant()->timezone)->startOfDay()->subDays($days - 1)->utc();
+        $cutoff = CarbonImmutable::now(maintenanceCenterContext()->maintenanceCenter()->timezone)->startOfDay()->subDays($days - 1)->utc();
 
         $owing = DB::table('vehicle_balances')
             ->select('customer_id')
-            ->where('tenant_id', tenantContext()->id())
+            ->where('maintenance_center_id', maintenanceCenterContext()->id())
             ->groupBy('customer_id')
             ->havingRaw('SUM(balance) > 0');
 
@@ -92,14 +92,14 @@ class WhatsappReminderService
             ->whereRaw(<<<'SQL'
                 GREATEST(
                     COALESCE((SELECT MAX(o.completed_at) FROM orders o
-                        WHERE o.tenant_id = customers.tenant_id AND o.customer_id = customers.id
+                        WHERE o.maintenance_center_id = customers.maintenance_center_id AND o.customer_id = customers.id
                           AND o.status = ? AND o.total > o.paid), '1970-01-01'),
                     COALESCE((SELECT MAX(r.received_at) FROM payment_receipts r
-                        WHERE r.tenant_id = customers.tenant_id AND r.customer_id = customers.id
+                        WHERE r.maintenance_center_id = customers.maintenance_center_id AND r.customer_id = customers.id
                           AND r.voided_at IS NULL), '1970-01-01'),
                     COALESCE(customers.debt_reminded_at, '1970-01-01')
                 ) < ?
                 SQL, [OrderStatus::Completed->value, $cutoff->toDateTimeString()])
-            ->get(['id', 'tenant_id', 'phone']);
+            ->get(['id', 'maintenance_center_id', 'phone']);
     }
 }

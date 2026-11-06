@@ -25,7 +25,7 @@ class TechnicianCashierTest extends CenterHttpTestCase
             ->assertJsonPath('data.account.email', 'hassan@dawar.test')
             ->assertJsonPath('data.account.role.value', 'technician_cashier');
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $user = User::query()->where('email', 'hassan@dawar.test')->firstOrFail();
         $this->assertSame(UserRole::TechnicianCashier, $user->role);
         $this->assertSame($this->branch->id, $user->branch_id);
@@ -70,7 +70,7 @@ class TechnicianCashierTest extends CenterHttpTestCase
         $this->postJson($this->url('employees'), [...$payload, 'account' => ['email' => $this->owner->email, 'password' => 'secret123', 'role' => 'cashier']], $headers)
             ->assertStatus(422);
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(0, Employee::query()->count());
     }
 
@@ -88,7 +88,7 @@ class TechnicianCashierTest extends CenterHttpTestCase
             ->assertJsonPath('data.account.role.value', 'technician_cashier')
             ->assertJsonPath('data.account.email', 'w@dawar.test');
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame('اسم جديد', User::query()->where('email', 'w@dawar.test')->value('name'));
     }
 
@@ -113,7 +113,7 @@ class TechnicianCashierTest extends CenterHttpTestCase
     {
         $worker = $this->technicianCashier();
         $headers = $this->as($worker);
-        $this->tenant->update(['cashier_max_discount' => 50]);
+        $this->maintenanceCenter->update(['cashier_max_discount' => 50]);
 
         $order = $this->openOrder($this->vehicle(), [['name' => 'مصنعية', 'qty' => 1, 'unit_price' => 300]], ['discount' => 50], $worker);
 
@@ -122,7 +122,7 @@ class TechnicianCashierTest extends CenterHttpTestCase
         $this->postJson($this->url("orders/{$order['id']}/payments"), ['amount' => 50, 'method' => 'cash'], $headers)->assertCreated();
         $this->postJson($this->url("orders/{$order['id']}/cancel"), ['reason' => 'x'], $headers)->assertForbidden();
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->postJson($this->url('customers'), ['name' => 'عميل', 'phone' => '01099999999'], $headers)->assertCreated();
         $this->getJson($this->url('expenses'), $headers)->assertOk();
 

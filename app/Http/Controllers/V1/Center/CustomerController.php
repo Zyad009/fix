@@ -121,7 +121,7 @@ class CustomerController extends Controller implements HasMiddleware
 
             if ($this->wantsExcel($request)) {
                 $rows = array_map(fn (array $entry): array => [
-                    CarbonImmutable::createFromTimestamp($entry['date'], tenantContext()->tenant()->timezone)->format('Y-m-d H:i'),
+                    CarbonImmutable::createFromTimestamp($entry['date'], maintenanceCenterContext()->maintenanceCenter()->timezone)->format('Y-m-d H:i'),
                     $entry['type']['label'],
                     $entry['reference'],
                     $entry['vehicle_plate'],

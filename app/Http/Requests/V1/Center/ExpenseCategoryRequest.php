@@ -12,7 +12,7 @@ class ExpenseCategoryRequest extends AbstractFormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100', tenantUnique('expense_categories', 'name')->ignore($this->route('expense_category'))],
+            'name' => ['required', 'string', 'max:100', maintenanceCenterUnique('expense_categories', 'name')->ignore($this->route('expense_category'))],
         ];
     }
 }

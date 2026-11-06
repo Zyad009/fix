@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToBranch;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['branch_id', 'product_id', 'qty'])]
 class ProductBranchStock extends Model
 {
-    use BelongsToBranch, BelongsToTenant;
+    use BelongsToBranch, BelongsToMaintenanceCenter;
 
     protected $table = 'product_branch_stock';
 

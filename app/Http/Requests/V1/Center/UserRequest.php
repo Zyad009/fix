@@ -22,7 +22,7 @@ class UserRequest extends AbstractFormRequest
             'email' => [$required, 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user'))],
             'password' => [$required, 'string', 'min:8', 'max:255'],
             'role' => [$required, Rule::enum(UserRole::class)],
-            'branch_id' => ['nullable', 'integer', tenantExists('branches')->where('is_active', true)],
+            'branch_id' => ['nullable', 'integer', maintenanceCenterExists('branches')->where('is_active', true)],
         ];
     }
 

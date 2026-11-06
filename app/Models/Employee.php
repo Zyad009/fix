@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToBranch;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['branch_id', 'user_id', 'name', 'phone', 'job_title', 'base_salary', 'hired_at', 'is_active', 'created_by'])]
 class Employee extends Model
 {
-    use BelongsToBranch, BelongsToTenant;
+    use BelongsToBranch, BelongsToMaintenanceCenter;
 
     /** @var array<string, mixed> */
     protected $attributes = [

@@ -14,7 +14,7 @@ class PayrollRequest extends AbstractFormRequest
         return [
             'period' => ['required', 'date_format:Y-m'],
             'items' => ['sometimes', 'array'],
-            'items.*.employee_id' => ['required', 'integer', tenantExists('employees')],
+            'items.*.employee_id' => ['required', 'integer', maintenanceCenterExists('employees')],
             'items.*.amount' => ['required', 'decimal:0,2', 'min:0', 'max:9999999999'],
             'notes' => ['nullable', 'string', 'max:500'],
         ];

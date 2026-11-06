@@ -35,11 +35,11 @@ class CustomerVehicleTest extends CenterHttpTestCase
             ->assertJsonPath('data.debts.total', 0);
     }
 
-    public function test_phone_is_unique_per_tenant_only(): void
+    public function test_phone_is_unique_per_maintenance_center_only(): void
     {
         $this->customer('أ', '01011111111');
-        [$other] = $this->createTenant('مركز ب');
-        $otherOwner = tenantContext()->run($other, fn () => User::query()->firstOrFail());
+        [$other] = $this->createMaintenanceCenter('مركز ب');
+        $otherOwner = maintenanceCenterContext()->run($other, fn () => User::query()->firstOrFail());
 
         $this->postJson($this->url('customers'), ['name' => 'ب', 'phone' => '010 1111 1111'], $this->as($this->owner))->assertStatus(422);
         $this->postJson($this->url('customers'), ['name' => 'ب', 'phone' => '01011111111'], $this->as($otherOwner))->assertCreated();
@@ -133,7 +133,7 @@ class CustomerVehicleTest extends CenterHttpTestCase
         $this->vehicle($clean);
         $this->deleteJson($this->url("customers/{$clean->id}"), [], $this->as($this->owner))->assertOk();
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSoftDeleted($clean);
         $this->assertSame(0, $clean->vehicles()->count());
 
@@ -186,7 +186,7 @@ class CustomerVehicleTest extends CenterHttpTestCase
         $this->assertNotNull($response->json('data.vin_image_url'));
 
         $path = Vehicle::query()->findOrFail($response->json('data.id'))->vin_image_path;
-        $this->assertStringStartsWith('tenants/'.$this->tenant->id.'/vehicles/', $path);
+        $this->assertStringStartsWith('tenants/'.$this->maintenanceCenter->id.'/vehicles/', $path);
         Storage::disk('public')->assertExists($path);
     }
 
@@ -275,12 +275,12 @@ class CustomerVehicleTest extends CenterHttpTestCase
         ], $this->as($this->owner) + ['Accept' => 'application/json'])->assertStatus(422);
     }
 
-    public function test_chassis_image_of_another_tenants_vehicle_cannot_be_changed(): void
+    public function test_chassis_image_of_another_maintenance_centers_vehicle_cannot_be_changed(): void
     {
         Storage::fake('public');
         $vehicle = $this->vehicle();
-        [$other] = $this->createTenant('مركز ب');
-        $otherOwner = tenantContext()->run($other, fn () => User::query()->firstOrFail());
+        [$other] = $this->createMaintenanceCenter('مركز ب');
+        $otherOwner = maintenanceCenterContext()->run($other, fn () => User::query()->firstOrFail());
 
         $this->post($this->url("vehicles/{$vehicle->id}"), ['_method' => 'PUT', 'vin_image' => UploadedFile::fake()->image('vin.jpg')], $this->as($otherOwner) + ['Accept' => 'application/json'])
             ->assertNotFound();

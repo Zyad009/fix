@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Enums\PaymentMethod;
 use App\Models\Concerns\BelongsToBranch;
-use App\Models\Concerns\BelongsToTenant;
+use App\Models\Concerns\BelongsToMaintenanceCenter;
 use App\Models\Concerns\Voidable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +22,7 @@ use Illuminate\Support\Carbon;
 #[Fillable(['branch_id', 'category_id', 'amount', 'method', 'spent_at', 'notes', 'created_by'])]
 class Expense extends Model
 {
-    use BelongsToBranch, BelongsToTenant, Voidable;
+    use BelongsToBranch, BelongsToMaintenanceCenter, Voidable;
 
     /**
      * @return array<string, string>

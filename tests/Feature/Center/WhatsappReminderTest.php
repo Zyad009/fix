@@ -28,7 +28,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
         parent::setUp();
 
         $this->travelTo(CarbonImmutable::parse('2026-11-03 10:00', 'Africa/Cairo'));
-        $this->tenant->update([
+        $this->maintenanceCenter->update([
             'whatsapp_device_id' => 'device-1',
             'whatsapp_service_reminder_enabled' => true,
             'whatsapp_debt_reminder_enabled' => true,
@@ -51,7 +51,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
     private function runReminders(): void
     {
         $this->artisan('whatsapp:reminders')->assertSuccessful();
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
     }
 
     /**
@@ -63,7 +63,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
         $order = $this->openOrder(Vehicle::query()->findOrFail($vehicleId), [['name' => 'خدمة', 'qty' => 1, 'unit_price' => 100]], ['next_service_date' => $nextServiceDate]);
 
         $this->postJson($this->url("orders/{$order['id']}/complete"), ['payments' => [['amount' => 100]]], $this->as($this->owner, $this->branch))->assertOk();
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
 
         return $order['id'];
     }
@@ -82,7 +82,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
     private function pay(int $orderId, string $amount, int $daysAgo): int
     {
         $receiptId = $this->postJson($this->url("orders/{$orderId}/payments"), ['amount' => $amount], $this->as($this->owner, $this->branch))->json('data.id');
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         PaymentReceipt::query()->withoutGlobalScope('branch')->whereKey($receiptId)->toBase()->update(['received_at' => now()->subDays($daysAgo)]);
 
         return $receiptId;
@@ -139,10 +139,10 @@ class WhatsappReminderTest extends CenterHttpTestCase
         $this->debt($this->customer('مديون', '01044444444'), 40);
         Queue::fake();
 
-        $this->tenant->update(['whatsapp_service_reminder_enabled' => false, 'whatsapp_debt_reminder_enabled' => false]);
+        $this->maintenanceCenter->update(['whatsapp_service_reminder_enabled' => false, 'whatsapp_debt_reminder_enabled' => false]);
         $this->runReminders();
 
-        $this->tenant->update(['whatsapp_service_reminder_enabled' => true, 'whatsapp_debt_reminder_enabled' => true, 'whatsapp_device_id' => null]);
+        $this->maintenanceCenter->update(['whatsapp_service_reminder_enabled' => true, 'whatsapp_debt_reminder_enabled' => true, 'whatsapp_device_id' => null]);
         $this->runReminders();
 
         Queue::assertNothingPushed();
@@ -228,7 +228,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
 
     public function test_the_debt_job_sends_the_amount_owed_when_it_runs(): void
     {
-        $this->tenant->update(['phone' => '01000000000']);
+        $this->maintenanceCenter->update(['phone' => '01000000000']);
         $customer = $this->customer('عميل', '01044444444');
         $orderId = $this->debt($customer, 40, '1500');
         $this->runReminders();
@@ -243,7 +243,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
             && str_contains($request['message'], '1,200.00')
             && str_contains($request['message'], '01000000000'));
 
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $message = WhatsappMessage::query()->sole();
         $this->assertSame(WhatsappMessageStatus::Sent, $message->status);
         $this->assertSame($customer->id, $message->customer_id);
@@ -260,7 +260,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
         $this->reminders('debt_reminder')[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
 
         Http::assertNothingSent();
-        $this->inTenant($this->tenant);
+        $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame(WhatsappMessageStatus::SkippedNoDebt, WhatsappMessage::query()->sole()->status);
     }
 
@@ -284,14 +284,14 @@ class WhatsappReminderTest extends CenterHttpTestCase
 
     public function test_each_center_follows_its_own_settings_and_device(): void
     {
-        [$other] = $this->createTenant('مركز ب');
+        [$other] = $this->createMaintenanceCenter('مركز ب');
         $other->update(['whatsapp_device_id' => 'device-2', 'whatsapp_debt_reminder_enabled' => false]);
         $this->debt($this->customer('عميل أ', '01044444444'), 40);
         $this->runReminders();
 
         $jobs = $this->reminders('debt_reminder');
         $this->assertCount(1, $jobs);
-        $this->assertSame($this->tenant->id, $jobs[0]->tenantId);
+        $this->assertSame($this->maintenanceCenter->id, $jobs[0]->maintenanceCenterId);
         $this->assertSame('device-1', $jobs[0]->deviceId);
     }
 
@@ -309,10 +309,10 @@ class WhatsappReminderTest extends CenterHttpTestCase
 
     public function test_reminders_are_off_for_a_new_center(): void
     {
-        [$tenant] = $this->createTenant('مركز جديد');
+        [$maintenanceCenter] = $this->createMaintenanceCenter('مركز جديد');
 
-        $this->assertFalse($tenant->fresh()->whatsapp_service_reminder_enabled);
-        $this->assertFalse($tenant->fresh()->whatsapp_debt_reminder_enabled);
-        $this->assertSame(30, $tenant->fresh()->debt_reminder_days);
+        $this->assertFalse($maintenanceCenter->fresh()->whatsapp_service_reminder_enabled);
+        $this->assertFalse($maintenanceCenter->fresh()->whatsapp_debt_reminder_enabled);
+        $this->assertSame(30, $maintenanceCenter->fresh()->debt_reminder_days);
     }
 }

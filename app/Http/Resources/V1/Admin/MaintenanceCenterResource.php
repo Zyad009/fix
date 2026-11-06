@@ -3,12 +3,12 @@
 namespace App\Http\Resources\V1\Admin;
 
 use App\Http\Resources\V1\Center\BranchResource;
-use App\Models\Tenant;
+use App\Models\MaintenanceCenter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/** @mixin Tenant */
-class TenantResource extends JsonResource
+/** @mixin MaintenanceCenter */
+class MaintenanceCenterResource extends JsonResource
 {
     /**
      * @return array<string, mixed>

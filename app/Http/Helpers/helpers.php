@@ -1,9 +1,9 @@
 <?php
 
 use App\Models\User;
+use App\Support\MaintenanceCenter\BranchContext;
+use App\Support\MaintenanceCenter\MaintenanceCenterContext;
 use App\Support\Money;
-use App\Support\Tenancy\BranchContext;
-use App\Support\Tenancy\TenantContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -60,10 +60,10 @@ if (! function_exists('actor')) {
     }
 }
 
-if (! function_exists('tenantContext')) {
-    function tenantContext(): TenantContext
+if (! function_exists('maintenanceCenterContext')) {
+    function maintenanceCenterContext(): MaintenanceCenterContext
     {
-        return app(TenantContext::class);
+        return app(MaintenanceCenterContext::class);
     }
 }
 
@@ -74,26 +74,26 @@ if (! function_exists('branchContext')) {
     }
 }
 
-if (! function_exists('tenantExists')) {
+if (! function_exists('maintenanceCenterExists')) {
     /**
-     * `exists` rule limited to the current tenant (and to live rows when the
+     * `exists` rule limited to the current maintenance center (and to live rows when the
      * table soft-deletes).
      */
-    function tenantExists(string $table, string $column = 'id', bool $withoutTrashed = false): Exists
+    function maintenanceCenterExists(string $table, string $column = 'id', bool $withoutTrashed = false): Exists
     {
-        $rule = Rule::exists($table, $column)->where('tenant_id', tenantContext()->id());
+        $rule = Rule::exists($table, $column)->where('maintenance_center_id', maintenanceCenterContext()->id());
 
         return $withoutTrashed ? $rule->withoutTrashed() : $rule;
     }
 }
 
-if (! function_exists('tenantUnique')) {
+if (! function_exists('maintenanceCenterUnique')) {
     /**
-     * `unique` rule limited to the current tenant.
+     * `unique` rule limited to the current maintenance center.
      */
-    function tenantUnique(string $table, string $column): Unique
+    function maintenanceCenterUnique(string $table, string $column): Unique
     {
-        return Rule::unique($table, $column)->where('tenant_id', tenantContext()->id());
+        return Rule::unique($table, $column)->where('maintenance_center_id', maintenanceCenterContext()->id());
     }
 }
 
