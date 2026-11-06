@@ -17,6 +17,6 @@
         "@laravel/multiplex": "^0.4.1"
     },
     "dependencies": {
-        "puppeteer": "^24.43.1"
+        "puppeteer": "^25.16.0"
     }
 }
