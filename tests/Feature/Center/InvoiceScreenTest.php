@@ -35,6 +35,17 @@ class InvoiceScreenTest extends CenterHttpTestCase
             ->assertJsonPath('data.order.status.value', 'open');
     }
 
+    public function test_a_new_customer_on_the_invoice_needs_an_egyptian_mobile(): void
+    {
+        $this->postJson($this->url('orders'), [
+            'customer' => ['name' => 'محمد علي', 'phone' => '0101234567'],
+            'vehicle' => ['plate_number' => 'أ ب ج 1234'],
+            'items' => [['name' => 'مصنعية', 'qty' => 1, 'unit_price' => 300]],
+        ], $this->as($this->cashier()))
+            ->assertStatus(422)
+            ->assertJsonPath('message', __('validation.custom')['customer.phone']['regex']);
+    }
+
     public function test_known_phone_and_plate_are_reused(): void
     {
         $customer = $this->customer('قديم', '01011112222');

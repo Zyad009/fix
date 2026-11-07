@@ -71,7 +71,7 @@ class OrderRequest extends AbstractFormRequest
             'customer' => ['required_with:vehicle', 'exclude_without:vehicle', 'array'],
             'customer.id' => ['exclude_without:vehicle', 'nullable', 'integer', tenantExists('customers', withoutTrashed: true)],
             'customer.name' => ['exclude_without:vehicle', 'required_without:customer.id', 'nullable', 'string', 'max:255'],
-            'customer.phone' => ['exclude_without:vehicle', 'required_without:customer.id', 'nullable', 'string', 'min:7', 'max:15'],
+            'customer.phone' => ['exclude_without:vehicle', 'required_without:customer.id', 'nullable', 'string', PhoneNormalizer::rule()],
         ];
     }
 

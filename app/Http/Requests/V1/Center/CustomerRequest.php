@@ -33,7 +33,7 @@ class CustomerRequest extends AbstractFormRequest
 
         return [
             'name' => [$required, 'string', 'max:255'],
-            'phone' => [$required, 'string', 'min:7', 'max:15', tenantUnique('customers', 'phone_active')->ignore($this->route('customer'))],
+            'phone' => [$required, 'string', PhoneNormalizer::rule(), tenantUnique('customers', 'phone_active')->ignore($this->route('customer'))],
             'notes' => ['nullable', 'string', 'max:2000'],
             'vehicles' => [$this->isMethod('post') ? 'sometimes' : 'prohibited', 'array', 'max:10'],
             ...VehicleRequest::vehicleRules('vehicles.*.'),

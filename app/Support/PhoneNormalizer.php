@@ -8,6 +8,19 @@ namespace App\Support;
  */
 final class PhoneNormalizer
 {
+    /**
+     * An Egyptian mobile after normalize(): 11 digits starting 010/011/012/015.
+     */
+    public const EGYPT_MOBILE_REGEX = '/^01[0125]\d{8}$/';
+
+    /**
+     * Validation rule for a customer-facing mobile number (input already normalized).
+     */
+    public static function rule(): string
+    {
+        return 'regex:'.self::EGYPT_MOBILE_REGEX;
+    }
+
     public static function normalize(?string $phone): string
     {
         if ($phone === null) {
