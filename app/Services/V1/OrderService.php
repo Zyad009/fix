@@ -49,7 +49,7 @@ class OrderService
      */
     public function list(array $filters): LengthAwarePaginator
     {
-        return $this->query($filters)->paginate($filters['per_page'] ?? config('paginate.default'));
+        return $this->query($filters)->with('latestInvoiceWhatsapp')->paginate($filters['per_page'] ?? config('paginate.default'));
     }
 
     /**
@@ -277,6 +277,7 @@ class OrderService
             'creator:id,name',
             'items' => fn ($query) => $query->orderBy('id'),
             'payments' => fn ($query) => $query->with('receipt:id,receipt_no')->orderBy('id'),
+            'latestInvoiceWhatsapp',
         ]);
     }
 

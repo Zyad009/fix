@@ -95,6 +95,8 @@ return [
     'whatsapp_not_connected' => 'WhatsApp is not connected for this center. Contact the administration.',
     'whatsapp_invalid_phone' => 'This phone number cannot receive WhatsApp messages.',
     'whatsapp_invoice_not_sendable' => 'Only completed invoices can be sent.',
+    'whatsapp_phone_taken' => 'This number belongs to another customer.',
+    'whatsapp_order_has_no_customer' => 'This invoice has no customer.',
     'whatsapp_receipt_voided' => 'A voided receipt cannot be sent.',
     'whatsapp_test_body' => 'Test message from :center. The WhatsApp connection works ✅',
     'whatsapp_invoice_caption' => "Thank you for choosing :center 🌟\nInvoice #:number\nTotal: :total EGP\nPaid: :paid EGP\nRemaining: :remaining EGP",

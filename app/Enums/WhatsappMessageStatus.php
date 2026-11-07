@@ -8,6 +8,7 @@ enum WhatsappMessageStatus: string
 {
     use EnumTrait;
 
+    case Queued = 'queued';
     case Sent = 'sent';
     case Failed = 'failed';
     case SkippedDisabled = 'skipped_disabled';
@@ -16,6 +17,7 @@ enum WhatsappMessageStatus: string
     case SkippedNoDebt = 'skipped_no_debt';
 
     public const LABELS = [
+        'queued' => ['ar' => 'قيد الإرسال', 'en' => 'Queued'],
         'sent' => ['ar' => 'أُرسلت', 'en' => 'Sent'],
         'failed' => ['ar' => 'فشلت', 'en' => 'Failed'],
         'skipped_disabled' => ['ar' => 'لم تُرسل: الرسالة موقوفة', 'en' => 'Skipped: message disabled'],

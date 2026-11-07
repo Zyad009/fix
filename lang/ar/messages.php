@@ -95,6 +95,8 @@ return [
     'whatsapp_not_connected' => 'واتساب غير مربوط بهذا المركز. تواصل مع الإدارة.',
     'whatsapp_invalid_phone' => 'رقم التليفون غير صالح للإرسال على واتساب.',
     'whatsapp_invoice_not_sendable' => 'يمكن إرسال الفواتير المقفولة فقط.',
+    'whatsapp_phone_taken' => 'الرقم ده مسجل لعميل تاني.',
+    'whatsapp_order_has_no_customer' => 'الفاتورة دي مش مربوطة بعميل.',
     'whatsapp_receipt_voided' => 'لا يمكن إرسال إيصال ملغي.',
     'whatsapp_test_body' => 'رسالة تجربة من :center. الربط بواتساب يعمل بنجاح ✅',
     'whatsapp_invoice_caption' => "شكراً لتعاملكم مع :center 🌟\nفاتورة رقم :number\nالإجمالي: :total جنيه\nالمدفوع: :paid جنيه\nالمتبقي: :remaining جنيه",

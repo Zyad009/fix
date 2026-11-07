@@ -4,6 +4,7 @@ namespace Tests\Feature\Center;
 
 use App\Enums\WhatsappMessageStatus;
 use App\Jobs\SendWhatsappMessageJob;
+use App\Models\Customer;
 use App\Models\Tenant;
 use App\Models\WhatsappMessage;
 use App\Services\V1\BalanceService;
@@ -250,6 +251,115 @@ class WhatsappTest extends CenterHttpTestCase
             ->assertJsonPath('data.0.order.id', $order);
 
         $this->getJson($this->url('whatsapp/messages'), $this->as($this->cashier()))->assertForbidden();
+    }
+
+    public function test_a_queued_message_is_logged_at_once_and_settled_by_its_job(): void
+    {
+        $orderId = $this->invoice($this->vehicle($this->customer('عميل', '01012345678')), '300');
+
+        $this->inTenant($this->tenant);
+        $queued = WhatsappMessage::query()->sole();
+        $this->assertSame(WhatsappMessageStatus::Queued, $queued->status);
+        $this->assertSame($orderId, $queued->order_id);
+        $this->assertSame('201012****78', $queued->recipient);
+        $this->assertSame($queued->id, $this->jobs()[0]->messageId);
+
+        $this->fakeImage();
+        Http::fake(['*' => Http::response(['code' => 'SUCCESS', 'results' => ['message_id' => 'wa-1']])]);
+        $this->jobs()[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
+
+        $this->inTenant($this->tenant);
+        $this->assertSame($queued->id, WhatsappMessage::query()->sole()->id);
+        $this->assertSame(WhatsappMessageStatus::Sent, WhatsappMessage::query()->sole()->status);
+    }
+
+    public function test_the_invoice_shows_its_latest_whatsapp_status(): void
+    {
+        $vehicle = $this->vehicle($this->customer('عميل', '01012345678'));
+        $orderId = $this->invoice($vehicle, '300');
+        $open = $this->openOrder($vehicle, [['name' => 'x', 'qty' => 1, 'unit_price' => 100]]);
+        $headers = $this->as($this->owner, $this->branch);
+
+        $this->getJson($this->url("orders/{$orderId}"), $headers)
+            ->assertOk()
+            ->assertJsonPath('data.whatsapp.status.value', 'queued')
+            ->assertJsonPath('data.whatsapp.recipient', '201012****78');
+        $this->getJson($this->url("orders/{$open['id']}"), $headers)->assertOk()->assertJsonPath('data.whatsapp', null);
+
+        $this->inTenant($this->tenant);
+        WhatsappMessage::query()->sole()->update(['status' => WhatsappMessageStatus::Failed, 'error' => 'device offline']);
+        WhatsappMessage::query()->create(['type' => 'service_reminder', 'order_id' => $orderId, 'status' => WhatsappMessageStatus::Sent]);
+
+        $this->getJson($this->url('orders?status=completed'), $headers)
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $orderId)
+            ->assertJsonPath('data.0.whatsapp.status.value', 'failed')
+            ->assertJsonPath('data.0.whatsapp.error', 'device offline');
+    }
+
+    public function test_resend_corrects_the_customer_phone_and_sends_the_invoice_again(): void
+    {
+        $customer = $this->customer('عميل', '01012345678');
+        $orderId = $this->invoice($this->vehicle($customer), '300');
+
+        $this->postJson($this->url("orders/{$orderId}/whatsapp/resend"), ['phone' => '٠١١ ٢٢٢٣-٣٣٤٤'], $this->as($this->cashier()))
+            ->assertOk()
+            ->assertJsonPath('msg', __('messages.whatsapp_queued'));
+
+        $this->inTenant($this->tenant);
+        $this->assertSame('01122233344', Customer::query()->findOrFail($customer->id)->phone);
+        $jobs = $this->jobs();
+        $this->assertCount(2, $jobs);
+        $this->assertSame('invoice', $jobs[1]->type);
+        $this->assertSame($orderId, $jobs[1]->orderId);
+        $this->assertSame('201122233344', $jobs[1]->recipient);
+
+        $this->getJson($this->url("orders/{$orderId}"), $this->as($this->owner, $this->branch))
+            ->assertJsonPath('data.whatsapp.id', $jobs[1]->messageId)
+            ->assertJsonPath('data.whatsapp.recipient', '201122****44');
+    }
+
+    public function test_resend_rules_leave_the_phone_unchanged(): void
+    {
+        $customer = $this->customer('عميل', '01012345678');
+        $this->customer('تاني', '01022222222');
+        $vehicle = $this->vehicle($customer);
+        $orderId = $this->invoice($vehicle, '300');
+        $open = $this->openOrder($vehicle, [['name' => 'x', 'qty' => 1, 'unit_price' => 100]]);
+        $headers = $this->as($this->owner, $this->branch);
+        $url = $this->url("orders/{$orderId}/whatsapp/resend");
+
+        foreach (['1012345678', '0101234567', '010123456789', '01412345678', '0221234567', ''] as $wrong) {
+            $this->postJson($url, ['phone' => $wrong], $headers)->assertStatus(422);
+        }
+
+        $this->postJson($url, ['phone' => '01022222222'], $headers)
+            ->assertStatus(422)
+            ->assertJsonPath('msg', __('messages.whatsapp_phone_taken'));
+        $this->postJson($this->url("orders/{$open['id']}/whatsapp/resend"), ['phone' => '01099999999'], $headers)
+            ->assertStatus(422)
+            ->assertJsonPath('msg', __('messages.whatsapp_invoice_not_sendable'));
+        $this->postJson($url, ['phone' => '01099999999'], $this->as($this->technician()))->assertForbidden();
+
+        $this->tenant->update(['whatsapp_device_id' => null]);
+        $this->postJson($url, ['phone' => '01099999999'], $this->as($this->owner, $this->branch))
+            ->assertStatus(422)
+            ->assertJsonPath('msg', __('messages.whatsapp_not_connected'));
+
+        $this->inTenant($this->tenant);
+        $this->assertSame('01012345678', Customer::query()->findOrFail($customer->id)->phone);
+        $this->assertCount(1, $this->jobs());
+    }
+
+    public function test_resend_is_tenant_isolated(): void
+    {
+        $orderId = $this->invoice($this->vehicle($this->customer('عميل', '01012345678')), '300');
+        [, $otherOwner] = $this->createTenant('مركز ب');
+
+        $this->postJson($this->url("orders/{$orderId}/whatsapp/resend"), ['phone' => '01099999999'], $this->as($otherOwner))->assertNotFound();
+
+        $this->inTenant($this->tenant);
+        $this->assertSame(1, Customer::query()->where('phone', '01012345678')->count());
     }
 
     /**
