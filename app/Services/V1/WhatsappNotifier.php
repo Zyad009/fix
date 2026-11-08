@@ -25,6 +25,8 @@ use Illuminate\Support\Facades\DB;
  */
 class WhatsappNotifier
 {
+    public function __construct(protected CustomerService $customers) {}
+
     public function invoiceCompleted(Order $order): void
     {
         if ($order->is_opening_balance) {
@@ -59,11 +61,35 @@ class WhatsappNotifier
 
     public function resendInvoice(Order $order): void
     {
-        if (! $order->isCompleted() || $order->is_opening_balance) {
-            throw new BusinessRuleException(__('messages.whatsapp_invoice_not_sendable'), 422);
+        $this->ensureInvoiceSendable($order);
+
+        $this->manual(WhatsappMessageType::Invoice, $this->customerPhone($order->customer_id), orderId: $order->id, customerId: $order->customer_id);
+    }
+
+    /**
+     * The customer typed a wrong number: the number is corrected on the
+     * customer (so later messages reach the right phone) and the invoice is
+     * sent again. Nothing is changed when the invoice cannot be sent.
+     */
+    public function correctPhoneAndResendInvoice(Order $order, string $phone): void
+    {
+        $this->ensureInvoiceSendable($order);
+
+        if ($order->customer_id === null) {
+            throw new BusinessRuleException(__('messages.whatsapp_order_has_no_customer'), 422);
         }
 
-        $this->manual(WhatsappMessageType::Invoice, $this->customerPhone($order->customer_id), orderId: $order->id);
+        DB::transaction(function () use ($order, $phone): void {
+            $customer = Customer::query()->withTrashed()->lockForUpdate()->findOrFail($order->customer_id);
+
+            if (Customer::query()->where('phone', PhoneNormalizer::normalize($phone))->whereKeyNot($customer->id)->exists()) {
+                throw new BusinessRuleException(__('messages.whatsapp_phone_taken'), 422);
+            }
+
+            $this->customers->update($customer, ['phone' => $phone]);
+        });
+
+        $this->resendInvoice($order);
     }
 
     public function resendReceipt(PaymentReceipt $receipt): void
@@ -72,7 +98,7 @@ class WhatsappNotifier
             throw new BusinessRuleException(__('messages.whatsapp_receipt_voided'), 422);
         }
 
-        $this->manual(WhatsappMessageType::Payment, $this->customerPhone($receipt->customer_id), receiptId: $receipt->id);
+        $this->manual(WhatsappMessageType::Payment, $this->customerPhone($receipt->customer_id), receiptId: $receipt->id, customerId: $receipt->customer_id);
     }
 
     public function sendTest(string $phone): void
@@ -127,13 +153,11 @@ class WhatsappNotifier
         DB::afterCommit(fn () => rescue(fn () => $this->dispatch($maintenanceCenter, $type, $recipient, $orderId, $receiptId, $customerId)));
     }
 
-    private function manual(WhatsappMessageType $type, ?string $phone, ?int $orderId = null, ?int $receiptId = null): void
+    private function manual(WhatsappMessageType $type, ?string $phone, ?int $orderId = null, ?int $receiptId = null, ?int $customerId = null): void
     {
         $maintenanceCenter = maintenanceCenterContext()->maintenanceCenter();
 
-        if (blank($maintenanceCenter->whatsapp_device_id)) {
-            throw new BusinessRuleException(__('messages.whatsapp_not_connected'), 422);
-        }
+        $this->ensureConnected($maintenanceCenter);
 
         $recipient = PhoneNormalizer::toWhatsapp($phone);
 
@@ -141,11 +165,40 @@ class WhatsappNotifier
             throw new BusinessRuleException(__('messages.whatsapp_invalid_phone'), 422);
         }
 
-        $this->dispatch($maintenanceCenter, $type, $recipient, $orderId, $receiptId);
+        $this->dispatch($maintenanceCenter, $type, $recipient, $orderId, $receiptId, $customerId);
     }
 
+    private function ensureInvoiceSendable(Order $order): void
+    {
+        if (! $order->isCompleted() || $order->is_opening_balance) {
+            throw new BusinessRuleException(__('messages.whatsapp_invoice_not_sendable'), 422);
+        }
+
+        $this->ensureConnected(maintenanceCenterContext()->maintenanceCenter());
+    }
+
+    private function ensureConnected(MaintenanceCenter $maintenanceCenter): void
+    {
+        if (blank($maintenanceCenter->whatsapp_device_id)) {
+            throw new BusinessRuleException(__('messages.whatsapp_not_connected'), 422);
+        }
+    }
+
+    /**
+     * The row is logged as queued right away, so the invoice shows the message
+     * while it waits; the job settles the same row (sent/failed/skipped).
+     */
     private function dispatch(MaintenanceCenter $maintenanceCenter, WhatsappMessageType $type, string $recipient, ?int $orderId, ?int $receiptId, ?int $customerId = null): void
     {
+        $message = WhatsappMessage::query()->create([
+            'type' => $type,
+            'order_id' => $orderId,
+            'receipt_id' => $receiptId,
+            'customer_id' => $customerId,
+            'recipient' => PhoneNormalizer::mask($recipient),
+            'status' => WhatsappMessageStatus::Queued,
+        ]);
+
         SendWhatsappMessageJob::dispatch(
             $maintenanceCenter->id,
             $type->value,
@@ -154,6 +207,7 @@ class WhatsappNotifier
             $orderId,
             $receiptId,
             $customerId,
+            $message->id,
         );
     }
 

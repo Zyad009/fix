@@ -45,6 +45,24 @@ class CustomerVehicleTest extends CenterHttpTestCase
         $this->postJson($this->url('customers'), ['name' => 'ب', 'phone' => '01011111111'], $this->as($otherOwner))->assertCreated();
     }
 
+    public function test_phone_must_be_an_egyptian_mobile(): void
+    {
+        $headers = $this->as($this->owner);
+
+        foreach (['1012345678', '0101234567', '010123456789', '01412345678', '0221234567', '+201012345678'] as $wrong) {
+            $this->postJson($this->url('customers'), ['name' => 'ب', 'phone' => $wrong], $headers)
+                ->assertStatus(422)
+                ->assertJsonPath('message', __('validation.custom.phone.regex'));
+        }
+
+        foreach (['01012345678', '01112345678', '01212345678', '01512345678'] as $phone) {
+            $this->postJson($this->url('customers'), ['name' => 'ب', 'phone' => $phone], $headers)->assertCreated();
+        }
+
+        $customer = $this->customer('ج', '01099999999');
+        $this->putJson($this->url("customers/{$customer->id}"), ['phone' => '0109999999'], $headers)->assertStatus(422);
+    }
+
     public function test_plate_is_normalized_unique_and_searchable_in_any_format(): void
     {
         $vehicle = $this->vehicle(plate: 'س ص ع 123');

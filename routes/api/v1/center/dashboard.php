@@ -58,6 +58,7 @@ Route::middleware(['auth:sanctum', 'maintenance_center', 'branch', 'subscription
 
     // Orders (= invoices)
     Route::post('orders/{order}/whatsapp', [WhatsappController::class, 'sendInvoice'])->name('orders.whatsapp');
+    Route::post('orders/{order}/whatsapp/resend', [WhatsappController::class, 'resendInvoice'])->name('orders.whatsapp.resend');
     Route::post('receipts/{receipt}/whatsapp', [WhatsappController::class, 'sendReceipt'])->name('receipts.whatsapp');
     Route::post('whatsapp/test', [WhatsappController::class, 'test'])->name('whatsapp.test');
     Route::get('whatsapp/messages', [WhatsappController::class, 'messages'])->name('whatsapp.messages');

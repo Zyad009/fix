@@ -236,8 +236,8 @@ MD,
         'en' => 'Customers (paginated) with each one\'s debt. `q` by name or phone, `has_debt=1` for debtors, `format=excel`.',
     ],
     'center.customers.store' => [
-        'ar' => 'إضافة عميل، وممكن معاه عربياته (`vehicles[]`) في نفس الطلب. التليفون مايتكررش جوه المركز، واللوحة كذلك.',
-        'en' => 'Create a customer, optionally with their vehicles (`vehicles[]`). Phone and plate are unique within the center.',
+        'ar' => 'إضافة عميل، وممكن معاه عربياته (`vehicles[]`) في نفس الطلب. التليفون موبايل مصري: 11 رقم يبدأ بـ 010 أو 011 أو 012 أو 015 (الأرقام العربية والمسافات بتتشال)، ومايتكررش جوه المركز، واللوحة كذلك.',
+        'en' => 'Create a customer, optionally with their vehicles (`vehicles[]`). The phone is an Egyptian mobile: 11 digits starting 010, 011, 012 or 015 (Arabic digits and spaces are normalized), unique within the center, as is the plate.',
     ],
     'center.customers.show' => [
         'ar' => 'العميل بعربياته، و `debts`: إجمالي المديونية وتفصيلها على كل عربية.',
@@ -433,8 +433,8 @@ MD,
     // =====================================================================
 
     'center.orders.index' => [
-        'ar' => 'قايمة الأوردرات/الفواتير (paginated) في الفرع. `q` برقم الفاتورة أو اللوحة. الفني بيشوف المفتوح بس. الأرصدة الافتتاحية مستبعدة إلا بـ `include_opening_balance=1`.',
-        'en' => 'Orders/invoices (paginated) in the branch. `q` by invoice number or plate. Technicians see open orders only. Opening balances are excluded unless `include_opening_balance=1`.',
+        'ar' => 'قايمة الأوردرات/الفواتير (paginated) في الفرع. `q` برقم الفاتورة أو اللوحة. الفني بيشوف المفتوح بس. الأرصدة الافتتاحية مستبعدة إلا بـ `include_opening_balance=1`. كل صف فيه `whatsapp` حالة آخر رسالة للفاتورة (زي التفاصيل).',
+        'en' => 'Orders/invoices (paginated) in the branch. `q` by invoice number or plate. Technicians see open orders only. Opening balances are excluded unless `include_opening_balance=1`. Each row carries `whatsapp`, the latest invoice message status (see order details).',
     ],
     'center.orders.store' => [
         'ar' => <<<'MD'
@@ -473,8 +473,8 @@ MD,
 MD,
     ],
     'center.orders.show' => [
-        'ar' => 'تفاصيل الأوردر بالبنود والمدفوعات والعربية والعميل. الفني مابيشوفش التكلفة ولا الأوردرات المقفولة.',
-        'en' => 'Order details with lines, payments, vehicle and customer. Technicians see neither costs nor closed orders.',
+        'ar' => 'تفاصيل الأوردر بالبنود والمدفوعات والعربية والعميل. الفني مابيشوفش التكلفة ولا الأوردرات المقفولة. `whatsapp`: آخر رسالة واتساب للفاتورة `{id, status, recipient, error, sent_at, created_at}`؛ `status` واحدة من `queued` قيد الإرسال، `sent`، `failed` (السبب في `error`)، أو `skipped_*`. ولو مفيش رسالة بتبقى `null`.',
+        'en' => 'Order details with lines, payments, vehicle and customer. Technicians see neither costs nor closed orders. `whatsapp`: the invoice\'s latest WhatsApp message `{id, status, recipient, error, sent_at, created_at}`; `status` is `queued`, `sent`, `failed` (reason in `error`) or `skipped_*`. `null` when no message exists.',
     ],
     'center.orders.update' => [
         'ar' => 'تعديل رأس الأوردر: العداد، الفني، الخصم، الصيانة الجاية، الملاحظات. الفاتورة المقفولة: owner بس، وبيتسجل في الـ audit. الإجمالي مايقلش عن المدفوع.',
@@ -642,6 +642,10 @@ MD,
         'ar' => 'إعادة إرسال صورة الفاتورة للعميل على واتساب (الفواتير المقفولة بس). بيشتغل حتى لو رسالة الفاتورة الأوتوماتيك موقوفة. واتساب مش مربوط أو الرقم غلط → 422.',
         'en' => 'Resend the invoice image to the customer on WhatsApp (completed invoices only). Works even when the automatic invoice message is off. WhatsApp not connected or a bad number → 422.',
     ],
+    'center.orders.whatsapp.resend' => [
+        'ar' => 'لو العميل كتب رقمه غلط: `phone` الرقم الصح (موبايل مصري 11 رقم يبدأ بـ 010/011/012/015) بيتحدّث في بيانات العميل، وبعدين صورة الفاتورة بتتبعت تاني عليه. محتاج صلاحية إقفال الفواتير وتعديل العملاء (10 محاولات في الدقيقة). الرقم متسجل لعميل تاني، أو الفاتورة مش مقفولة، أو واتساب مش مربوط → 422 والرقم مابيتغيرش. الحالة بتظهر في `whatsapp` في تفاصيل الفاتورة.',
+        'en' => 'When the customer typed a wrong number: `phone` is the correct one (Egyptian mobile, 11 digits starting 010/011/012/015). It is saved on the customer, then the invoice image is sent again. Needs the complete-invoice and manage-customers permissions (10 attempts per minute). A number owned by another customer, an invoice that is not completed, or WhatsApp not connected → 422 and the number is not changed. The status shows in the invoice\'s `whatsapp`.',
+    ],
     'center.receipts.whatsapp' => [
         'ar' => 'إعادة إرسال صورة إيصال السداد للعميل على واتساب. الإيصال الملغي مرفوض (422).',
         'en' => 'Resend the payment receipt image to the customer on WhatsApp. A voided receipt is refused (422).',
@@ -656,7 +660,7 @@ MD,
 
 **الأنواع:** `invoice` فاتورة، `payment` إيصال، `test` تجربة، `service_reminder` تذكير صيانة، `debt_reminder` تذكير مديونية (فيه `customer`).
 
-**الحالات:** `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال.
+**الحالات:** `queued` قيد الإرسال (لسه في الطابور)، `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال.
 الرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.
 MD,
         'en' => <<<'MD'
@@ -664,7 +668,7 @@ The center's WhatsApp message log (paginated). Numbers are masked.
 
 **Types:** `invoice`, `payment`, `test`, `service_reminder`, `debt_reminder` (carries `customer`).
 
-**Statuses:** `sent`; `failed` after 3 attempts (reason in `error`); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending.
+**Statuses:** `queued` waiting in the queue; `sent`; `failed` after 3 attempts (reason in `error`); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending.
 Messages go out in the background, so the API answers before delivery. Follow them here.
 MD,
     ],

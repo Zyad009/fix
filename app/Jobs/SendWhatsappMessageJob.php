@@ -43,6 +43,7 @@ class SendWhatsappMessageJob implements ShouldQueue
         public readonly ?int $orderId = null,
         public readonly ?int $receiptId = null,
         public readonly ?int $customerId = null,
+        public readonly ?int $messageId = null,
     ) {
         $this->onQueue('notifications');
     }
@@ -61,7 +62,7 @@ class SendWhatsappMessageJob implements ShouldQueue
                 return;
             }
 
-            $messageId = match ($type) {
+            $providerMessageId = match ($type) {
                 WhatsappMessageType::Test => $gowa->sendText($this->recipient, __('messages.whatsapp_test_body', ['center' => maintenanceCenterContext()->maintenanceCenter()->name]), $this->deviceId),
                 WhatsappMessageType::Invoice => $this->sendInvoice($gowa, $images),
                 WhatsappMessageType::Payment => $this->sendReceipt($gowa, $images),
@@ -73,7 +74,7 @@ class SendWhatsappMessageJob implements ShouldQueue
                 ]), $this->deviceId),
             };
 
-            $this->record(WhatsappMessageStatus::Sent, ['provider_message_id' => $messageId, 'sent_at' => now()]);
+            $this->record(WhatsappMessageStatus::Sent, ['provider_message_id' => $providerMessageId, 'sent_at' => now()]);
         });
     }
 
@@ -148,10 +149,21 @@ class SendWhatsappMessageJob implements ShouldQueue
     }
 
     /**
+     * Settles the row logged as queued at dispatch; a job queued before that
+     * row existed (no id) logs a new one.
+     *
      * @param  array<string, mixed>  $attributes
      */
     private function record(WhatsappMessageStatus $status, array $attributes): void
     {
+        $queued = $this->messageId === null ? null : WhatsappMessage::query()->find($this->messageId);
+
+        if ($queued !== null) {
+            $queued->update(['status' => $status, ...$attributes]);
+
+            return;
+        }
+
         WhatsappMessage::query()->create([
             'type' => $this->type,
             'order_id' => $this->orderId,

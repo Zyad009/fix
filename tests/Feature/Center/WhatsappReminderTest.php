@@ -146,7 +146,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
         $this->runReminders();
 
         Queue::assertNothingPushed();
-        $this->assertSame(0, WhatsappMessage::query()->count());
+        $this->assertSame(0, WhatsappMessage::query()->whereIn('type', ['service_reminder', 'debt_reminder'])->count());
     }
 
     // ------------------------------------------------------------------- debt
@@ -244,7 +244,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
             && str_contains($request['message'], '01000000000'));
 
         $this->inMaintenanceCenter($this->maintenanceCenter);
-        $message = WhatsappMessage::query()->sole();
+        $message = WhatsappMessage::query()->where('type', 'debt_reminder')->sole();
         $this->assertSame(WhatsappMessageStatus::Sent, $message->status);
         $this->assertSame($customer->id, $message->customer_id);
     }
@@ -261,7 +261,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
 
         Http::assertNothingSent();
         $this->inMaintenanceCenter($this->maintenanceCenter);
-        $this->assertSame(WhatsappMessageStatus::SkippedNoDebt, WhatsappMessage::query()->sole()->status);
+        $this->assertSame(WhatsappMessageStatus::SkippedNoDebt, WhatsappMessage::query()->where('type', 'debt_reminder')->sole()->status);
     }
 
     public function test_the_service_job_sends_the_plate_and_date(): void

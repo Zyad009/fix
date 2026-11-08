@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\OrderStatus;
 use App\Enums\ProductKind;
+use App\Enums\WhatsappMessageType;
 use App\Models\Concerns\BelongsToBranch;
 use App\Models\Concerns\BelongsToMaintenanceCenter;
 use App\Support\Money;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -151,5 +153,15 @@ class Order extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * The last WhatsApp message of this invoice (its status on the invoice screen).
+     *
+     * @return HasOne<WhatsappMessage, $this>
+     */
+    public function latestInvoiceWhatsapp(): HasOne
+    {
+        return $this->hasOne(WhatsappMessage::class)->ofMany(['id' => 'max'], fn ($query) => $query->where('type', WhatsappMessageType::Invoice));
     }
 }

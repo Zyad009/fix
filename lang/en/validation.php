@@ -181,9 +181,8 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
-        ],
+        'phone' => ['regex' => 'The mobile number must be 11 digits starting with 010, 011, 012 or 015.'],
+        'customer.phone' => ['regex' => 'The mobile number must be 11 digits starting with 010, 011, 012 or 015.'],
     ],
 
     /*
