@@ -4,6 +4,7 @@ namespace Tests\Feature\Center;
 
 use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\DefaultRolePermissionsSeeder;
 use Tests\CenterHttpTestCase;
 
 /**
@@ -127,6 +128,24 @@ class RoleManagementTest extends CenterHttpTestCase
         ], $owner)->assertStatus(422);
 
         $this->assertSame(5, Role::query()->withoutGlobalScope('maintenance_center')->where('maintenance_center_id', $other->id)->count());
+    }
+
+    public function test_the_default_permissions_seeder_only_adds_what_a_default_role_is_missing(): void
+    {
+        $technicianCashier = Role::query()->where('key', 'technician_cashier')->firstOrFail();
+        $technicianCashier->update(['permissions' => ['orders.view', 'reports.view']]);
+        $custom = Role::query()->create(['key' => 'role_custom', 'name' => 'خاص', 'permissions' => ['reports.view']]);
+        Role::query()->where('key', 'technician')->delete();
+
+        $this->seed(DefaultRolePermissionsSeeder::class);
+        $this->seed(DefaultRolePermissionsSeeder::class);
+
+        $permissions = $technicianCashier->fresh()->permissions;
+        $this->assertContains('orders.edit_completed', $permissions);
+        $this->assertContains('reports.view', $permissions);
+        $this->assertSameSize(array_unique($permissions), $permissions);
+        $this->assertSame(['reports.view'], $custom->fresh()->permissions);
+        $this->assertFalse(Role::query()->where('key', 'technician')->exists());
     }
 
     public function test_technician_cashier_edits_a_closed_invoice_but_cannot_cancel_it(): void
