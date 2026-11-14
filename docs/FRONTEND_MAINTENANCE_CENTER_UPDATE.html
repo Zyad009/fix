@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تحديث المراكز والـ username — للفرونت</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e4df;
+    --accent: #0f766e; --accent-soft: #e6f4f2; --new: #1d4ed8; --new-soft: #e8efff;
+    --warn: #b45309; --warn-soft: #fdf3e4; --danger: #b91c1c; --danger-soft: #fdecec; --code-bg: #f1f1ee;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514; --card: #1e1e1c; --text: #ecece8; --muted: #a3a39c; --line: #33332f;
+      --accent: #2dd4bf; --accent-soft: #123330; --new: #93b4ff; --new-soft: #1a2540;
+      --warn: #fbbf24; --warn-soft: #362a12; --danger: #fca5a5; --danger-soft: #3a1717; --code-bg: #262623;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.75 "Segoe UI", Tahoma, "Noto Sans Arabic", system-ui, sans-serif; padding: 0 16px; }
+  main { max-width: 900px; margin: 0 auto; padding-block: 40px 80px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+  h3 { font-size: 1.08rem; margin: 28px 0 8px; }
+  p { margin: 8px 0; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .88em; background: var(--code-bg);
+    padding: 1px 6px; border-radius: 5px; direction: ltr; unicode-bidi: embed; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; direction: ltr; text-align: left; font-size: .86rem; line-height: 1.6; margin: 10px 0; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .grid .card { margin: 0; }
+  .card h3 { margin-top: 0; }
+  .tag { display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 9px; border-radius: 99px; margin-inline-end: 6px; vertical-align: middle; }
+  .t-new { background: var(--new-soft); color: var(--new); }
+  .t-chg { background: var(--warn-soft); color: var(--warn); }
+  .t-brk { background: var(--danger-soft); color: var(--danger); }
+  .t-none { background: var(--accent-soft); color: var(--accent); }
+  .table-wrap { overflow-x: auto; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: .93rem; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.ltr { direction: ltr; text-align: left; white-space: nowrap; }
+  .note { border-inline-start: 4px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .danger { border-inline-start: 4px solid var(--danger); background: var(--danger-soft); padding: 12px 14px; border-radius: 8px; margin: 12px 0; }
+  .ok { border-inline-start: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .endpoint { font-family: Consolas, monospace; direction: ltr; display: inline-block; font-size: .92rem; }
+  .m { font-weight: 700; margin-inline-end: 6px; }
+  .m-get { color: var(--accent); } .m-post { color: var(--new); } .m-put { color: var(--warn); }
+  nav ol { margin: 6px 0; padding-inline-start: 22px; }
+  nav a, a { color: var(--new); }
+  ul { padding-inline-start: 22px; margin: 6px 0; }
+  li { margin: 3px 0; }
+  .muted { color: var(--muted); font-size: .9rem; }
+  .old { text-decoration: line-through; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>تحديث الـ API: المراكز والدخول بالـ username</h1>
+<p class="sub">للفرونت إند (شاشات المركز ولوحة الأدمن) · 6 نوفمبر 2026</p>
+
+<div class="danger">
+  <b>فيه breaking changes.</b> النسخة دي من الـ API لازم تتنشر هي والفرونت في نفس الوقت.
+  لو الباك اتنشر قبل الفرونت، بيانات المركز في شاشات المركز مش هتظهر، ولوحة الأدمن هتطلع 404 في كل شاشات المراكز.
+</div>
+
+<div class="card">
+  <h3>الخلاصة في سطور</h3>
+  <ul>
+    <li><span class="tag t-brk">Breaking</span> رد الدخول و <code>me</code>: المفتاح <code class="old">tenant</code> بقى <code>maintenance_center</code>.</li>
+    <li><span class="tag t-brk">Breaking</span> لوحة الأدمن: كل مسارات <code class="old">/admin/tenants</code> بقت <code>/admin/maintenance-centers</code>.</li>
+    <li><span class="tag t-chg">تغيير</span> سجل العمليات: نوع السجل <code class="old">tenant</code> بقى <code>maintenance_center</code>.</li>
+    <li><span class="tag t-new">جديد</span> الدخول بـ <code>username</code> كبديل للإيميل.</li>
+    <li><span class="tag t-new">جديد</span> حقل <code>username</code> في المستخدمين، وحسابات الموظفين، ومالك المركز الجديد.</li>
+    <li><span class="tag t-none">من غير شغل</span> روابط الصور الجديدة بقت تحت <code>maintenance-centers/</code>، والفرونت مش محتاج يغيّر حاجة.</li>
+  </ul>
+</div>
+
+<nav class="card">
+  <b>المحتويات</b>
+  <ol>
+    <li><a href="#profile">رد الدخول و me</a></li>
+    <li><a href="#admin">مسارات لوحة الأدمن</a></li>
+    <li><a href="#audit">سجل العمليات</a></li>
+    <li><a href="#login">الدخول بالـ username</a></li>
+    <li><a href="#username">إضافة وتعديل الـ username</a></li>
+    <li><a href="#images">روابط الصور</a></li>
+    <li><a href="#errors">شكل الأخطاء</a></li>
+    <li><a href="#checklist">المطلوب من الفرونت</a></li>
+  </ol>
+</nav>
+
+<!-- ============ 1 ============ -->
+<h2 id="profile">1. رد الدخول و <code>me</code> <span class="tag t-brk">Breaking</span></h2>
+<p>بيانات المركز في الردين دول بقت تحت مفتاح جديد. محتوى المركز نفسه ما اتغيرش (<code>id</code> و <code>name</code> و <code>logo_url</code> وإعدادات الواتساب وغيرهم).</p>
+<p>
+  <span class="endpoint"><span class="m m-post">POST</span>/api/v1/center/auth/login</span><br>
+  <span class="endpoint"><span class="m m-get">GET</span>/api/v1/center/auth/me</span>
+</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>قبل</h3>
+<pre><code>{
+  "data": {
+    "token": "...",
+    "user": { ... },
+    "tenant": { "id": 1, "name": "مركز أ", ... },
+    "branches": [ ... ],
+    "permissions": [ ... ]
+  }
+}</code></pre>
+  </div>
+  <div class="card">
+    <h3>بعد</h3>
+<pre><code>{
+  "data": {
+    "token": "...",
+    "user": { "username": "ahmed", ... },
+    "maintenance_center": { "id": 1, "name": "مركز أ", ... },
+    "branches": [ ... ],
+    "permissions": [ ... ]
+  }
+}</code></pre>
+  </div>
+</div>
+
+<div class="note">
+  <b>متنساش اللي متخزن عندك.</b> لو بتحفظ رد الدخول في <code>localStorage</code> أو في الـ store، المستخدمين اللي داخلين بالفعل عندهم نسخة قديمة فيها <code>tenant</code>.
+  أبسط حل: أول ما الصفحة تفتح، نادي <code>GET /auth/me</code> وحدّث المحفوظ. التوكنات القديمة لسه شغالة، ومفيش حد هيضطر يسجل دخول تاني.
+</div>
+
+<p>ابحث في الكود عن: <code>data.tenant</code> و <code>.tenant.</code> و <code>tenant?.</code> و <code>['tenant']</code>.</p>
+
+<!-- ============ 2 ============ -->
+<h2 id="admin">2. مسارات لوحة الأدمن <span class="tag t-brk">Breaking</span></h2>
+<p>شكل الطلبات والردود زي ما هو. اللي اتغير المسار بس، وأسماء الـ routes في Postman.</p>
+
+<div class="table-wrap"><table>
+  <tr><th>العملية</th><th>قبل</th><th>بعد</th></tr>
+  <tr><td>قايمة المراكز</td><td class="ltr"><span class="old">GET /admin/tenants</span></td><td class="ltr">GET /admin/maintenance-centers</td></tr>
+  <tr><td>إضافة مركز</td><td class="ltr"><span class="old">POST /admin/tenants</span></td><td class="ltr">POST /admin/maintenance-centers</td></tr>
+  <tr><td>تفاصيل مركز</td><td class="ltr"><span class="old">GET /admin/tenants/{id}</span></td><td class="ltr">GET /admin/maintenance-centers/{id}</td></tr>
+  <tr><td>تعديل مركز</td><td class="ltr"><span class="old">PUT /admin/tenants/{id}</span></td><td class="ltr">PUT /admin/maintenance-centers/{id}</td></tr>
+  <tr><td>إيقاف / تفعيل</td><td class="ltr"><span class="old">PATCH /admin/tenants/toggle/{id}</span></td><td class="ltr">PATCH /admin/maintenance-centers/toggle/{id}</td></tr>
+  <tr><td>الاشتراك</td><td class="ltr"><span class="old">PATCH /admin/tenants/{id}/subscription</span></td><td class="ltr">PATCH /admin/maintenance-centers/{id}/subscription</td></tr>
+  <tr><td>فروع المركز</td><td class="ltr"><span class="old">GET /admin/tenants/{id}/branches</span></td><td class="ltr">GET /admin/maintenance-centers/{id}/branches</td></tr>
+  <tr><td>إضافة فرع</td><td class="ltr"><span class="old">POST /admin/tenants/{id}/branches</span></td><td class="ltr">POST /admin/maintenance-centers/{id}/branches</td></tr>
+  <tr><td>تعديل فرع</td><td class="ltr"><span class="old">PUT /admin/tenants/{id}/branches/{branch}</span></td><td class="ltr">PUT /admin/maintenance-centers/{id}/branches/{branch}</td></tr>
+  <tr><td>إيقاف / تفعيل فرع</td><td class="ltr"><span class="old">PATCH /admin/tenants/{id}/branches/{branch}/toggle</span></td><td class="ltr">PATCH /admin/maintenance-centers/{id}/branches/{branch}/toggle</td></tr>
+</table></div>
+<p class="muted">كل المسارات قبلها <code>/api/v1</code>. المسارات القديمة بترجع 404 ومفيش redirect.</p>
+
+<div class="ok">لو المسار متعرّف في مكان واحد (constant أو API client)، كفاية تغيّر <code>tenants</code> لـ <code>maintenance-centers</code> فيه.</div>
+
+<!-- ============ 3 ============ -->
+<h2 id="audit">3. سجل العمليات <span class="tag t-chg">تغيير</span></h2>
+<p><span class="endpoint"><span class="m m-get">GET</span>/api/v1/center/audit-logs</span></p>
+<p>قيمة <code>auditable_type</code> للسجلات الخاصة بالمركز نفسه بقت <code>maintenance_center</code> بدل <code>tenant</code>، في الرد وفي الفلتر <code>?auditable_type=</code>. السجلات القديمة اتحدّثت في قاعدة البيانات.</p>
+<p>لو عندك dropdown لأنواع السجل أو ترجمة للنوع، غيّر القيمة دي. باقي الأنواع (<code>order</code> و <code>payment</code> و <code>user</code> وغيرهم) زي ما هي.</p>
+
+<!-- ============ 4 ============ -->
+<h2 id="login">4. الدخول بالـ username <span class="tag t-new">جديد</span></h2>
+<p><span class="endpoint"><span class="m m-post">POST</span>/api/v1/center/auth/login</span></p>
+<p>المستخدم يقدر يدخل بالإيميل زي الأول، أو بالـ <code>username</code> لو اتعمله واحد. <b>الدخول بالإيميل لسه شغال من غير أي تغيير.</b></p>
+
+<div class="grid">
+  <div class="card">
+    <h3>بالإيميل (زي الأول)</h3>
+<pre><code>{
+  "email": "owner@dawar.test",
+  "password": "secret123"
+}</code></pre>
+  </div>
+  <div class="card">
+    <h3>بالـ username</h3>
+<pre><code>{
+  "username": "ahmed",
+  "password": "secret123"
+}</code></pre>
+  </div>
+</div>
+
+<div class="table-wrap"><table>
+  <tr><th>القاعدة</th><th>التفاصيل</th></tr>
+  <tr><td>الحقول</td><td>لازم <code>email</code> أو <code>username</code>، ومعاهم <code>password</code>. لو بعت الاتنين، الإيميل هو اللي بيتستخدم.</td></tr>
+  <tr><td>حالة الحروف</td><td>مش بتفرق: <code>Ahmed</code> و <code>ahmed</code> نفس المستخدم.</td></tr>
+  <tr><td>المحاولات</td><td>5 محاولات في الدقيقة، وبعدها <code>429</code>.</td></tr>
+  <tr><td>دخول الأدمن</td><td><b>ما اتغيرش.</b> <code>/admin/auth/login</code> لسه بالإيميل بس.</td></tr>
+</table></div>
+
+<h3>اقتراح لشاشة الدخول</h3>
+<p>خانة واحدة باسم "الإيميل أو اسم المستخدم". لو القيمة فيها <code>@</code> ابعتها <code>email</code>، ولو مفيهاش ابعتها <code>username</code>. ده آمن لأن الـ username مينفعش يكون فيه <code>@</code>.</p>
+<pre><code>const body = identifier.includes('@')
+  ? { email: identifier, password }
+  : { username: identifier, password };</code></pre>
+
+<h3>ردود الخطأ</h3>
+<div class="table-wrap"><table>
+  <tr><th>الحالة</th><th>code</th><th>السبب</th></tr>
+  <tr><td><code>401</code></td><td><code>invalid_credentials</code></td><td>المستخدم مش موجود أو كلمة السر غلط. الرسالة واحدة في الحالتين عن قصد.</td></tr>
+  <tr><td><code>403</code></td><td><code>account_inactive</code></td><td>الحساب أو المركز موقوف.</td></tr>
+  <tr><td><code>422</code></td><td><code>422</code></td><td>مفيش إيميل ولا username، أو الإيميل مش بصيغة صحيحة.</td></tr>
+  <tr><td><code>429</code></td><td>—</td><td>أكتر من 5 محاولات في الدقيقة.</td></tr>
+</table></div>
+
+<!-- ============ 5 ============ -->
+<h2 id="username">5. إضافة وتعديل الـ username <span class="tag t-new">جديد</span></h2>
+
+<div class="table-wrap"><table>
+  <tr><th>القاعدة</th><th>التفاصيل</th></tr>
+  <tr><td>إجباري؟</td><td>لأ، اختياري في كل مكان. الحسابات الحالية <code>username</code> بتاعها <code>null</code>.</td></tr>
+  <tr><td>الطول</td><td>من 3 لـ 50 حرف.</td></tr>
+  <tr><td>الحروف المسموحة</td><td>حروف إنجليزي وأرقام و <code>-</code> و <code>_</code> بس. ممنوع المسافات والعربي و <code>@</code>.</td></tr>
+  <tr><td>التكرار</td><td>فريد على مستوى <b>كل المراكز</b> مش المركز بس، ومن غير فرق في حالة الحروف. لو اسم مستخدم في مركز تاني، هيرجع <code>422</code>.</td></tr>
+</table></div>
+
+<p>Regex للتحقق في الفرونت قبل الإرسال: <code>/^[A-Za-z0-9_-]{3,50}$/</code></p>
+
+<h3>المستخدمين</h3>
+<p>
+  <span class="endpoint"><span class="m m-post">POST</span>/api/v1/center/users</span><br>
+  <span class="endpoint"><span class="m m-put">PUT</span>/api/v1/center/users/{id}</span>
+</p>
+<pre><code>{
+  "name": "أحمد",
+  "username": "ahmed",
+  "email": "ahmed@dawar.test",
+  "password": "secret123",
+  "role": "cashier",
+  "branch_id": 1
+}</code></pre>
+<ul>
+  <li><b>التعديل:</b> تقدر تغيّر <code>username</code> و <code>email</code> من نفس الطلب، وتبعت الحقل اللي اتغير بس.</li>
+  <li><b>المسح:</b> <code>{"username": null}</code> بيمسح الـ username.</li>
+  <li><b>لو ما بعتهوش:</b> الـ username بيفضل زي ما هو.</li>
+  <li><b>البحث:</b> <code>GET /users?q=</code> بقى بيدوّر في الـ username كمان.</li>
+  <li><b>الرد:</b> فيه <code>username</code> في كل رد مستخدم (القايمة والتفاصيل والدخول و <code>me</code>).</li>
+</ul>
+
+<h3>حساب الموظف</h3>
+<p>
+  <span class="endpoint"><span class="m m-post">POST</span>/api/v1/center/employees</span><br>
+  <span class="endpoint"><span class="m m-put">PUT</span>/api/v1/center/employees/{id}</span>
+</p>
+<pre><code>{
+  "name": "حسن",
+  "base_salary": 6000,
+  "account": {
+    "username": "hassan",
+    "email": "hassan@dawar.test",
+    "password": "secret123",
+    "role": "technician_cashier"
+  }
+}</code></pre>
+<p>الرد فيه <code>account.username</code>:</p>
+<pre><code>"account": { "id": 7, "username": "hassan", "email": "hassan@dawar.test", "role": { ... }, "is_active": true }</code></pre>
+
+<h3>مالك المركز (لوحة الأدمن)</h3>
+<p><span class="endpoint"><span class="m m-post">POST</span>/api/v1/admin/maintenance-centers</span></p>
+<pre><code>"owner": { "name": "أحمد", "username": "amal_owner", "email": "owner@amal.test", "password": "secret123" }</code></pre>
+
+<!-- ============ 6 ============ -->
+<h2 id="images">6. روابط الصور <span class="tag t-none">من غير شغل</span></h2>
+<p>الصور الجديدة (لوجو المركز، وصور المنتجات، وصورة الشاسيه) بقت بتتخزن تحت <code>maintenance-centers/</code> بدل <code>tenants/</code>:</p>
+<pre><code>قبل:  https://.../storage/tenants/1/vehicles/AbC123.jpg
+بعد:  https://.../storage/maintenance-centers/1/vehicles/AbC123.jpg</code></pre>
+<div class="ok">
+  الحقول <code>logo_url</code> و <code>image_url</code> و <code>vin_image_url</code> بترجع الرابط كامل، فاستخدمها زي ما هي.
+  أي صورة قديمة هتفضل برابطها القديم وشغالة. <b>ما تبنيش رابط الصورة بنفسك</b> من الـ id أو من المسار.
+</div>
+
+<!-- ============ 7 ============ -->
+<h2 id="errors">7. شكل الأخطاء (للتذكير)</h2>
+<p>ما اتغيرش، بس مهم في شاشات الـ username:</p>
+<div class="grid">
+  <div class="card">
+    <h3>خطأ validation (422)</h3>
+<pre><code>{
+  "status": 0,
+  "code": 422,
+  "message": "username مستخدم بالفعل.",
+  "data": null
+}</code></pre>
+    <p class="muted">الرسالة بتيجي من <code>message</code>، وبتكون أول خطأ بس.</p>
+  </div>
+  <div class="card">
+    <h3>باقي الأخطاء</h3>
+<pre><code>{
+  "status": false,
+  "msg": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+  "code": "invalid_credentials"
+}</code></pre>
+    <p class="muted">الرسالة من <code>msg</code>، و <code>code</code> موجود أحياناً.</p>
+  </div>
+</div>
+
+<!-- ============ 8 ============ -->
+<h2 id="checklist">8. المطلوب من الفرونت</h2>
+<div class="table-wrap"><table>
+  <tr><th>الشاشة</th><th>المطلوب</th><th></th></tr>
+  <tr><td>كل مكان بيقرا بيانات المركز</td><td>غيّر <code>data.tenant</code> لـ <code>data.maintenance_center</code>، وحدّث المحفوظ في الـ storage بـ <code>GET /auth/me</code>.</td><td><span class="tag t-brk">لازم</span></td></tr>
+  <tr><td>لوحة الأدمن: المراكز والفروع</td><td>غيّر <code>/admin/tenants</code> لـ <code>/admin/maintenance-centers</code>.</td><td><span class="tag t-brk">لازم</span></td></tr>
+  <tr><td>سجل العمليات</td><td>غيّر القيمة <code>tenant</code> لـ <code>maintenance_center</code> في الفلتر والترجمة.</td><td><span class="tag t-chg">لو موجودة</span></td></tr>
+  <tr><td>شاشة الدخول (المركز)</td><td>خانة "الإيميل أو اسم المستخدم"، وتبعت <code>email</code> أو <code>username</code>.</td><td><span class="tag t-new">جديد</span></td></tr>
+  <tr><td>إضافة / تعديل مستخدم</td><td>خانة <code>username</code> اختيارية، مع زرار مسح يبعت <code>null</code>.</td><td><span class="tag t-new">جديد</span></td></tr>
+  <tr><td>إضافة / تعديل موظف</td><td>خانة <code>account.username</code> اختيارية، وعرض <code>account.username</code>.</td><td><span class="tag t-new">جديد</span></td></tr>
+  <tr><td>قايمة المستخدمين</td><td>عمود أو سطر للـ <code>username</code> (ممكن يكون <code>null</code>).</td><td><span class="tag t-new">جديد</span></td></tr>
+  <tr><td>إضافة مركز (الأدمن)</td><td>خانة <code>owner.username</code> اختيارية.</td><td><span class="tag t-new">جديد</span></td></tr>
+  <tr><td>الصور</td><td>مفيش حاجة، طالما بتستخدم الروابط اللي جاية من الـ API.</td><td><span class="tag t-none">من غير شغل</span></td></tr>
+</table></div>
+
+<p class="muted">مجموعة Postman (<code>postman/Dawar.postman_collection.json</code>) متحدّثة بكل ده، وفيها طلب "center.auth.login — بالـ username".</p>
+
+</main>
+</body>
+</html>

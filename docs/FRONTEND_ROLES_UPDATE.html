@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الأدوار والصلاحيات — للفرونت</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e4df;
+    --accent: #0f766e; --accent-soft: #e6f4f2; --new: #1d4ed8; --new-soft: #e8efff;
+    --warn: #b45309; --warn-soft: #fdf3e4; --danger: #b91c1c; --danger-soft: #fdecec; --code-bg: #f1f1ee;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514; --card: #1e1e1c; --text: #ecece8; --muted: #a3a39c; --line: #33332f;
+      --accent: #2dd4bf; --accent-soft: #123330; --new: #93b4ff; --new-soft: #1a2540;
+      --warn: #fbbf24; --warn-soft: #362a12; --danger: #fca5a5; --danger-soft: #3a1717; --code-bg: #262623;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.75 "Segoe UI", Tahoma, "Noto Sans Arabic", system-ui, sans-serif; padding: 0 16px; }
+  main { max-width: 900px; margin: 0 auto; padding-block: 40px 80px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+  h3 { font-size: 1.08rem; margin: 28px 0 8px; }
+  p { margin: 8px 0; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .88em; background: var(--code-bg);
+    padding: 1px 6px; border-radius: 5px; direction: ltr; unicode-bidi: embed; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; direction: ltr; text-align: left; font-size: .86rem; line-height: 1.6; margin: 10px 0; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .grid .card { margin: 0; }
+  .card h3 { margin-top: 0; }
+  .tag { display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 9px; border-radius: 99px; margin-inline-end: 6px; vertical-align: middle; }
+  .t-new { background: var(--new-soft); color: var(--new); }
+  .t-chg { background: var(--warn-soft); color: var(--warn); }
+  .t-brk { background: var(--danger-soft); color: var(--danger); }
+  .t-none { background: var(--accent-soft); color: var(--accent); }
+  .table-wrap { overflow-x: auto; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: .93rem; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.ltr { direction: ltr; text-align: left; white-space: nowrap; }
+  .note { border-inline-start: 4px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .danger { border-inline-start: 4px solid var(--danger); background: var(--danger-soft); padding: 12px 14px; border-radius: 8px; margin: 12px 0; }
+  .ok { border-inline-start: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .endpoint { font-family: Consolas, monospace; direction: ltr; display: inline-block; font-size: .92rem; }
+  .m { font-weight: 700; margin-inline-end: 6px; }
+  .m-get { color: var(--accent); } .m-post { color: var(--new); } .m-put { color: var(--warn); } .m-del { color: var(--danger); }
+  nav ol { margin: 6px 0; padding-inline-start: 22px; }
+  nav a, a { color: var(--new); }
+  ul { padding-inline-start: 22px; margin: 6px 0; }
+  li { margin: 3px 0; }
+  .muted { color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>الأدوار والصلاحيات</h1>
+<p class="sub">تحديث الباك إند — المالك بقى يعمل أدوار لمركزه ويختار صلاحيات كل دور. كل المسارات تحت <code>/api/v1/center</code>.</p>
+
+<div class="ok">
+  <strong>الشاشات الموجودة مش هتتكسر.</strong> <code>role</code> في الحسابات والموظفين لسه بنفس الشكل <code>{label, value}</code>، والقيم القديمة (<code>owner</code>، <code>cashier</code>، <code>technician_cashier</code>، <code>technician</code>) لسه شغالة زي ما هي. المطلوب: شاشة جديدة لإدارة الأدوار، وتحديث صغير في اختيار الدور.
+</div>
+
+<nav class="card">
+  <strong>المحتوى</strong>
+  <ol>
+    <li><a href="#summary">ملخص التغييرات</a></li>
+    <li><a href="#endpoints">الـ APIs الجديدة</a></li>
+    <li><a href="#shape">شكل الدور (Role)</a></li>
+    <li><a href="#catalog">قائمة الصلاحيات</a></li>
+    <li><a href="#rules">قواعد لازم الشاشة تحترمها</a></li>
+    <li><a href="#users">الحسابات والموظفين</a></li>
+    <li><a href="#tc">الفني والكاشير يعدّل فاتورة مقفولة</a></li>
+    <li><a href="#errors">الأخطاء</a></li>
+    <li><a href="#todo">المطلوب من الفرونت</a></li>
+  </ol>
+</nav>
+
+<h2 id="summary">1. ملخص التغييرات</h2>
+<div class="grid">
+  <div class="card"><h3><span class="tag t-new">جديد</span>إدارة الأدوار</h3>
+    <p>المالك يقدر يضيف دور، ويعدّل اسمه وصلاحياته، ويمسحه. كل مركز ليه أدواره لوحده.</p></div>
+  <div class="card"><h3><span class="tag t-chg">اتغير</span>قائمة الأدوار</h3>
+    <p><code>options.roles</code> بقت جاية من أدوار المركز نفسه، فممكن يبقى فيها أدوار المالك عملها، زي <code>role_12</code>.</p></div>
+  <div class="card"><h3><span class="tag t-chg">اتغير</span>الفني والكاشير</h3>
+    <p><code>technician_cashier</code> بقى يقدر يعدّل الفاتورة المقفولة، لكن لسه ما يقدرش يلغيها.</p></div>
+  <div class="card"><h3><span class="tag t-none">زي ما هو</span>تسجيل الدخول</h3>
+    <p><code>auth/me</code> بيرجع <code>permissions</code> زي الأول. اعتمد عليها في إظهار وإخفاء الأزرار، مش على اسم الدور.</p></div>
+</div>
+
+<h2 id="endpoints">2. الـ APIs الجديدة</h2>
+<p>كلها محتاجة صلاحية <code>roles.manage</code>، والصلاحية دي للمالك بس. أي حد غيره هياخد <code>403</code>، فالقائمة بتاعتها تظهر للمالك بس.</p>
+<div class="table-wrap"><table>
+  <tr><th>الـ API</th><th>بيعمل إيه</th></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/roles</td><td>أدوار المركز. المالك الأول، وكل دور معاه <code>users_count</code></td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/roles/permissions</td><td>الصلاحيات اللي ينفع تتدي لأي دور، متقسمة مجموعات ومعاها أسماء جاهزة للعرض (لشاشة الـ checkboxes)</td></tr>
+  <tr><td class="ltr"><span class="m m-post">POST</span>/roles</td><td>إضافة دور</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/roles/{id}</td><td>دور واحد</td></tr>
+  <tr><td class="ltr"><span class="m m-put">PUT</span>/roles/{id}</td><td>تعديل دور. كل الحقول اختيارية، وابعت بس اللي اتغير</td></tr>
+  <tr><td class="ltr"><span class="m m-del">DELETE</span>/roles/{id}</td><td>مسح دور مالوش حسابات</td></tr>
+</table></div>
+
+<h3>Body الإضافة والتعديل</h3>
+<div class="table-wrap"><table>
+  <tr><th>الحقل</th><th>في الإضافة</th><th>القواعد</th></tr>
+  <tr><td class="ltr">name</td><td>مطلوب</td><td>نص لحد 100 حرف، ومينفعش يتكرر جوه نفس المركز</td></tr>
+  <tr><td class="ltr">permissions</td><td>مطلوب</td><td>array من مفاتيح <code>/roles/permissions</code>، من غير تكرار. ينفع تبقى فاضية</td></tr>
+  <tr><td class="ltr">acts_as_technician</td><td>اختياري (false)</td><td>boolean. لو <code>true</code>، الموظف المربوط بالحساب بيتحط فني تلقائي على الفواتير اللي بيفتحها</td></tr>
+</table></div>
+<pre><code>POST /api/v1/center/roles
+{
+  "name": "مشرف ورشة",
+  "acts_as_technician": true,
+  "permissions": ["customers.view", "orders.view", "orders.view_closed",
+                  "orders.create", "orders.complete", "orders.edit_completed", "reports.view"]
+}</code></pre>
+<p class="muted">في التعديل، <code>permissions</code> لو اتبعتت بتستبدل القائمة كلها، يعني مش بتتضاف على القديمة. ابعت القائمة كاملة بعد التعديل.</p>
+
+<h2 id="shape">3. شكل الدور (Role)</h2>
+<pre><code>{
+  "id": 14,
+  "key": "role_14",           // ده اللي بيتبعت في role لما تعمل حساب أو موظف
+  "name": "مشرف ورشة",
+  "is_owner": false,
+  "is_default": false,        // true للأدوار الأربعة اللي المركز بيبدأ بيها
+  "acts_as_technician": true,
+  "permissions": ["customers.view", "orders.view", "..."],
+  "users_count": 0            // في list/show/store/update
+}</code></pre>
+<ul>
+  <li><code>key</code> بيتعمل لوحده ومش بيتغير أبدًا، حتى لو الاسم اتغير. الأدوار الافتراضية مفاتيحها <code>owner</code> و<code>cashier</code> و<code>technician_cashier</code> و<code>technician</code>، والأدوار الجديدة مفتاحها <code>role_{id}</code>.</li>
+  <li>دور المالك <code>permissions</code> بتاعته فيها كل الصلاحيات، ومن ضمنها <code>roles.manage</code>.</li>
+</ul>
+
+<h2 id="catalog">4. قائمة الصلاحيات</h2>
+<p><code>GET /roles/permissions</code> بيرجع مجموعات، والأسماء جاية حسب الـ header <code>lang</code>:</p>
+<pre><code>{
+  "data": [
+    { "key": "settings", "label": "الإعدادات والحسابات",
+      "permissions": [ { "key": "settings.manage", "label": "تعديل إعدادات المركز" }, ... ] },
+    { "key": "orders", "label": "الفواتير", "permissions": [ ... ] },
+    ...
+  ]
+}</code></pre>
+<p>اعرضها زي ما هي. القائمة دي مش فيها <code>roles.manage</code> لأنها ما ينفعش تتدي لأي دور غير المالك.</p>
+<div class="table-wrap"><table>
+  <tr><th>المجموعة</th><th>الصلاحيات</th></tr>
+  <tr><td>الإعدادات والحسابات</td><td class="ltr">settings.manage · users.manage · audit.view</td></tr>
+  <tr><td>العملاء والعربيات</td><td class="ltr">customers.view · customers.manage</td></tr>
+  <tr><td>المنتجات والمخزون</td><td class="ltr">catalog.view · catalog.manage · stock.manage · costs.view</td></tr>
+  <tr><td>الفواتير</td><td class="ltr">orders.view · orders.view_closed · orders.create · orders.price_override · orders.discount · orders.discount_unlimited · orders.complete · orders.edit_completed · orders.cancel_completed</td></tr>
+  <tr><td>التحصيل</td><td class="ltr">payments.collect · payments.void · opening_balances.manage</td></tr>
+  <tr><td>المصروفات</td><td class="ltr">expenses.view · expenses.manage · expenses.void</td></tr>
+  <tr><td>الموظفين والمرتبات</td><td class="ltr">payroll.manage</td></tr>
+  <tr><td>التقارير</td><td class="ltr">reports.view</td></tr>
+</table></div>
+
+<h2 id="rules">5. قواعد لازم الشاشة تحترمها</h2>
+<div class="table-wrap"><table>
+  <tr><th>الحالة</th><th>اللي يحصل</th><th>اقتراح للشاشة</th></tr>
+  <tr><td>دور المالك (<code>is_owner: true</code>)</td><td>التعديل والمسح بيرجعوا <code>422</code></td><td>اعرضه للقراءة بس، من غير زرار تعديل أو مسح</td></tr>
+  <tr><td>دور عليه حسابات (<code>users_count &gt; 0</code>)</td><td>المسح بيرجع <code>409</code>، حتى لو الحسابات موقوفة</td><td>اقفل زرار المسح، أو اعرض رسالة إن الحسابات لازم تتنقل لدور تاني الأول</td></tr>
+  <tr><td>الأدوار الافتراضية (<code>is_default: true</code>)</td><td>تتعدل وتتمسح عادي (لو مالهاش حسابات)</td><td>ممكن تحط عليها علامة "افتراضي"</td></tr>
+  <tr><td>أي دور غير المالك</td><td>مربوط بفرع واحد، فأي حساب عليه محتاج <code>branch_id</code></td><td>اظهر اختيار الفرع لأي دور <code>value</code> بتاعه مش <code>owner</code></td></tr>
+  <tr><td>التعديل على دور</td><td>بيتطبق على أصحابه من الطلب الجاي على طول</td><td>صاحب الحساب لازم يعمل refresh لـ <code>auth/me</code> علشان الأزرار تتحدث</td></tr>
+</table></div>
+
+<h2 id="users">6. الحسابات والموظفين</h2>
+<div class="table-wrap"><table>
+  <tr><th>الـ API</th><th>اللي اتغير</th></tr>
+  <tr><td class="ltr">GET /options</td><td><span class="tag t-chg">اتغير</span><code>roles</code> بقت أدوار المركز من الداتابيز، بنفس الشكل <code>[{label, value}]</code>. ممكن يبقى فيها أدوار جديدة، وممكن دور افتراضي يختفي لو المالك مسحه، فما تكتبش القائمة ثابتة في الفرونت.</td></tr>
+  <tr><td class="ltr">POST/PUT /users</td><td><code>role</code> = <code>key</code> أي دور في المركز. دور من مركز تاني بيرجع <code>422</code>.</td></tr>
+  <tr><td class="ltr">GET /users?role=</td><td>الفلتر بقى بياخد أي <code>key</code>، مش بس الأربعة القديمة.</td></tr>
+  <tr><td class="ltr">POST/PUT /employees</td><td><code>account.role</code> = أي دور <strong>غير المالك</strong>. شيل <code>owner</code> من الاختيارات هنا.</td></tr>
+</table></div>
+<div class="danger">
+  <strong>حماية حسابات المالك:</strong> أي حساب غير المالك، حتى لو معاه <code>users.manage</code>، ما يقدرش يعمل حساب مالك، ولا يعدّل حساب مالك (ومن ضمنه الباسورد)، ولا يوقّفه. كل ده بيرجع <code>403</code>. في شاشة الحسابات، لو المستخدم الحالي مش مالك، اخفي اختيار <code>owner</code> وأزرار التعديل والإيقاف على حسابات المالك.
+</div>
+
+<h2 id="tc">7. الفني والكاشير يعدّل فاتورة مقفولة</h2>
+<p><code>technician_cashier</code> أخد صلاحية <code>orders.edit_completed</code>، فيقدر يضيف ويعدّل ويمسح بنود فاتورة مقفولة، ويعدّل الخصم والملاحظات، زي المالك.</p>
+<ul>
+  <li><strong>الإلغاء (<code>orders.cancel_completed</code>) لسه للمالك بس.</strong></li>
+  <li>اعتمد على <code>permissions</code> من <code>auth/me</code> علشان تظهر أزرار التعديل على الفاتورة المقفولة، مش على اسم الدور. كده أي دور جديد ياخد الصلاحية دي هيشتغل لوحده.</li>
+</ul>
+
+<h2 id="errors">8. الأخطاء</h2>
+<p>كلها بنفس الشكل المعتاد <code>{status, msg, data}</code>، و<code>msg</code> جاي بلغة الـ header <code>lang</code>.</p>
+<div class="table-wrap"><table>
+  <tr><th>الكود</th><th>متى</th><th>الرسالة (عربي)</th></tr>
+  <tr><td class="ltr">403</td><td>حد غير المالك فتح <code>/roles</code></td><td>رسالة الصلاحيات المعتادة</td></tr>
+  <tr><td class="ltr">403</td><td>حد غير المالك لمس حساب مالك</td><td>حسابات المالك يعملها ويعدلها المالك بس.</td></tr>
+  <tr><td class="ltr">422</td><td>تعديل أو مسح دور المالك</td><td>دور المالك ثابت: معاه كل الصلاحيات ومينفعش يتعدل أو يتمسح.</td></tr>
+  <tr><td class="ltr">409</td><td>مسح دور عليه حسابات</td><td>مينفعش تمسح دور عليه حسابات. انقل الحسابات لدور تاني الأول.</td></tr>
+  <tr><td class="ltr">422</td><td>اسم مكرر، صلاحية مش موجودة، <code>roles.manage</code>، أو <code>permissions</code> ناقصة في الإضافة</td><td>أخطاء الـ validation المعتادة على الحقل</td></tr>
+  <tr><td class="ltr">404</td><td><code>id</code> دور من مركز تاني</td><td>—</td></tr>
+</table></div>
+
+<h2 id="todo">9. المطلوب من الفرونت</h2>
+<ol>
+  <li><strong>شاشة الأدوار</strong> (للمالك بس): جدول بالأدوار فيه الاسم وعدد الحسابات، وفورم فيه الاسم و"يعتبر فني" وصلاحيات متقسمة مجموعات من <code>/roles/permissions</code>.</li>
+  <li><strong>اختيار الدور</strong> في الحسابات والموظفين: هات القائمة من <code>options.roles</code> كل مرة، وما تكتبهاش ثابتة. في الموظفين شيل <code>owner</code>، وأي دور غير المالك محتاج اختيار فرع.</li>
+  <li><strong>شاشة الحسابات</strong>: لو المستخدم مش مالك، اخفي اختيار المالك وأزرار التعديل والإيقاف على حسابات المالك.</li>
+  <li><strong>الفاتورة المقفولة</strong>: أزرار التعديل تظهر حسب <code>orders.edit_completed</code>، والإلغاء حسب <code>orders.cancel_completed</code>.</li>
+  <li><strong>سجل العمليات</strong>: فيه نوع جديد <code>auditable_type = "role"</code>، فمحتاج يتعرض باسم "دور".</li>
+</ol>
+<p class="muted">التفاصيل الكاملة والأمثلة موجودة في Postman collection (<code>postman/Dawar.postman_collection.json</code>) تحت مسارات <code>roles</code>.</p>
+
+</main>
+</body>
+</html>
