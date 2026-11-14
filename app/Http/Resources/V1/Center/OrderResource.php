@@ -42,7 +42,7 @@ class OrderResource extends JsonResource
                 'id' => $this->latestInvoiceWhatsapp->id,
                 'status' => $this->latestInvoiceWhatsapp->status->response(),
                 'recipient' => $this->latestInvoiceWhatsapp->recipient,
-                'error' => $this->latestInvoiceWhatsapp->error,
+                'error' => $this->latestInvoiceWhatsapp->failureMessage(),
                 'sent_at' => $this->latestInvoiceWhatsapp->sent_at?->timestamp,
                 'created_at' => $this->latestInvoiceWhatsapp->created_at?->timestamp,
             ] : null),

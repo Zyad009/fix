@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\WhatsappFailureReason;
 use App\Enums\WhatsappMessageStatus;
 use App\Enums\WhatsappMessageType;
 use App\Models\MaintenanceCenter;
@@ -80,12 +81,16 @@ class SendWhatsappMessageJob implements ShouldQueue
 
     public function failed(Throwable $exception): void
     {
-        $this->inMaintenanceCenter(fn () => $this->record(WhatsappMessageStatus::Failed, ['error' => mb_substr($exception->getMessage(), 0, 500)]));
+        $reason = WhatsappFailureReason::fromException($exception);
+
+        $this->inMaintenanceCenter(fn () => $this->record(WhatsappMessageStatus::Failed, ['error' => $reason->value]));
 
         Log::channel('whatsapp')->error('WhatsApp message failed permanently', [
             'maintenance_center_id' => $this->maintenanceCenterId,
+            'message_id' => $this->messageId,
             'type' => $this->type,
             'recipient' => PhoneNormalizer::mask($this->recipient),
+            'reason' => $reason->value,
             'error' => $exception->getMessage(),
         ]);
     }

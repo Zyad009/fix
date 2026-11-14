@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Center;
 
+use App\Enums\WhatsappFailureReason;
 use App\Enums\WhatsappMessageStatus;
+use App\Exceptions\DocumentImageException;
 use App\Jobs\SendWhatsappMessageJob;
 use App\Models\Customer;
 use App\Models\MaintenanceCenter;
@@ -181,7 +183,26 @@ class WhatsappTest extends CenterHttpTestCase
         $this->inMaintenanceCenter($this->maintenanceCenter);
         $message = WhatsappMessage::query()->sole();
         $this->assertSame(WhatsappMessageStatus::Failed, $message->status);
-        $this->assertSame('device offline', $message->error);
+        $this->assertSame('send_failed', $message->error);
+    }
+
+    public function test_an_image_failure_is_logged_without_exposing_the_renderer_output(): void
+    {
+        $vehicle = $this->vehicle($this->customer('عميل', '01012345678'));
+        $orderId = $this->invoice($vehicle, '300');
+
+        $this->jobs()[0]->failed(new DocumentImageException(new RuntimeException('The command "node" /home/app/browser.cjs failed')));
+
+        $this->inMaintenanceCenter($this->maintenanceCenter);
+        $this->assertSame('image_failed', WhatsappMessage::query()->sole()->error);
+
+        $this->getJson($this->url("orders/{$orderId}"), $this->as($this->owner, $this->branch))
+            ->assertOk()
+            ->assertJsonPath('data.whatsapp.status.value', 'failed')
+            ->assertJsonPath('data.whatsapp.error', WhatsappFailureReason::ImageFailed->label('ar'));
+        $this->getJson($this->url('whatsapp/messages'), [...$this->as($this->owner, $this->branch), 'lang' => 'en'])
+            ->assertOk()
+            ->assertJsonPath('data.0.error', WhatsappFailureReason::ImageFailed->label('en'));
     }
 
     public function test_manual_resend_and_its_rules(): void
@@ -287,14 +308,14 @@ class WhatsappTest extends CenterHttpTestCase
         $this->getJson($this->url("orders/{$open['id']}"), $headers)->assertOk()->assertJsonPath('data.whatsapp', null);
 
         $this->inMaintenanceCenter($this->maintenanceCenter);
-        WhatsappMessage::query()->sole()->update(['status' => WhatsappMessageStatus::Failed, 'error' => 'device offline']);
+        WhatsappMessage::query()->sole()->update(['status' => WhatsappMessageStatus::Failed, 'error' => 'raw gateway error from before reasons existed']);
         WhatsappMessage::query()->create(['type' => 'service_reminder', 'order_id' => $orderId, 'status' => WhatsappMessageStatus::Sent]);
 
         $this->getJson($this->url('orders?status=completed'), $headers)
             ->assertOk()
             ->assertJsonPath('data.0.id', $orderId)
             ->assertJsonPath('data.0.whatsapp.status.value', 'failed')
-            ->assertJsonPath('data.0.whatsapp.error', 'device offline');
+            ->assertJsonPath('data.0.whatsapp.error', WhatsappFailureReason::SendFailed->label());
     }
 
     public function test_resend_corrects_the_customer_phone_and_sends_the_invoice_again(): void

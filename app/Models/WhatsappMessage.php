@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\WhatsappFailureReason;
 use App\Enums\WhatsappMessageStatus;
 use App\Enums\WhatsappMessageType;
 use App\Models\Concerns\BelongsToMaintenanceCenter;
@@ -39,6 +40,14 @@ class WhatsappMessage extends Model
             'status' => WhatsappMessageStatus::class,
             'sent_at' => 'datetime',
         ];
+    }
+
+    /**
+     * The user-facing reason of a failed message; never the raw error.
+     */
+    public function failureMessage(): ?string
+    {
+        return WhatsappFailureReason::fromStored($this->error)?->label();
     }
 
     /**

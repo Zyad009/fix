@@ -2,10 +2,12 @@
 
 namespace App\Services\V1;
 
+use App\Exceptions\DocumentImageException;
 use App\Models\Order;
 use App\Models\PaymentReceipt;
 use Illuminate\Support\Str;
 use Spatie\Browsershot\Browsershot;
+use Throwable;
 
 /**
  * Invoice and receipt pictures for WhatsApp, rendered by headless Chrome. The
@@ -59,7 +61,11 @@ class DocumentImageService
 
         $html = view($view, [...$data, 'fonts' => $this->fonts(), 'logo' => $this->logo($data['center']['logo_path'] ?? null)])->render();
 
-        $this->browser($html)->save($path);
+        try {
+            $this->browser($html)->save($path);
+        } catch (Throwable $th) {
+            throw new DocumentImageException($th);
+        }
 
         return $path;
     }
