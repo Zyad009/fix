@@ -42,6 +42,11 @@ return [
         'no_sandbox' => (bool) env('BROWSERSHOT_NO_SANDBOX', false),
     ],
 
+    'log_viewer' => [
+        'username' => env('LOG_VIEWER_USERNAME'),
+        'password' => env('LOG_VIEWER_PASSWORD'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
