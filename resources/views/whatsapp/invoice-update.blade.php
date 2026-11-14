@@ -22,21 +22,15 @@
     <meta charset="utf-8">
     @include('whatsapp.partials.styles')
     <style>
-        body { border-top: 10px solid #d97706; }
-        .mark { background: #d97706; }
-        .notice { display: flex; align-items: center; gap: 14px; background: #fffbeb; border: 2px solid #f59e0b; border-radius: 14px; padding: 16px 20px; margin-bottom: 28px; }
-        .notice-icon { width: 48px; height: 48px; border-radius: 50%; background: #f59e0b; color: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .notice-title { font-size: 20px; font-weight: 700; color: #92400e; }
-        .notice-text { color: #78350f; }
+        .notice { display: flex; align-items: center; gap: 12px; background: #fffbeb; border: 1px solid #fde68a; border-inline-start: 5px solid #f59e0b; border-radius: 12px; padding: 12px 16px; margin-bottom: 28px; }
+        .notice-icon { width: 38px; height: 38px; border-radius: 50%; background: #f59e0b; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .notice-title { font-size: 17px; font-weight: 700; color: #92400e; }
+        .notice-text { color: #6b7280; font-size: 13px; }
 
-        .doc { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
-        .doc-no { color: #b45309; }
-        .doc-tag { display: inline-block; background: #f59e0b; color: #fff; font-weight: 700; font-size: 12px; border-radius: 999px; padding: 2px 12px; margin-bottom: 4px; }
-        .plate { color: #b45309; }
+        .doc-tag { display: inline-block; background: #fef3c7; color: #92400e; font-weight: 700; font-size: 12px; border-radius: 999px; padding: 1px 12px; margin-bottom: 4px; }
 
-        .changes { background: #fffbeb; border-color: #fde68a; }
-        .changes .card-title { color: #92400e; border-color: #fde68a; }
-        .change { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px dashed #fde68a; }
+        .changes { border-inline-start: 4px solid #f59e0b; }
+        .change { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px dashed #e5e7eb; }
         .change:last-child { border-bottom: 0; }
         .badge { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 12px; flex-shrink: 0; min-width: 56px; text-align: center; }
         .badge.added { background: #dcfce7; color: #166534; }
@@ -45,7 +39,7 @@
         .change-name { font-weight: 700; }
         .change-detail { color: #6b7280; margin-inline-start: auto; }
         .old { text-decoration: line-through; color: #9ca3af; }
-        .arrow { color: #d97706; font-weight: 700; padding: 0 4px; }
+        .arrow { color: #6b7280; font-weight: 700; padding: 0 4px; }
         .removed-name { text-decoration: line-through; color: #6b7280; }
 
         .compare { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
@@ -53,19 +47,16 @@
         .compare .label { margin-bottom: 4px; }
         .compare .figure { font-size: 20px; font-weight: 700; }
         .compare .before .figure { color: #6b7280; text-decoration: line-through; }
-        .compare .after { background: #fffbeb; border-color: #f59e0b; }
-        .compare .after .figure { color: #b45309; }
+        .compare .after { background: #eff6ff; border-color: #bfdbfe; }
+        .compare .after .figure { color: #1e3a8a; }
         .compare .up .figure { color: #b91c1c; }
         .compare .down .figure { color: #166534; }
-
-        .lines th { background: #fef3c7; }
-        .row.grand { background: #fffbeb; color: #92400e; }
     </style>
 </head>
 <body>
     <div class="notice">
         <div class="notice-icon">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
         </div>
         <div>
             <div class="notice-title">تم تعديل الفاتورة رقم <span class="ltr">#{{ $invoice['order_no'] }}</span></div>
