@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Enums\UserRole;
 use App\Models\Branch;
 use App\Models\Category;
 use App\Models\ExpenseCategory;
@@ -30,7 +29,7 @@ class AdminMaintenanceCenterTest extends CenterHttpTestCase
 
         $owner = User::query()->firstOrFail();
         $this->assertSame('owner@noor.test', $owner->email);
-        $this->assertSame(UserRole::Owner, $owner->role);
+        $this->assertTrue($owner->currentRole()->is_owner);
         $this->assertNull($owner->branch_id);
         $this->assertSame(1, Branch::query()->count());
         $this->assertEqualsCanonicalizing(Category::DEFAULTS, Category::query()->pluck('name')->all());

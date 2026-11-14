@@ -12,6 +12,7 @@ use App\Models\Employee;
 use App\Models\ExpenseCategory;
 use App\Models\MaintenanceCenter;
 use App\Models\Product;
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\V1\Admin\MaintenanceCenterProvisioningService;
@@ -97,8 +98,8 @@ class DemoSeeder extends Seeder
         $main = Branch::query()->where('is_default', true)->firstOrFail();
         branchContext()->set($main);
 
-        User::query()->create(['name' => 'كاشير الفرع', 'email' => 'cashier@dawar.test', 'password' => self::PASSWORD, 'role' => UserRole::Cashier, 'branch_id' => $main->id]);
-        $techUser = User::query()->create(['name' => 'فني الفرع', 'email' => 'tech@dawar.test', 'password' => self::PASSWORD, 'role' => UserRole::Technician, 'branch_id' => $main->id]);
+        User::query()->create(['name' => 'كاشير الفرع', 'email' => 'cashier@dawar.test', 'password' => self::PASSWORD, 'role_id' => Role::idOf(UserRole::Cashier), 'branch_id' => $main->id]);
+        $techUser = User::query()->create(['name' => 'فني الفرع', 'email' => 'tech@dawar.test', 'password' => self::PASSWORD, 'role_id' => Role::idOf(UserRole::Technician), 'branch_id' => $main->id]);
 
         $technician = Employee::query()->create(['name' => 'حسن الفني', 'user_id' => $techUser->id, 'job_title' => 'ميكانيكي', 'base_salary' => '6000', 'hired_at' => '2025-01-01']);
         Employee::query()->create(['name' => 'سعيد', 'job_title' => 'عامل غيار زيت', 'base_salary' => '4500', 'hired_at' => '2025-06-01']);

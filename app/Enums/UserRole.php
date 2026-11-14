@@ -4,6 +4,11 @@ namespace App\Enums;
 
 use App\Support\Traits\EnumTrait;
 
+/**
+ * Keys and default names of the roles every maintenance center starts with
+ * (config/rbac.php `defaults`). What a role may do is stored on the center's
+ * own `roles` row, see App\Models\Role.
+ */
 enum UserRole: string
 {
     use EnumTrait;
@@ -19,39 +24,4 @@ enum UserRole: string
         'technician' => ['ar' => 'فني', 'en' => 'Technician'],
         'technician_cashier' => ['ar' => 'فني وكاشير', 'en' => 'Technician & cashier'],
     ];
-
-    /**
-     * Owners act across every branch; staff are pinned to one.
-     */
-    public function isBranchBound(): bool
-    {
-        return $this !== self::Owner;
-    }
-
-    /**
-     * Roles that do the work themselves: orders they open default to their
-     * own employee record as the technician.
-     */
-    public function actsAsTechnician(): bool
-    {
-        return in_array($this, [self::Technician, self::TechnicianCashier], true);
-    }
-
-    /**
-     * Staff roles that can be given to an employee's login account.
-     *
-     * @return list<string>
-     */
-    public static function staffValues(): array
-    {
-        return array_values(array_filter(self::values(), fn (string $role): bool => $role !== self::Owner->value));
-    }
-
-    /**
-     * @return list<string>
-     */
-    public function permissions(): array
-    {
-        return config('rbac.roles.'.$this->value, []);
-    }
 }

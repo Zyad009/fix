@@ -585,7 +585,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإنشاء مركز جديد (مفيش تسجيل ذاتي). في transaction واحدة بيعمل:\nالمركز + حساب الـ **owner** + **الفرع الرئيسي** (`branch_name` اختياري) + التصنيفات الافتراضية للمنتجات والمصروفات.\n\n- `subscription_ends_at`: آخر يوم في الاشتراك؛ بعده المركز يبقى **قراءة بس** (أي كتابة → 402).\n- `cashier_max_discount`: أقصى خصم بالجنيه للكاشير.\n- `owner.username`: اختياري، وفريد على مستوى كل المراكز.\n\n---\n\n### 🇬🇧 English\n\nCreate a center (no self sign-up). One transaction creates the center, its **owner** account, the **main branch** (`branch_name` optional) and the default product/expense categories.\n\n- `subscription_ends_at`: last day of the subscription; after it the center is **read-only** (writes → 402).\n- `cashier_max_discount`: the cashier's maximum discount in EGP.\n- `owner.username`: optional, and unique across all centers.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/admin/maintenance-centers` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `plan` | — | string · max:50 · nullable |\n| `subscription_ends_at` | — | date · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `branch_name` | — | string · max:255 · nullable |\n| `owner` | ✅ | array |\n| `owner.name` | ✅ | string · max:255 |\n| `owner.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `owner.email` | ✅ | email · max:255 · unique:users |\n| `owner.password` | ✅ | string · min:8 · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإنشاء مركز جديد (مفيش تسجيل ذاتي). في transaction واحدة بيعمل:\r\nالمركز + حساب الـ **owner** + **الفرع الرئيسي** (`branch_name` اختياري) + التصنيفات الافتراضية للمنتجات والمصروفات.\r\n\r\n- `subscription_ends_at`: آخر يوم في الاشتراك؛ بعده المركز يبقى **قراءة بس** (أي كتابة → 402).\r\n- `cashier_max_discount`: أقصى خصم بالجنيه للكاشير.\r\n- `owner.username`: اختياري، وفريد على مستوى كل المراكز.\n\n---\n\n### 🇬🇧 English\n\nCreate a center (no self sign-up). One transaction creates the center, its **owner** account, the **main branch** (`branch_name` optional) and the default product/expense categories.\r\n\r\n- `subscription_ends_at`: last day of the subscription; after it the center is **read-only** (writes → 402).\r\n- `cashier_max_discount`: the cashier's maximum discount in EGP.\r\n- `owner.username`: optional, and unique across all centers.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/admin/maintenance-centers` |\n| Auth / المصادقة | Bearer token (admin) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `super admin` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `plan` | — | string · max:50 · nullable |\n| `subscription_ends_at` | — | date · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `branch_name` | — | string · max:255 · nullable |\n| `owner` | ✅ | array |\n| `owner.name` | ✅ | string · max:255 |\n| `owner.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `owner.email` | ✅ | email · max:255 · unique:users |\n| `owner.password` | ✅ | string · min:8 · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"مركز الأمل\",\n    \"phone\": \"01000000000\",\n    \"address\": \"الإسكندرية\",\n    \"plan\": \"pro\",\n    \"subscription_ends_at\": \"2027-12-31\",\n    \"cashier_max_discount\": 100,\n    \"branch_name\": \"الفرع الرئيسي\",\n    \"owner\": {\n        \"name\": \"أحمد\",\n        \"email\": \"owner@amal.test\",\n        \"password\": \"secret123\"\n    }\n}"
@@ -1106,7 +1106,7 @@
                         "auth": {
                             "type": "noauth"
                         },
-                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\n\n**الرد:** `token`, `user` (بالدور)، `maintenance_center`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\n\n**Returns:** `token`, `user` (with role), `maintenance_center`, available `branches`, and `permissions` (for hiding UI actions).\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\r\n\r\n**الرد:** `token`, `user` (بالدور)، `maintenance_center`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\r\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\r\n\r\n**Returns:** `token`, `user` (with role), `maintenance_center`, available `branches`, and `permissions` (for hiding UI actions).\r\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"email\": \"owner@dawar.test\",\n    \"password\": \"password\"\n}"
@@ -1167,7 +1167,7 @@
                         "auth": {
                             "type": "noauth"
                         },
-                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\n\n**الرد:** `token`, `user` (بالدور)، `maintenance_center`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\n\n**Returns:** `token`, `user` (with role), `maintenance_center`, available `branches`, and `permissions` (for hiding UI actions).\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nدخول مستخدم المركز (5 محاولات في الدقيقة). ابعت `email` أو `username` مع `password`، ولو الاتنين اتبعتوا بيتستخدم `email`.\r\n\r\n**الرد:** `token`, `user` (بالدور)، `maintenance_center`، `branches` (المتاحة له)، `permissions` (عشان الفرونت يخفي الأزرار).\r\nبيترفض لو المستخدم أو المركز موقوف (403 `account_inactive`).\n\n---\n\n### 🇬🇧 English\n\nCenter user login (5 attempts per minute). Send `email` or `username` with `password`; if both are sent, `email` is used.\r\n\r\n**Returns:** `token`, `user` (with role), `maintenance_center`, available `branches`, and `permissions` (for hiding UI actions).\r\nRejected if the user or the center is suspended (403 `account_inactive`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/auth/login` |\n| Auth / المصادقة | none (public) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | — |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `email` | ⚠️ | required_without:username · email · max:255 · nullable |\n| `username` | ⚠️ | required_without:email · string · max:50 · nullable |\n| `password` | ✅ | string · max:255 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"username\": \"owner3\",\n    \"password\": \"password\"\n}"
@@ -1384,7 +1384,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\n**المصدر الوحيد للماركات والموديلات في الفرونت** (عشان الإدخال يبقى موحد).\n\nكل ماركة: `id`, `name_ar`, `name_en`, `logo_url`, و `models[]`.\nفي العربية ابعت `car_make_id` و `car_model_id` من هنا، و `year` (سنة الموديل).\n\n---\n\n### 🇬🇧 English\n\n**The single source of makes and models for the frontend** (so input stays consistent).\n\nEach make: `id`, `name_ar`, `name_en`, `logo_url`, `models[]`.\nOn a vehicle send `car_make_id` / `car_model_id` from here, and `year` (model year).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/car-makes` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                        "description": "### 🇪🇬 العربية\n\n**المصدر الوحيد للماركات والموديلات في الفرونت** (عشان الإدخال يبقى موحد).\r\n\r\nكل ماركة: `id`, `name_ar`, `name_en`, `logo_url`, و `models[]`.\r\nفي العربية ابعت `car_make_id` و `car_model_id` من هنا، و `year` (سنة الموديل).\n\n---\n\n### 🇬🇧 English\n\n**The single source of makes and models for the frontend** (so input stays consistent).\r\n\r\nEach make: `id`, `name_ar`, `name_en`, `logo_url`, `models[]`.\r\nOn a vehicle send `car_make_id` / `car_model_id` from here, and `year` (model year).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/car-makes` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
                     }
                 }
             ]
@@ -2085,7 +2085,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\n**سداد من إجمالي المديونية — توزيع تلقائي من الأقدم.**\n\n- `amount` مطلوب، `method` اختياري (افتراضي `cash`)، `notes` اختياري.\n- `allocation` مش لازم (الافتراضي `oldest`).\n- `vehicle_id` اختياري: يقصر التوزيع على فواتير عربية واحدة.\n- المبلغ أكبر من إجمالي المديونية → 422.\n\n**الرد:** الإيصال (`receipt_no`, `amount`, `method`, `payments[]` بالتوزيع والمتبقي على كل فاتورة). يتطبع من `receipts/{id}/print`.\n\n---\n\n### 🇬🇧 English\n\n**Pay from the total debt — automatic, oldest first.**\n\n- `amount` required, `method` optional (default `cash`), `notes` optional.\n- `allocation` may be omitted (default `oldest`).\n- `vehicle_id` optional: limits the allocation to one vehicle's invoices.\n- Amount above the total debt → 422.\n\n**Returns:** the receipt (`receipt_no`, `amount`, `method`, `payments[]` with the split and each invoice's remaining). Print via `receipts/{id}/print`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/customers/{customer}/payments` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payments.collect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `method` | — | in: cash, instapay, wallet, card, bank · **default: `cash`** |\n| `vehicle_id` | ⚠️ | integer · exists:vehicles · nullable · **oldest only** |\n| `notes` | — | string · max:500 · nullable |\n| `allocation` | — | in: oldest,manual · **default: `oldest` · `manual` needs `orders`** |\n| `orders` | ⚠️ | array · min:1 · max:100 · **manual only** |\n| `orders.*.order_id` | ✅ | integer · distinct |\n| `orders.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
+                        "description": "### 🇪🇬 العربية\n\n**سداد من إجمالي المديونية — توزيع تلقائي من الأقدم.**\r\n\r\n- `amount` مطلوب، `method` اختياري (افتراضي `cash`)، `notes` اختياري.\r\n- `allocation` مش لازم (الافتراضي `oldest`).\r\n- `vehicle_id` اختياري: يقصر التوزيع على فواتير عربية واحدة.\r\n- المبلغ أكبر من إجمالي المديونية → 422.\r\n\r\n**الرد:** الإيصال (`receipt_no`, `amount`, `method`, `payments[]` بالتوزيع والمتبقي على كل فاتورة). يتطبع من `receipts/{id}/print`.\n\n---\n\n### 🇬🇧 English\n\n**Pay from the total debt — automatic, oldest first.**\r\n\r\n- `amount` required, `method` optional (default `cash`), `notes` optional.\r\n- `allocation` may be omitted (default `oldest`).\r\n- `vehicle_id` optional: limits the allocation to one vehicle's invoices.\r\n- Amount above the total debt → 422.\r\n\r\n**Returns:** the receipt (`receipt_no`, `amount`, `method`, `payments[]` with the split and each invoice's remaining). Print via `receipts/{id}/print`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/customers/{customer}/payments` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payments.collect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `method` | — | in: cash, instapay, wallet, card, bank · **default: `cash`** |\n| `vehicle_id` | ⚠️ | integer · exists:vehicles · nullable · **oldest only** |\n| `notes` | — | string · max:500 · nullable |\n| `allocation` | — | in: oldest,manual · **default: `oldest` · `manual` needs `orders`** |\n| `orders` | ⚠️ | array · min:1 · max:100 · **manual only** |\n| `orders.*.order_id` | ✅ | integer · distinct |\n| `orders.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"amount\": 500,\n    \"method\": \"cash\",\n    \"notes\": null\n}"
@@ -2146,7 +2146,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\n**سداد من الإجمالي — المستخدم يوزّع بنفسه.**\n\n- `allocation: \"manual\"` و `orders: [{order_id, amount}]` (الفواتير من `unpaid-orders`).\n- **مجموع المبالغ لازم = `amount`** وإلا 422.\n- كل مبلغ مايزيدش عن المتبقي على فاتورته.\n- الفاتورة لازم تكون للعميل ده ومقفولة ولسه عليها فلوس، وإلا 422 **ومفيش حاجة بتتسجل**.\n- ممكن فواتير من فروع مختلفة؛ الإيصال بيتسجل في درج فرع المستخدم.\n\nنصيحة للفرونت: لما يعلّم فاتورة املأ مبلغها بالمتبقي عليها وخلّيه يعدّل.\n\n---\n\n### 🇬🇧 English\n\n**Pay from the total debt — the user splits it.**\n\n- `allocation: \"manual\"` and `orders: [{order_id, amount}]` (invoices from `unpaid-orders`).\n- **The amounts must add up to `amount`**, otherwise 422.\n- Each amount ≤ what that invoice still owes.\n- Each invoice must be this customer's, completed and unpaid, otherwise 422 **and nothing is recorded**.\n- Invoices may come from different branches; the receipt goes to the user's branch drawer.\n\nFrontend tip: when an invoice is ticked, prefill its remaining amount and let the user edit it.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/customers/{customer}/payments` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payments.collect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `method` | — | in: cash, instapay, wallet, card, bank · **default: `cash`** |\n| `vehicle_id` | ⚠️ | integer · exists:vehicles · nullable · **oldest only** |\n| `notes` | — | string · max:500 · nullable |\n| `allocation` | — | in: oldest,manual · **default: `oldest` · `manual` needs `orders`** |\n| `orders` | ⚠️ | array · min:1 · max:100 · **manual only** |\n| `orders.*.order_id` | ✅ | integer · distinct |\n| `orders.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
+                        "description": "### 🇪🇬 العربية\n\n**سداد من الإجمالي — المستخدم يوزّع بنفسه.**\r\n\r\n- `allocation: \"manual\"` و `orders: [{order_id, amount}]` (الفواتير من `unpaid-orders`).\r\n- **مجموع المبالغ لازم = `amount`** وإلا 422.\r\n- كل مبلغ مايزيدش عن المتبقي على فاتورته.\r\n- الفاتورة لازم تكون للعميل ده ومقفولة ولسه عليها فلوس، وإلا 422 **ومفيش حاجة بتتسجل**.\r\n- ممكن فواتير من فروع مختلفة؛ الإيصال بيتسجل في درج فرع المستخدم.\r\n\r\nنصيحة للفرونت: لما يعلّم فاتورة املأ مبلغها بالمتبقي عليها وخلّيه يعدّل.\n\n---\n\n### 🇬🇧 English\n\n**Pay from the total debt — the user splits it.**\r\n\r\n- `allocation: \"manual\"` and `orders: [{order_id, amount}]` (invoices from `unpaid-orders`).\r\n- **The amounts must add up to `amount`**, otherwise 422.\r\n- Each amount ≤ what that invoice still owes.\r\n- Each invoice must be this customer's, completed and unpaid, otherwise 422 **and nothing is recorded**.\r\n- Invoices may come from different branches; the receipt goes to the user's branch drawer.\r\n\r\nFrontend tip: when an invoice is ticked, prefill its remaining amount and let the user edit it.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/customers/{customer}/payments` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payments.collect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `method` | — | in: cash, instapay, wallet, card, bank · **default: `cash`** |\n| `vehicle_id` | ⚠️ | integer · exists:vehicles · nullable · **oldest only** |\n| `notes` | — | string · max:500 · nullable |\n| `allocation` | — | in: oldest,manual · **default: `oldest` · `manual` needs `orders`** |\n| `orders` | ⚠️ | array · min:1 · max:100 · **manual only** |\n| `orders.*.order_id` | ✅ | integer · distinct |\n| `orders.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"amount\": 500,\n    \"method\": \"instapay\",\n    \"allocation\": \"manual\",\n    \"orders\": [\n        {\n            \"order_id\": 1,\n            \"amount\": 300\n        },\n        {\n            \"order_id\": 2,\n            \"amount\": 200\n        }\n    ]\n}"
@@ -2273,7 +2273,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\n**كشف حساب العميل** (زي كشف البنك) من كل الفروع.\n\n**الرد:**\n```json\n{\n  \"customer\": {\"id\", \"name\", \"phone\"},\n  \"summary\": {\"total_invoiced\", \"total_paid\", \"balance\", \"open_orders_deposits\", \"vehicles\": [...]},\n  \"period\": {\"from\", \"to\"},\n  \"opening_balance\": 0,\n  \"entries\": [\n    {\"type\": {\"value\": \"invoice|opening_balance|payment\", \"label\"}, \"date\": 1761300000,\n     \"reference\": 12, \"order_id\": 5, \"receipt_id\": null, \"vehicle_plate\", \"branch\",\n     \"method\": null, \"debit\": 300, \"credit\": 0, \"balance\": 300}\n  ],\n  \"closing_balance\": 600\n}\n```\n- `debit` = عليه (فاتورة / رصيد افتتاحي)، `credit` = له (تحصيل، صف لكل إيصال)، `balance` = الرصيد بعد الحركة.\n- `reference` = رقم الفاتورة أو الإيصال حسب النوع.\n- `closing_balance` = المديونية الحالية بالظبط (من غير `to`).\n- الأوردرات الملغية مش ظاهرة. العربون على أوردر مفتوح في `summary.open_orders_deposits` بس.\n- `from`/`to` بأيام المركز؛ اللي قبل `from` بيتجمع في `opening_balance`.\n\n---\n\n### 🇬🇧 English\n\n**Customer account statement** (bank-statement style) across all branches.\n\n- `debit` = owed (invoice / opening balance), `credit` = paid (collection, one row per receipt), `balance` = running balance after the row.\n- `reference` = invoice number or receipt number depending on the type.\n- `closing_balance` equals the current debt exactly (without `to`).\n- Cancelled orders are left out. Deposits on still-open orders appear only in `summary.open_orders_deposits`.\n- `from`/`to` are center-local days; everything before `from` is summed into `opening_balance`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/customers/{customer}/statement` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view_closed` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `format` | — | in:json,excel · nullable |\n| `from` | — | date_format:Y-m-d · nullable |\n| `to` | — | date_format:Y-m-d · after_or_equal:from · nullable |\n| `vehicle_id` | — | integer · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
+                        "description": "### 🇪🇬 العربية\n\n**كشف حساب العميل** (زي كشف البنك) من كل الفروع.\r\n\r\n**الرد:**\r\n```json\r\n{\r\n  \"customer\": {\"id\", \"name\", \"phone\"},\r\n  \"summary\": {\"total_invoiced\", \"total_paid\", \"balance\", \"open_orders_deposits\", \"vehicles\": [...]},\r\n  \"period\": {\"from\", \"to\"},\r\n  \"opening_balance\": 0,\r\n  \"entries\": [\r\n    {\"type\": {\"value\": \"invoice|opening_balance|payment\", \"label\"}, \"date\": 1761300000,\r\n     \"reference\": 12, \"order_id\": 5, \"receipt_id\": null, \"vehicle_plate\", \"branch\",\r\n     \"method\": null, \"debit\": 300, \"credit\": 0, \"balance\": 300}\r\n  ],\r\n  \"closing_balance\": 600\r\n}\r\n```\r\n- `debit` = عليه (فاتورة / رصيد افتتاحي)، `credit` = له (تحصيل، صف لكل إيصال)، `balance` = الرصيد بعد الحركة.\r\n- `reference` = رقم الفاتورة أو الإيصال حسب النوع.\r\n- `closing_balance` = المديونية الحالية بالظبط (من غير `to`).\r\n- الأوردرات الملغية مش ظاهرة. العربون على أوردر مفتوح في `summary.open_orders_deposits` بس.\r\n- `from`/`to` بأيام المركز؛ اللي قبل `from` بيتجمع في `opening_balance`.\n\n---\n\n### 🇬🇧 English\n\n**Customer account statement** (bank-statement style) across all branches.\r\n\r\n- `debit` = owed (invoice / opening balance), `credit` = paid (collection, one row per receipt), `balance` = running balance after the row.\r\n- `reference` = invoice number or receipt number depending on the type.\r\n- `closing_balance` equals the current debt exactly (without `to`).\r\n- Cancelled orders are left out. Deposits on still-open orders appear only in `summary.open_orders_deposits`.\r\n- `from`/`to` are center-local days; everything before `from` is summed into `opening_balance`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/customers/{customer}/statement` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view_closed` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `format` | — | in:json,excel · nullable |\n| `from` | — | date_format:Y-m-d · nullable |\n| `to` | — | date_format:Y-m-d · after_or_equal:from · nullable |\n| `vehicle_id` | — | integer · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 },
                 {
@@ -2331,7 +2331,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\n**الفواتير اللي عليها مديونية** (لشاشة \"سداد فاتورة معينة\" و\"أختار الفواتير بنفسي\")، من كل الفروع، من الأقدم للأحدث.\n\n**الرد:** `{ \"total_due\": 700, \"orders\": [ {id, order_no, branch, vehicle, total, paid, remaining, completed_at, ...} ] }`\n\n---\n\n### 🇬🇧 English\n\n**Invoices that still owe money** (for \"pay a specific invoice\" and \"choose invoices myself\"), every branch, oldest first.\n\n**Returns:** `{ \"total_due\": 700, \"orders\": [ {id, order_no, branch, vehicle, total, paid, remaining, completed_at, ...} ] }`\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/customers/{customer}/unpaid-orders` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payments.collect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `vehicle_id` | — | integer · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
+                        "description": "### 🇪🇬 العربية\n\n**الفواتير اللي عليها مديونية** (لشاشة \"سداد فاتورة معينة\" و\"أختار الفواتير بنفسي\")، من كل الفروع، من الأقدم للأحدث.\r\n\r\n**الرد:** `{ \"total_due\": 700, \"orders\": [ {id, order_no, branch, vehicle, total, paid, remaining, completed_at, ...} ] }`\n\n---\n\n### 🇬🇧 English\n\n**Invoices that still owe money** (for \"pay a specific invoice\" and \"choose invoices myself\"), every branch, oldest first.\r\n\r\n**Returns:** `{ \"total_due\": 700, \"orders\": [ {id, order_no, branch, vehicle, total, paid, remaining, completed_at, ...} ] }`\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/customers/{customer}/unpaid-orders` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payments.collect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `vehicle_id` | — | integer · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 },
                 {
@@ -2603,7 +2603,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإضافة موظف (owner)، **ومعاه حساب الدخول لو محتاج** (زي fitZone).\n\n`account`: `{username?, email, password, role}` — الدور `cashier` أو `technician` أو `technician_cashier` (فني وكاشير). **`owner` ممنوع.**\nالحساب بيتعمل في نفس فرع الموظف وبنفس اسمه. الرد فيه `account: {id, username, email, role, is_active}`.\n\n---\n\n### 🇬🇧 English\n\nCreate an employee (owner), **with a login account when needed** (like fitZone).\n\n`account`: `{username?, email, password, role}` — role `cashier`, `technician` or `technician_cashier`. **`owner` is not allowed.**\nThe account is created in the employee's branch with the same name. The response includes `account: {id, username, email, role, is_active}`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/employees` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payroll.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:20 · nullable |\n| `job_title` | — | string · max:100 · nullable |\n| `base_salary` | ✅ | decimal:0,2 · min:0 · max:9999999999 |\n| `hired_at` | — | date_format:Y-m-d · nullable |\n| `account` | — | array |\n| `account.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `account.email` | ✅ | email · max:255 · unique:users |\n| `account.password` | ✅ | string · min:8 · max:255 |\n| `account.role` | ✅ | in: cashier,technician,technician_cashier |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإضافة موظف (owner)، **ومعاه حساب الدخول لو محتاج** (زي fitZone).\r\n\r\n`account`: `{username?, email, password, role}` — الدور `cashier` أو `technician` أو `technician_cashier` (فني وكاشير). **`owner` ممنوع.**\r\nالحساب بيتعمل في نفس فرع الموظف وبنفس اسمه. الرد فيه `account: {id, username, email, role, is_active}`.\n\n---\n\n### 🇬🇧 English\n\nCreate an employee (owner), **with a login account when needed** (like fitZone).\r\n\r\n`account`: `{username?, email, password, role}` — role `cashier`, `technician` or `technician_cashier`. **`owner` is not allowed.**\r\nThe account is created in the employee's branch with the same name. The response includes `account: {id, username, email, role, is_active}`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/employees` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payroll.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `phone` | — | string · max:20 · nullable |\n| `job_title` | — | string · max:100 · nullable |\n| `base_salary` | ✅ | decimal:0,2 · min:0 · max:9999999999 |\n| `hired_at` | — | date_format:Y-m-d · nullable |\n| `account` | — | array |\n| `account.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `account.email` | ✅ | email · max:255 · unique:users |\n| `account.password` | ✅ | string · min:8 · max:255 |\n| `account.role` | ✅ | string · exists:roles |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"حسن\",\n    \"job_title\": \"ميكانيكي\",\n    \"base_salary\": 6000,\n    \"hired_at\": \"2026-01-01\",\n    \"account\": {\n        \"username\": \"hassan\",\n        \"email\": \"hassan@dawar.test\",\n        \"password\": \"secret123\",\n        \"role\": \"technician_cashier\"\n    }\n}"
@@ -2715,7 +2715,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل موظف. `account`: لو عنده حساب بيتعدّل (أي حقل؛ تغيير الباسورد بيطلّعه)، ولو معندوش بيتعمل (`email` + `password` + `role`). تغيير الاسم بيغيّر اسم الحساب.\n\n---\n\n### 🇬🇧 English\n\nUpdate an employee. `account`: updates the existing login (any field; a password change signs it out) or creates one (`email` + `password` + `role`). Renaming the employee renames the account.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/employees/{employee}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payroll.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:20 · nullable |\n| `job_title` | — | string · max:100 · nullable |\n| `base_salary` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `hired_at` | — | date_format:Y-m-d · nullable |\n| `account` | — | array |\n| `account.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `account.email` | ✅ | email · max:255 · unique:users |\n| `account.password` | ✅ | string · min:8 · max:255 |\n| `account.role` | ✅ | in: cashier,technician,technician_cashier |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل موظف. `account`: لو عنده حساب بيتعدّل (أي حقل؛ تغيير الباسورد بيطلّعه)، ولو معندوش بيتعمل (`email` + `password` + `role`). تغيير الاسم بيغيّر اسم الحساب.\n\n---\n\n### 🇬🇧 English\n\nUpdate an employee. `account`: updates the existing login (any field; a password change signs it out) or creates one (`email` + `password` + `role`). Renaming the employee renames the account.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/employees/{employee}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `payroll.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:20 · nullable |\n| `job_title` | — | string · max:100 · nullable |\n| `base_salary` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `hired_at` | — | date_format:Y-m-d · nullable |\n| `account` | — | array |\n| `account.username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `account.email` | ✅ | email · max:255 · unique:users |\n| `account.password` | ✅ | string · min:8 · max:255 |\n| `account.role` | ✅ | string · exists:roles |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"base_salary\": 6500,\n    \"account\": {\n        \"role\": \"technician_cashier\"\n    }\n}"
@@ -3472,7 +3472,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nالقوائم الثابتة للفرونت (قيمة + اسم بلغة الـ `lang`): طرق الدفع، حالات الأوردر، أنواع المنتجات، الأدوار، أنواع حركات الموظفين...\n\n---\n\n### 🇬🇧 English\n\nFixed lists for the frontend (value + label in the `lang` language): payment methods, order statuses, product kinds, roles, employee transaction types…\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/options` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                        "description": "### 🇪🇬 العربية\n\nالقوائم الثابتة للفرونت (قيمة + اسم بلغة الـ `lang`): طرق الدفع، حالات الأوردر، أنواع المنتجات، أدوار المركز (بما فيها اللي المالك عملها، والقيمة هي `key`)، أنواع حركات الموظفين...\n\n---\n\n### 🇬🇧 English\n\nFixed lists for the frontend (value + label in the `lang` language): payment methods, order statuses, product kinds, the center's roles (custom ones included, the value is the `key`), employee transaction types…\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/options` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | — |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
                     }
                 }
             ]
@@ -3742,7 +3742,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\n**زرار \"حفظ الفاتورة\".** بيعمل الأوردر، ولو `complete: true` بيقفله فاتورة ويحصّل في نفس الـ call (transaction واحدة: لو أي حاجة فشلت مفيش حاجة بتتسجل).\n\n**العربية — واحد من الاتنين:**\n- `vehicle_id`: عربية متسجلة (من البحث).\n- أو `customer` + `vehicle` من الشاشة:\n  - `customer`: `{id}` لعميل موجود، أو `{name, phone}` (لو التليفون متسجل بيتستخدم العميل الموجود).\n  - `vehicle`: لو اللوحة متسجلة لنفس العميل بتتستخدم؛ لو **لعميل تاني → 422**.\n  - محتاج صلاحية إضافة عملاء (الفني العادي → 403).\n\n**البنود:** من الكتالوج `{product_id, qty}` (+ `unit_price` لو عنده صلاحية تغيير السعر)، أو صنف حر `{name, qty, unit_price}`.\n**الخصم:** مبلغ (النسبة يحسبها الفرونت). الكاشير ليه حد أقصى.\n**القفل:** `complete: true` + `payments: [{amount, method?}]` (`method` افتراضي `cash`).\n**الفني الافتراضي:** لو اللي فاتح \"فني\" أو \"فني وكاشير\" ومابعتش `technician_id` → بيتحط هو.\n\n**الرد:** `{order, warnings[]}` — الأوردر فيه `parts_total` و `services_total` و `subtotal`, `discount`, `total`, `paid`, `remaining`. التحذيرات: العداد أقل من آخر قراءة أو المخزون نقص (من غير منع).\n\n---\n\n### 🇬🇧 English\n\n**The \"save invoice\" button.** Creates the order; with `complete: true` it also completes it and collects payments in the same call (one transaction: on any failure nothing is saved).\n\n**Vehicle — one of:**\n- `vehicle_id`: a registered vehicle (from search).\n- or `customer` + `vehicle` typed on the screen:\n  - `customer`: `{id}` of an existing customer, or `{name, phone}` (a known phone reuses that customer).\n  - `vehicle`: a plate already registered to the same customer is reused; registered to **another customer → 422**.\n  - Requires the add-customers permission (plain technician → 403).\n\n**Lines:** catalog `{product_id, qty}` (+ `unit_price` with the price-override permission) or free line `{name, qty, unit_price}`.\n**Discount:** an amount (the frontend converts percentages). Cashiers have a cap.\n**Complete:** `complete: true` + `payments: [{amount, method?}]` (`method` defaults to `cash`).\n**Default technician:** a technician / technician-cashier who omits `technician_id` becomes the technician.\n\n**Returns:** `{order, warnings[]}` — the order includes `parts_total`, `services_total`, `subtotal`, `discount`, `total`, `paid`, `remaining`. Warnings: odometer below the last reading, or stock went short (never blocking).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.create` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `vehicle_id` | ⚠️ | required_without:vehicle · integer · exists:vehicles · nullable |\n| `odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `technician_id` | — | integer · nullable |\n| `discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `next_service_odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `next_service_date` | — | date_format:Y-m-d · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `items` | — | array · max:100 |\n| `items.*.product_id` | — | integer · exists:products · nullable |\n| `items.*.name` | ⚠️ | required_without:items.*.product_id · string · max:255 · nullable |\n| `items.*.kind` | — | in: part, service · nullable |\n| `items.*.qty` | ✅ | decimal:0,2 · gt:0 · max:99999999 |\n| `items.*.unit_price` | ⚠️ | required_without:items.*.product_id · decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `items.*.unit_cost` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `vehicle` | ⚠️ | array · prohibits:vehicle_id |\n| `vehicle.plate_number` | ✅ | string · max:30 |\n| `vehicle.vin` | — | string · max:50 · nullable |\n| `vehicle.car_make_id` | — | integer · exists:car_makes · nullable |\n| `vehicle.car_model_id` | — | integer · exists:car_models · nullable |\n| `vehicle.year` | — | integer · min:1950 · max:2027 · nullable |\n| `vehicle.color` | — | string · max:50 · nullable |\n| `vehicle.notes` | — | string · max:2000 · nullable |\n| `customer` | ⚠️ | required_with:vehicle · array |\n| `customer.id` | — | integer · exists:customers · nullable |\n| `customer.name` | ⚠️ | required_without:customer.id · string · max:255 · nullable |\n| `customer.phone` | ⚠️ | required_without:customer.id · string · regex:/^01[0125]\\d{8}$/ · nullable |\n| `complete` | — | boolean |\n| `payments` | ⚠️ | prohibited_unless:complete,true · array · max:5 |\n| `payments.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `payments.*.method` | — | in: cash, instapay, wallet, card, bank · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
+                        "description": "### 🇪🇬 العربية\n\n**زرار \"حفظ الفاتورة\".** بيعمل الأوردر، ولو `complete: true` بيقفله فاتورة ويحصّل في نفس الـ call (transaction واحدة: لو أي حاجة فشلت مفيش حاجة بتتسجل).\r\n\r\n**العربية — واحد من الاتنين:**\r\n- `vehicle_id`: عربية متسجلة (من البحث).\r\n- أو `customer` + `vehicle` من الشاشة:\r\n  - `customer`: `{id}` لعميل موجود، أو `{name, phone}` (لو التليفون متسجل بيتستخدم العميل الموجود).\r\n  - `vehicle`: لو اللوحة متسجلة لنفس العميل بتتستخدم؛ لو **لعميل تاني → 422**.\r\n  - محتاج صلاحية إضافة عملاء (الفني العادي → 403).\r\n\r\n**البنود:** من الكتالوج `{product_id, qty}` (+ `unit_price` لو عنده صلاحية تغيير السعر)، أو صنف حر `{name, qty, unit_price}`.\r\n**الخصم:** مبلغ (النسبة يحسبها الفرونت). الكاشير ليه حد أقصى.\r\n**القفل:** `complete: true` + `payments: [{amount, method?}]` (`method` افتراضي `cash`).\r\n**الفني الافتراضي:** لو اللي فاتح \"فني\" أو \"فني وكاشير\" ومابعتش `technician_id` → بيتحط هو.\r\n\r\n**الرد:** `{order, warnings[]}` — الأوردر فيه `parts_total` و `services_total` و `subtotal`, `discount`, `total`, `paid`, `remaining`. التحذيرات: العداد أقل من آخر قراءة أو المخزون نقص (من غير منع).\n\n---\n\n### 🇬🇧 English\n\n**The \"save invoice\" button.** Creates the order; with `complete: true` it also completes it and collects payments in the same call (one transaction: on any failure nothing is saved).\r\n\r\n**Vehicle — one of:**\r\n- `vehicle_id`: a registered vehicle (from search).\r\n- or `customer` + `vehicle` typed on the screen:\r\n  - `customer`: `{id}` of an existing customer, or `{name, phone}` (a known phone reuses that customer).\r\n  - `vehicle`: a plate already registered to the same customer is reused; registered to **another customer → 422**.\r\n  - Requires the add-customers permission (plain technician → 403).\r\n\r\n**Lines:** catalog `{product_id, qty}` (+ `unit_price` with the price-override permission) or free line `{name, qty, unit_price}`.\r\n**Discount:** an amount (the frontend converts percentages). Cashiers have a cap.\r\n**Complete:** `complete: true` + `payments: [{amount, method?}]` (`method` defaults to `cash`).\r\n**Default technician:** a technician / technician-cashier who omits `technician_id` becomes the technician.\r\n\r\n**Returns:** `{order, warnings[]}` — the order includes `parts_total`, `services_total`, `subtotal`, `discount`, `total`, `paid`, `remaining`. Warnings: odometer below the last reading, or stock went short (never blocking).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.create` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `vehicle_id` | ⚠️ | required_without:vehicle · integer · exists:vehicles · nullable |\n| `odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `technician_id` | — | integer · nullable |\n| `discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `next_service_odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `next_service_date` | — | date_format:Y-m-d · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `items` | — | array · max:100 |\n| `items.*.product_id` | — | integer · exists:products · nullable |\n| `items.*.name` | ⚠️ | required_without:items.*.product_id · string · max:255 · nullable |\n| `items.*.kind` | — | in: part, service · nullable |\n| `items.*.qty` | ✅ | decimal:0,2 · gt:0 · max:99999999 |\n| `items.*.unit_price` | ⚠️ | required_without:items.*.product_id · decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `items.*.unit_cost` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `vehicle` | ⚠️ | array · prohibits:vehicle_id |\n| `vehicle.plate_number` | ✅ | string · max:30 |\n| `vehicle.vin` | — | string · max:50 · nullable |\n| `vehicle.car_make_id` | — | integer · exists:car_makes · nullable |\n| `vehicle.car_model_id` | — | integer · exists:car_models · nullable |\n| `vehicle.year` | — | integer · min:1950 · max:2027 · nullable |\n| `vehicle.color` | — | string · max:50 · nullable |\n| `vehicle.notes` | — | string · max:2000 · nullable |\n| `customer` | ⚠️ | required_with:vehicle · array |\n| `customer.id` | — | integer · exists:customers · nullable |\n| `customer.name` | ⚠️ | required_without:customer.id · string · max:255 · nullable |\n| `customer.phone` | ⚠️ | required_without:customer.id · string · regex:/^01[0125]\\d{8}$/ · nullable |\n| `complete` | — | boolean |\n| `payments` | ⚠️ | prohibited_unless:complete,true · array · max:5 |\n| `payments.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `payments.*.method` | — | in: cash, instapay, wallet, card, bank · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"customer\": {\n        \"name\": \"محمد علي\",\n        \"phone\": \"01012345678\"\n    },\n    \"vehicle\": {\n        \"plate_number\": \"أ ب ج 1234\",\n        \"vin\": null,\n        \"car_make_id\": 1,\n        \"car_model_id\": null,\n        \"year\": 2019\n    },\n    \"odometer\": 45000,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"qty\": 1\n        },\n        {\n            \"name\": \"مصنعية\",\n            \"qty\": 1,\n            \"unit_price\": 300\n        }\n    ],\n    \"discount\": 50,\n    \"next_service_odometer\": 50000,\n    \"next_service_date\": \"2027-01-15\",\n    \"complete\": true,\n    \"payments\": [\n        {\n            \"amount\": 300,\n            \"method\": \"cash\"\n        }\n    ]\n}"
@@ -3798,7 +3798,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتفاصيل الأوردر بالبنود والمدفوعات والعربية والعميل. الفني مابيشوفش التكلفة ولا الأوردرات المقفولة. `whatsapp`: آخر رسالة واتساب للفاتورة `{id, status, recipient, error, sent_at, created_at}`؛ `status` واحدة من `queued` قيد الإرسال، `sent`، `failed` (السبب في `error`)، أو `skipped_*`. ولو مفيش رسالة بتبقى `null`.\n\n---\n\n### 🇬🇧 English\n\nOrder details with lines, payments, vehicle and customer. Technicians see neither costs nor closed orders. `whatsapp`: the invoice's latest WhatsApp message `{id, status, recipient, error, sent_at, created_at}`; `status` is `queued`, `sent`, `failed` (reason in `error`) or `skipped_*`. `null` when no message exists.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/orders/{order}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                        "description": "### 🇪🇬 العربية\n\nتفاصيل الأوردر بالبنود والمدفوعات والعربية والعميل. الفني مابيشوفش التكلفة ولا الأوردرات المقفولة. `whatsapp`: آخر رسالة واتساب للفاتورة `{id, status, recipient, error, sent_at, created_at}`؛ `status` واحدة من `queued` قيد الإرسال، `sent`، `failed` (السبب في `error`: نص مترجم مختصر للمستخدم، والتفاصيل الفنية في لوج السيرفر بس)، أو `skipped_*`. ولو مفيش رسالة بتبقى `null`.\n\n---\n\n### 🇬🇧 English\n\nOrder details with lines, payments, vehicle and customer. Technicians see neither costs nor closed orders. `whatsapp`: the invoice's latest WhatsApp message `{id, status, recipient, error, sent_at, created_at}`; `status` is `queued`, `sent`, `failed` (reason in `error`: a short translated text for the user; technical details stay in the server log) or `skipped_*`. `null` when no message exists.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/orders/{order}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
                     }
                 },
                 {
@@ -4457,7 +4457,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nشاشة \"إنشاء فاتورة\" في call واحد.\n\n**الرد:** `{ \"next_order_no\": 8, \"categories\": [ { \"id\", \"name\", \"products\": [ ... ] } ] }`\n- `next_order_no`: رقم الفاتورة **المتوقع** للعرض بس (الـ prefix زي INV- شغل الفرونت). الرقم الفعلي بيرجع مع الحفظ.\n- كل منتج: `id`, `name`, `barcode`, `kind`, `sale_price`, `image_url`, `stock` (رصيد الفرع).\n\n**`q`:** باركود (من الماسح) أو جزء من الاسم. باركود مطابق → المنتج ده بس؛ غير كده بحث بالاسم والتصنيفات اللي فيها نتائج بس.\n\n---\n\n### 🇬🇧 English\n\nThe \"new invoice\" screen in one call.\n\n**Returns:** `{ \"next_order_no\": 8, \"categories\": [ { \"id\", \"name\", \"products\": [ ... ] } ] }`\n- `next_order_no`: the **expected** invoice number, display only (a prefix like INV- is the frontend's). The real number comes back on save.\n- Each product: `id`, `name`, `barcode`, `kind`, `sale_price`, `image_url`, `stock` (branch stock).\n\n**`q`:** a scanned barcode or part of a name. Exact barcode match → that product only; otherwise a name search returning only matching categories.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/pos/catalog` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `catalog.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `q` | — | string · max:100 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
+                        "description": "### 🇪🇬 العربية\n\nشاشة \"إنشاء فاتورة\" في call واحد.\r\n\r\n**الرد:** `{ \"next_order_no\": 8, \"categories\": [ { \"id\", \"name\", \"products\": [ ... ] } ] }`\r\n- `next_order_no`: رقم الفاتورة **المتوقع** للعرض بس (الـ prefix زي INV- شغل الفرونت). الرقم الفعلي بيرجع مع الحفظ.\r\n- كل منتج: `id`, `name`, `barcode`, `kind`, `sale_price`, `image_url`, `stock` (رصيد الفرع).\r\n\r\n**`q`:** باركود (من الماسح) أو جزء من الاسم. باركود مطابق → المنتج ده بس؛ غير كده بحث بالاسم والتصنيفات اللي فيها نتائج بس.\n\n---\n\n### 🇬🇧 English\n\nThe \"new invoice\" screen in one call.\r\n\r\n**Returns:** `{ \"next_order_no\": 8, \"categories\": [ { \"id\", \"name\", \"products\": [ ... ] } ] }`\r\n- `next_order_no`: the **expected** invoice number, display only (a prefix like INV- is the frontend's). The real number comes back on save.\r\n- Each product: `id`, `name`, `barcode`, `kind`, `sale_price`, `image_url`, `stock` (branch stock).\r\n\r\n**`q`:** a scanned barcode or part of a name. Exact barcode match → that product only; otherwise a name search returning only matching categories.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/pos/catalog` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `catalog.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `q` | — | string · max:100 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 }
             ]
@@ -5498,6 +5498,322 @@
             ]
         },
         {
+            "name": "center / roles",
+            "item": [
+                {
+                    "name": "center.roles.permissions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/roles/permissions",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "roles",
+                                "permissions"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nكتالوج الصلاحيات اللي ينفع تتدي لأي دور، متقسم مجموعات وبأسماء بلغة الـ `lang`. ده اللي شاشة تعديل الدور بتعرضه كـ checkboxes.\n\n---\n\n### 🇬🇧 English\n\nThe grantable permissions, grouped and labelled in the `lang` language. This is what the role editor shows as checkboxes.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/roles/permissions` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
+                    "name": "center.roles.index",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/roles",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "roles"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nأدوار المركز (owner بس). أول واحد دايماً دور المالك. كل دور معاه `key` (القيمة اللي بتتبعت في `role` للحسابات والموظفين) و`permissions` و`users_count`. `is_default` معناها إنه من الأدوار الأربعة اللي المركز بيبدأ بيها.\n\n---\n\n### 🇬🇧 English\n\nThe center's roles (owner only). The owner role always comes first. Each role carries its `key` (the value sent as `role` for accounts and employees), `permissions` and `users_count`. `is_default` marks the four roles every center starts with.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/roles` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
+                    "name": "center.roles.store",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/roles",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "roles"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nإضافة دور: `name` و`permissions` (من الكتالوج) و`acts_as_technician` اختياري (لو `true` الأوردرات اللي الحساب يفتحها بتتسجل باسمه كفني). الـ `key` بيتعمل لوحده (`role_12`) ومابيتغيرش. أي دور غير المالك بيبقى مربوط بفرع واحد.\n\n---\n\n### 🇬🇧 English\n\nCreate a role: `name`, `permissions` (from the catalog) and optional `acts_as_technician` (when `true`, orders the account opens default to it as the technician). The `key` is generated (`role_12`) and never changes. Every role other than the owner is pinned to one branch.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/roles` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:100 · unique:roles |\n| `acts_as_technician` | — | boolean |\n| `permissions` | ✅ | array |\n| `permissions.*` | — | string · distinct · in: settings.manage,users.manage,audit.view,customers.view,customers.manage,catalog.view,catalog.manage,stock.manage,costs.view,orders.view,orders.view_closed,orders.create,orders.price_override,orders.discount,orders.discount_unlimited,orders.complete,orders.edit_completed,orders.cancel_completed,payments.collect,payments.void,opening_balances.manage,expenses.view,expenses.manage,expenses.void,payroll.manage,reports.view |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"مشرف ورشة\",\n    \"acts_as_technician\": true,\n    \"permissions\": [\n        \"customers.view\",\n        \"orders.view\",\n        \"orders.view_closed\",\n        \"orders.create\",\n        \"orders.complete\",\n        \"orders.edit_completed\",\n        \"reports.view\"\n    ]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "center.roles.show",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/roles/:role",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "roles",
+                                ":role"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "role",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nتفاصيل دور.\n\n---\n\n### 🇬🇧 English\n\nRole details.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/roles/{role}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
+                    "name": "center.roles.update",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/roles/:role",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "roles",
+                                ":role"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "role",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nتعديل الاسم أو الصلاحيات أو `acts_as_technician`. التعديل بيتطبق على الحسابات اللي عليها الدور من الطلب الجاي. دور المالك مينفعش يتعدل (422). بيتسجل في سجل العمليات.\n\n---\n\n### 🇬🇧 English\n\nUpdate the name, permissions or `acts_as_technician`. Accounts holding the role get the change from their next request. The owner role cannot be edited (422). Logged in the audit log.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/roles/{role}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:100 · unique:roles |\n| `acts_as_technician` | — | boolean |\n| `permissions` | — | array |\n| `permissions.*` | — | string · distinct · in: settings.manage,users.manage,audit.view,customers.view,customers.manage,catalog.view,catalog.manage,stock.manage,costs.view,orders.view,orders.view_closed,orders.create,orders.price_override,orders.discount,orders.discount_unlimited,orders.complete,orders.edit_completed,orders.cancel_completed,payments.collect,payments.void,opening_balances.manage,expenses.view,expenses.manage,expenses.void,payroll.manage,reports.view |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"permissions\": [\n        \"customers.view\",\n        \"orders.view\",\n        \"orders.create\"\n    ]\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "center.roles.destroy",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/roles/:role",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "roles",
+                                ":role"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "role",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nحذف دور. مرفوض لدور المالك (422)، ولأي دور عليه حسابات حتى لو موقوفة (409).\n\n---\n\n### 🇬🇧 English\n\nDelete a role. Refused for the owner role (422) and for any role held by accounts, suspended ones included (409).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `DELETE /api/v1/center/roles/{role}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                }
+            ]
+        },
+        {
             "name": "center / search",
             "item": [
                 {
@@ -5649,7 +5965,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل إعدادات المركز (owner)، ومنها رسائل واتساب الأوتوماتيك. الرد فيه `whatsapp_connected`، ورقم الإرسال (device) بيحدده الأدمن بس.\n\n- `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`: صورة الفاتورة وصورة الإيصال.\n- `whatsapp_service_reminder_enabled`: تذكير قبل معاد الصيانة الجاية بيوم. مقفول افتراضياً.\n- `whatsapp_debt_reminder_enabled` و `debt_reminder_days` (1 لـ 365، الافتراضي 30): تذكير المديونية. مقفول افتراضياً.\n\n**قاعدة تذكير المديونية:** العميل بيتفكّر لما يعدّي `debt_reminder_days` يوم من غير أي حاجة جديدة: لا فاتورة جديدة عليها فلوس، ولا دفعة (حتى لو جزئية)، ولا تذكير سابق. وبيتكرر كل فترة لحد ما يسدد كله.\n\nالتذكيرات بتتبعت كل يوم الساعة 10 الصبح بتوقيت القاهرة.\n\n---\n\n### 🇬🇧 English\n\nUpdate center settings (owner), including the automatic WhatsApp messages. The response includes `whatsapp_connected`; the sending device is set by the admin only.\n\n- `whatsapp_invoice_enabled`, `whatsapp_payment_enabled`: invoice and receipt images.\n- `whatsapp_service_reminder_enabled`: a reminder the day before the next service date. Off by default.\n- `whatsapp_debt_reminder_enabled` and `debt_reminder_days` (1–365, default 30): debt reminder. Off by default.\n\n**Debt reminder rule:** a customer is reminded once `debt_reminder_days` pass with nothing new: no new unpaid invoice, no payment (even partial), no earlier reminder. It repeats every period until the debt is fully paid.\n\nReminders go out daily at 10:00 Cairo time.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/settings` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `whatsapp_invoice_enabled` | — | boolean |\n| `whatsapp_payment_enabled` | — | boolean |\n| `whatsapp_service_reminder_enabled` | — | boolean |\n| `whatsapp_debt_reminder_enabled` | — | boolean |\n| `debt_reminder_days` | — | integer · min:1 · max:365 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل إعدادات المركز (owner)، ومنها رسائل واتساب الأوتوماتيك. الرد فيه `whatsapp_connected`، ورقم الإرسال (device) بيحدده الأدمن بس.\r\n\r\n- `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`: صورة الفاتورة وصورة الإيصال.\r\n- `whatsapp_service_reminder_enabled`: تذكير قبل معاد الصيانة الجاية بيوم. مقفول افتراضياً.\r\n- `whatsapp_debt_reminder_enabled` و `debt_reminder_days` (1 لـ 365، الافتراضي 30): تذكير المديونية. مقفول افتراضياً.\r\n\r\n**قاعدة تذكير المديونية:** العميل بيتفكّر لما يعدّي `debt_reminder_days` يوم من غير أي حاجة جديدة: لا فاتورة جديدة عليها فلوس، ولا دفعة (حتى لو جزئية)، ولا تذكير سابق. وبيتكرر كل فترة لحد ما يسدد كله.\r\n\r\nالتذكيرات بتتبعت كل يوم الساعة 10 الصبح بتوقيت القاهرة.\n\n---\n\n### 🇬🇧 English\n\nUpdate center settings (owner), including the automatic WhatsApp messages. The response includes `whatsapp_connected`; the sending device is set by the admin only.\r\n\r\n- `whatsapp_invoice_enabled`, `whatsapp_payment_enabled`: invoice and receipt images.\r\n- `whatsapp_service_reminder_enabled`: a reminder the day before the next service date. Off by default.\r\n- `whatsapp_debt_reminder_enabled` and `debt_reminder_days` (1–365, default 30): debt reminder. Off by default.\r\n\r\n**Debt reminder rule:** a customer is reminded once `debt_reminder_days` pass with nothing new: no new unpaid invoice, no payment (even partial), no earlier reminder. It repeats every period until the debt is fully paid.\r\n\r\nReminders go out daily at 10:00 Cairo time.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/settings` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `phone` | — | string · max:30 · nullable |\n| `address` | — | string · max:255 · nullable |\n| `cashier_max_discount` | — | decimal:0,2 · min:0 · max:9999999999 |\n| `whatsapp_invoice_enabled` | — | boolean |\n| `whatsapp_payment_enabled` | — | boolean |\n| `whatsapp_service_reminder_enabled` | — | boolean |\n| `whatsapp_debt_reminder_enabled` | — | boolean |\n| `debt_reminder_days` | — | integer · min:1 · max:365 |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"مركز الدوار\",\n    \"phone\": \"01000000000\",\n    \"cashier_max_discount\": 100,\n    \"whatsapp_invoice_enabled\": true,\n    \"whatsapp_payment_enabled\": true,\n    \"whatsapp_service_reminder_enabled\": true,\n    \"whatsapp_debt_reminder_enabled\": true,\n    \"debt_reminder_days\": 30\n}"
@@ -5751,7 +6067,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nحسابات الدخول (paginated) بفلتر الدور والفرع والحالة.\n\n---\n\n### 🇬🇧 English\n\nLogin accounts (paginated), filterable by role, branch and status.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/users` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `q` | — | string · max:100 · nullable |\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n| `role` | — | in: owner, cashier, technician, technician_cashier · nullable |\n| `branch_id` | — | integer · nullable |\n| `is_active` | — | boolean · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
+                        "description": "### 🇪🇬 العربية\n\nحسابات الدخول (paginated) بفلتر الدور والفرع والحالة.\n\n---\n\n### 🇬🇧 English\n\nLogin accounts (paginated), filterable by role, branch and status.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/users` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `q` | — | string · max:100 · nullable |\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n| `role` | — | string · max:50 · nullable |\n| `branch_id` | — | integer · nullable |\n| `is_active` | — | boolean · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 },
                 {
@@ -5801,7 +6117,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإضافة حساب من غير سجل موظف (زي owner إضافي). **حسابات الموظفين تتعمل من `employees` (الحقل `account`).** الكاشير والفني لازم `branch_id`؛ الـ owner مالوش فرع. `username` اختياري وفريد على مستوى كل المراكز (حروف إنجليزي وأرقام و`-` و`_`، من 3 لـ 50 حرف).\n\n---\n\n### 🇬🇧 English\n\nCreate an account without an employee record (e.g. another owner). **Staff logins are created from `employees` (`account` field).** Cashiers/technicians need `branch_id`; owners have none. `username` is optional and unique across all centers (English letters, digits, `-` and `_`, 3 to 50 characters).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/users` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `email` | ✅ | email · max:255 · unique:users |\n| `password` | ✅ | string · min:8 · max:255 |\n| `role` | ✅ | in: owner, cashier, technician, technician_cashier |\n| `branch_id` | — | integer · exists:branches · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإضافة حساب من غير سجل موظف (زي owner إضافي). **حسابات الموظفين تتعمل من `employees` (الحقل `account`).** `role` هو `key` الدور (من `roles` أو `options`). أي دور غير المالك لازم `branch_id`؛ الـ owner مالوش فرع. حسابات المالك يعملها ويعدلها المالك بس. `username` اختياري وفريد على مستوى كل المراكز (حروف إنجليزي وأرقام و`-` و`_`، من 3 لـ 50 حرف).\n\n---\n\n### 🇬🇧 English\n\nCreate an account without an employee record (e.g. another owner). **Staff logins are created from `employees` (`account` field).** `role` is the role `key` (from `roles` or `options`). Every role other than the owner needs `branch_id`; owners have none. Only an owner can create or change owner accounts. `username` is optional and unique across all centers (English letters, digits, `-` and `_`, 3 to 50 characters).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/users` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:255 |\n| `username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `email` | ✅ | email · max:255 · unique:users |\n| `password` | ✅ | string · min:8 · max:255 |\n| `role` | ✅ | string · exists:roles |\n| `branch_id` | — | integer · exists:branches · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"مالك تاني\",\n    \"username\": \"owner3\",\n    \"email\": \"owner3@dawar.test\",\n    \"password\": \"secret123\",\n    \"role\": \"owner\"\n}"
@@ -5913,7 +6229,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل حساب، بما فيه `username` و`email`. إرسال `username: null` بيمسحه. تغيير كلمة السر بيطلّعه من كل الأجهزة. مايقدرش يغيّر دوره هو.\n\n---\n\n### 🇬🇧 English\n\nUpdate an account, including `username` and `email`. Sending `username: null` clears it. A password change signs it out everywhere. You cannot change your own role.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/users/{user}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `email` | — | email · max:255 · unique:users |\n| `password` | — | string · min:8 · max:255 |\n| `role` | — | in: owner, cashier, technician, technician_cashier |\n| `branch_id` | — | integer · exists:branches · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل حساب، بما فيه `username` و`email`. إرسال `username: null` بيمسحه. تغيير كلمة السر بيطلّعه من كل الأجهزة. مايقدرش يغيّر دوره هو.\n\n---\n\n### 🇬🇧 English\n\nUpdate an account, including `username` and `email`. Sending `username: null` clears it. A password change signs it out everywhere. You cannot change your own role.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/users/{user}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `users.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:255 |\n| `username` | — | string · min:3 · max:50 · alpha_dash:ascii · unique:users · nullable |\n| `email` | — | email · max:255 · unique:users |\n| `password` | — | string · min:8 · max:255 |\n| `role` | — | string · exists:roles |\n| `branch_id` | — | integer · exists:branches · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"اسم جديد\",\n    \"username\": \"new_username\",\n    \"email\": \"new-email@dawar.test\"\n}"
@@ -6725,7 +7041,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nسجل رسائل واتساب بتاعة المركز (paginated). الرقم متخفي.\n\n**الأنواع:** `invoice` فاتورة، `payment` إيصال، `test` تجربة، `service_reminder` تذكير صيانة، `debt_reminder` تذكير مديونية (فيه `customer`).\n\n**الحالات:** `queued` قيد الإرسال (لسه في الطابور)، `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال.\nالرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.\n\n---\n\n### 🇬🇧 English\n\nThe center's WhatsApp message log (paginated). Numbers are masked.\n\n**Types:** `invoice`, `payment`, `test`, `service_reminder`, `debt_reminder` (carries `customer`).\n\n**Statuses:** `queued` waiting in the queue; `sent`; `failed` after 3 attempts (reason in `error`); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending.\nMessages go out in the background, so the API answers before delivery. Follow them here.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/whatsapp/messages` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n| `type` | — | in: invoice, payment, test, service_reminder, debt_reminder · nullable |\n| `status` | — | in: queued, sent, failed, skipped_disabled, skipped_no_device, skipped_invalid_phone, skipped_no_debt · nullable |\n| `from` | — | date_format:Y-m-d · nullable |\n| `to` | — | date_format:Y-m-d · after_or_equal:from · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
+                        "description": "### 🇪🇬 العربية\n\nسجل رسائل واتساب بتاعة المركز (paginated). الرقم متخفي.\r\n\r\n**الأنواع:** `invoice` فاتورة، `payment` إيصال، `test` تجربة، `service_reminder` تذكير صيانة، `debt_reminder` تذكير مديونية (فيه `customer`).\r\n\r\n**الحالات:** `queued` قيد الإرسال (لسه في الطابور)، `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`: نص مترجم مختصر، زي تعذّر تجهيز الصورة أو تعذّر الإرسال)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال.\r\nالرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.\n\n---\n\n### 🇬🇧 English\n\nThe center's WhatsApp message log (paginated). Numbers are masked.\r\n\r\n**Types:** `invoice`, `payment`, `test`, `service_reminder`, `debt_reminder` (carries `customer`).\r\n\r\n**Statuses:** `queued` waiting in the queue; `sent`; `failed` after 3 attempts (reason in `error`: a short translated text, such as the image could not be prepared or the message could not be sent); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending.\r\nMessages go out in the background, so the API answers before delivery. Follow them here.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/whatsapp/messages` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n| `type` | — | in: invoice, payment, test, service_reminder, debt_reminder · nullable |\n| `status` | — | in: queued, sent, failed, skipped_disabled, skipped_no_device, skipped_invalid_phone, skipped_no_debt · nullable |\n| `from` | — | date_format:Y-m-d · nullable |\n| `to` | — | date_format:Y-m-d · after_or_equal:from · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 }
             ]

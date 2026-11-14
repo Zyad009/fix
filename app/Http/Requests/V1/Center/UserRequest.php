@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\V1\Center;
 
-use App\Enums\UserRole;
 use App\Http\Requests\AbstractFormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,7 +20,7 @@ class UserRequest extends AbstractFormRequest
             'username' => $this->usernameRules($this->route('user')),
             'email' => [$required, 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->route('user'))],
             'password' => [$required, 'string', 'min:8', 'max:255'],
-            'role' => [$required, Rule::enum(UserRole::class)],
+            'role' => [$required, 'string', maintenanceCenterExists('roles', 'key')],
             'branch_id' => ['nullable', 'integer', maintenanceCenterExists('branches')->where('is_active', true)],
         ];
     }

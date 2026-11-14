@@ -11,6 +11,7 @@ use App\Http\Controllers\V1\Center\OrderController;
 use App\Http\Controllers\V1\Center\ProductController;
 use App\Http\Controllers\V1\Center\ReceiptController;
 use App\Http\Controllers\V1\Center\ReportController;
+use App\Http\Controllers\V1\Center\RoleController;
 use App\Http\Controllers\V1\Center\SettingsController;
 use App\Http\Controllers\V1\Center\UserController;
 use App\Http\Controllers\V1\Center\VehicleController;
@@ -25,6 +26,9 @@ Route::middleware(['auth:sanctum', 'maintenance_center', 'branch', 'subscription
 
     Route::apiResource('users', UserController::class)->except('destroy');
     Route::toggleActive('users', UserController::class);
+
+    Route::get('roles/permissions', [RoleController::class, 'permissions'])->name('roles.permissions');
+    Route::apiResource('roles', RoleController::class);
 
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 

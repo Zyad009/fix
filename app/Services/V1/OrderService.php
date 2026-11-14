@@ -330,7 +330,7 @@ class OrderService
     {
         $user = actor();
 
-        if (! $user?->role->actsAsTechnician()) {
+        if (! $user?->actsAsTechnician()) {
             return null;
         }
 

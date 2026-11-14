@@ -27,7 +27,7 @@ class TechnicianCashierTest extends CenterHttpTestCase
 
         $this->inMaintenanceCenter($this->maintenanceCenter);
         $user = User::query()->where('email', 'hassan@dawar.test')->firstOrFail();
-        $this->assertSame(UserRole::TechnicianCashier, $user->role);
+        $this->assertSame(UserRole::TechnicianCashier->value, $user->currentRole()->key);
         $this->assertSame($this->branch->id, $user->branch_id);
         $this->assertSame('حسن', $user->name);
         $this->assertSame($user->id, Employee::query()->findOrFail($response->json('data.id'))->user_id);

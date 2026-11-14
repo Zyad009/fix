@@ -24,6 +24,8 @@ $bodies = [
     'center.settings.update' => ['name' => 'مركز الدوار', 'phone' => '01000000000', 'cashier_max_discount' => 100, 'whatsapp_invoice_enabled' => true, 'whatsapp_payment_enabled' => true, 'whatsapp_service_reminder_enabled' => true, 'whatsapp_debt_reminder_enabled' => true, 'debt_reminder_days' => 30],
     'center.whatsapp.test' => ['phone' => '01012345678'],
     'center.orders.whatsapp.resend' => ['phone' => '01112345678'],
+    'center.roles.store' => ['name' => 'مشرف ورشة', 'acts_as_technician' => true, 'permissions' => ['customers.view', 'orders.view', 'orders.view_closed', 'orders.create', 'orders.complete', 'orders.edit_completed', 'reports.view']],
+    'center.roles.update' => ['permissions' => ['customers.view', 'orders.view', 'orders.create']],
     'center.users.store' => ['name' => 'مالك تاني', 'username' => 'owner3', 'email' => 'owner3@dawar.test', 'password' => 'secret123', 'role' => 'owner'],
     'center.users.update' => ['name' => 'اسم جديد', 'username' => 'new_username', 'email' => 'new-email@dawar.test'],
 

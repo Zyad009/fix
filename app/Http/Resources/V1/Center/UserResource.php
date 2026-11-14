@@ -19,7 +19,7 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'username' => $this->username,
             'email' => $this->email,
-            'role' => $this->role->response(),
+            'role' => $this->currentRole()->response(),
             'branch' => $this->whenLoaded('branch', fn () => $this->branch ? ['id' => $this->branch->id, 'name' => $this->branch->name] : null),
             'is_active' => $this->is_active,
             'created_at' => $this->created_at?->timestamp,

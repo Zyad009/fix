@@ -5,28 +5,19 @@
 | Role-based access control
 |--------------------------------------------------------------------------
 |
-| Single source of truth for what each role may do (brief.md §5). Routes
-| enforce these through the `permission:` middleware; services check the
-| finer-grained ones (discount limits, editing completed invoices, costs).
-| `*` grants everything.
+| The permission catalog is defined here, in code, because every permission
+| is enforced in code: routes through the `permission:` middleware, services
+| for the finer-grained ones (discount limits, editing completed invoices,
+| costs). Roles live in the `roles` table, one set per maintenance center:
+| the owner role holds everything, the others hold what the owner picks.
 |
 */
 
-return [
-
-    'permissions' => [
-        'settings.manage',
-        'users.manage',
-        'audit.view',
-
-        'customers.view',
-        'customers.manage',
-
-        'catalog.view',
-        'catalog.manage',
-        'stock.manage',
-        'costs.view',
-
+$groups = [
+    'settings' => ['settings.manage', 'users.manage', 'roles.manage', 'audit.view'],
+    'customers' => ['customers.view', 'customers.manage'],
+    'catalog' => ['catalog.view', 'catalog.manage', 'stock.manage', 'costs.view'],
+    'orders' => [
         'orders.view',
         'orders.view_closed',
         'orders.create',
@@ -36,61 +27,62 @@ return [
         'orders.complete',
         'orders.edit_completed',
         'orders.cancel_completed',
-
-        'payments.collect',
-        'payments.void',
-        'opening_balances.manage',
-
-        'expenses.view',
-        'expenses.manage',
-        'expenses.void',
-
-        'payroll.manage',
-
-        'reports.view',
     ],
+    'payments' => ['payments.collect', 'payments.void', 'opening_balances.manage'],
+    'expenses' => ['expenses.view', 'expenses.manage', 'expenses.void'],
+    'payroll' => ['payroll.manage'],
+    'reports' => ['reports.view'],
+];
 
-    'roles' => [
-        'owner' => ['*'],
+$cashier = [
+    'customers.view',
+    'customers.manage',
+    'catalog.view',
+    'orders.view',
+    'orders.view_closed',
+    'orders.create',
+    'orders.price_override',
+    'orders.discount',
+    'orders.complete',
+    'payments.collect',
+    'expenses.view',
+    'expenses.manage',
+];
 
-        'cashier' => [
-            'customers.view',
-            'customers.manage',
-            'catalog.view',
-            'orders.view',
-            'orders.view_closed',
-            'orders.create',
-            'orders.price_override',
-            'orders.discount',
-            'orders.complete',
-            'payments.collect',
-            'expenses.view',
-            'expenses.manage',
-        ],
+return [
 
-        // Medium workshops: the same person repairs, sells and collects.
-        // Same permissions as the cashier; the difference is the linked
-        // employee record that becomes the technician of their orders.
+    'groups' => $groups,
+
+    'permissions' => array_merge(...array_values($groups)),
+
+    /*
+     * Held by the owner role only and never grantable to another role: a role
+     * that could edit roles could grant itself everything.
+     */
+    'owner_only' => ['roles.manage'],
+
+    /*
+     * The roles every new maintenance center starts with. Owners can rename
+     * and re-permission them (except the owner role) or delete unused ones.
+     */
+    'defaults' => [
+        'owner' => ['is_owner' => true, 'acts_as_technician' => false, 'permissions' => []],
+
+        'cashier' => ['is_owner' => false, 'acts_as_technician' => false, 'permissions' => $cashier],
+
+        // Medium workshops: the same person repairs, sells and collects, and
+        // corrects the invoices they closed. Their linked employee record
+        // becomes the technician of the orders they open.
         'technician_cashier' => [
-            'customers.view',
-            'customers.manage',
-            'catalog.view',
-            'orders.view',
-            'orders.view_closed',
-            'orders.create',
-            'orders.price_override',
-            'orders.discount',
-            'orders.complete',
-            'payments.collect',
-            'expenses.view',
-            'expenses.manage',
+            'is_owner' => false,
+            'acts_as_technician' => true,
+            'permissions' => [...$cashier, 'orders.edit_completed'],
         ],
 
         'technician' => [
-            'customers.view',
-            'catalog.view',
-            'orders.view',
-            'orders.create',
+            'is_owner' => false,
+            'acts_as_technician' => true,
+            'permissions' => ['customers.view', 'catalog.view', 'orders.view', 'orders.create'],
         ],
     ],
 

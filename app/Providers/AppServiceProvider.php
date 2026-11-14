@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             'admin' => Models\Admin::class,
             'user' => Models\User::class,
+            'role' => Models\Role::class,
             'maintenance_center' => Models\MaintenanceCenter::class,
             'branch' => Models\Branch::class,
             'customer' => Models\Customer::class,

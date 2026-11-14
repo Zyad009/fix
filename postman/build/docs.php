@@ -180,8 +180,32 @@ MD,
         'en' => 'Login accounts (paginated), filterable by role, branch and status.',
     ],
     'center.users.store' => [
-        'ar' => 'إضافة حساب من غير سجل موظف (زي owner إضافي). **حسابات الموظفين تتعمل من `employees` (الحقل `account`).** الكاشير والفني لازم `branch_id`؛ الـ owner مالوش فرع. `username` اختياري وفريد على مستوى كل المراكز (حروف إنجليزي وأرقام و`-` و`_`، من 3 لـ 50 حرف).',
-        'en' => 'Create an account without an employee record (e.g. another owner). **Staff logins are created from `employees` (`account` field).** Cashiers/technicians need `branch_id`; owners have none. `username` is optional and unique across all centers (English letters, digits, `-` and `_`, 3 to 50 characters).',
+        'ar' => 'إضافة حساب من غير سجل موظف (زي owner إضافي). **حسابات الموظفين تتعمل من `employees` (الحقل `account`).** `role` هو `key` الدور (من `roles` أو `options`). أي دور غير المالك لازم `branch_id`؛ الـ owner مالوش فرع. حسابات المالك يعملها ويعدلها المالك بس. `username` اختياري وفريد على مستوى كل المراكز (حروف إنجليزي وأرقام و`-` و`_`، من 3 لـ 50 حرف).',
+        'en' => 'Create an account without an employee record (e.g. another owner). **Staff logins are created from `employees` (`account` field).** `role` is the role `key` (from `roles` or `options`). Every role other than the owner needs `branch_id`; owners have none. Only an owner can create or change owner accounts. `username` is optional and unique across all centers (English letters, digits, `-` and `_`, 3 to 50 characters).',
+    ],
+    'center.roles.index' => [
+        'ar' => 'أدوار المركز (owner بس). أول واحد دايماً دور المالك. كل دور معاه `key` (القيمة اللي بتتبعت في `role` للحسابات والموظفين) و`permissions` و`users_count`. `is_default` معناها إنه من الأدوار الأربعة اللي المركز بيبدأ بيها.',
+        'en' => 'The center\'s roles (owner only). The owner role always comes first. Each role carries its `key` (the value sent as `role` for accounts and employees), `permissions` and `users_count`. `is_default` marks the four roles every center starts with.',
+    ],
+    'center.roles.permissions' => [
+        'ar' => 'كتالوج الصلاحيات اللي ينفع تتدي لأي دور، متقسم مجموعات وبأسماء بلغة الـ `lang`. ده اللي شاشة تعديل الدور بتعرضه كـ checkboxes.',
+        'en' => 'The grantable permissions, grouped and labelled in the `lang` language. This is what the role editor shows as checkboxes.',
+    ],
+    'center.roles.store' => [
+        'ar' => 'إضافة دور: `name` و`permissions` (من الكتالوج) و`acts_as_technician` اختياري (لو `true` الأوردرات اللي الحساب يفتحها بتتسجل باسمه كفني). الـ `key` بيتعمل لوحده (`role_12`) ومابيتغيرش. أي دور غير المالك بيبقى مربوط بفرع واحد.',
+        'en' => 'Create a role: `name`, `permissions` (from the catalog) and optional `acts_as_technician` (when `true`, orders the account opens default to it as the technician). The `key` is generated (`role_12`) and never changes. Every role other than the owner is pinned to one branch.',
+    ],
+    'center.roles.show' => [
+        'ar' => 'تفاصيل دور.',
+        'en' => 'Role details.',
+    ],
+    'center.roles.update' => [
+        'ar' => 'تعديل الاسم أو الصلاحيات أو `acts_as_technician`. التعديل بيتطبق على الحسابات اللي عليها الدور من الطلب الجاي. دور المالك مينفعش يتعدل (422). بيتسجل في سجل العمليات.',
+        'en' => 'Update the name, permissions or `acts_as_technician`. Accounts holding the role get the change from their next request. The owner role cannot be edited (422). Logged in the audit log.',
+    ],
+    'center.roles.destroy' => [
+        'ar' => 'حذف دور. مرفوض لدور المالك (422)، ولأي دور عليه حسابات حتى لو موقوفة (409).',
+        'en' => 'Delete a role. Refused for the owner role (422) and for any role held by accounts, suspended ones included (409).',
     ],
     'center.users.show' => [
         'ar' => 'تفاصيل حساب.',
@@ -223,8 +247,8 @@ On a vehicle send `car_make_id` / `car_model_id` from here, and `year` (model ye
 MD,
     ],
     'center.options' => [
-        'ar' => 'القوائم الثابتة للفرونت (قيمة + اسم بلغة الـ `lang`): طرق الدفع، حالات الأوردر، أنواع المنتجات، الأدوار، أنواع حركات الموظفين...',
-        'en' => 'Fixed lists for the frontend (value + label in the `lang` language): payment methods, order statuses, product kinds, roles, employee transaction types…',
+        'ar' => 'القوائم الثابتة للفرونت (قيمة + اسم بلغة الـ `lang`): طرق الدفع، حالات الأوردر، أنواع المنتجات، أدوار المركز (بما فيها اللي المالك عملها، والقيمة هي `key`)، أنواع حركات الموظفين...',
+        'en' => 'Fixed lists for the frontend (value + label in the `lang` language): payment methods, order statuses, product kinds, the center\'s roles (custom ones included, the value is the `key`), employee transaction types…',
     ],
 
     // =====================================================================
@@ -473,8 +497,8 @@ MD,
 MD,
     ],
     'center.orders.show' => [
-        'ar' => 'تفاصيل الأوردر بالبنود والمدفوعات والعربية والعميل. الفني مابيشوفش التكلفة ولا الأوردرات المقفولة. `whatsapp`: آخر رسالة واتساب للفاتورة `{id, status, recipient, error, sent_at, created_at}`؛ `status` واحدة من `queued` قيد الإرسال، `sent`، `failed` (السبب في `error`)، أو `skipped_*`. ولو مفيش رسالة بتبقى `null`.',
-        'en' => 'Order details with lines, payments, vehicle and customer. Technicians see neither costs nor closed orders. `whatsapp`: the invoice\'s latest WhatsApp message `{id, status, recipient, error, sent_at, created_at}`; `status` is `queued`, `sent`, `failed` (reason in `error`) or `skipped_*`. `null` when no message exists.',
+        'ar' => 'تفاصيل الأوردر بالبنود والمدفوعات والعربية والعميل. الفني مابيشوفش التكلفة ولا الأوردرات المقفولة. `whatsapp`: آخر رسالة واتساب للفاتورة `{id, status, recipient, error, sent_at, created_at}`؛ `status` واحدة من `queued` قيد الإرسال، `sent`، `failed` (السبب في `error`: نص مترجم مختصر للمستخدم، والتفاصيل الفنية في لوج السيرفر بس)، أو `skipped_*`. ولو مفيش رسالة بتبقى `null`.',
+        'en' => 'Order details with lines, payments, vehicle and customer. Technicians see neither costs nor closed orders. `whatsapp`: the invoice\'s latest WhatsApp message `{id, status, recipient, error, sent_at, created_at}`; `status` is `queued`, `sent`, `failed` (reason in `error`: a short translated text for the user; technical details stay in the server log) or `skipped_*`. `null` when no message exists.',
     ],
     'center.orders.update' => [
         'ar' => 'تعديل رأس الأوردر: العداد، الفني، الخصم، الصيانة الجاية، الملاحظات. الفاتورة المقفولة: owner بس، وبيتسجل في الـ audit. الإجمالي مايقلش عن المدفوع.',
@@ -660,7 +684,7 @@ MD,
 
 **الأنواع:** `invoice` فاتورة، `payment` إيصال، `test` تجربة، `service_reminder` تذكير صيانة، `debt_reminder` تذكير مديونية (فيه `customer`).
 
-**الحالات:** `queued` قيد الإرسال (لسه في الطابور)، `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال.
+**الحالات:** `queued` قيد الإرسال (لسه في الطابور)، `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`: نص مترجم مختصر، زي تعذّر تجهيز الصورة أو تعذّر الإرسال)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال.
 الرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.
 MD,
         'en' => <<<'MD'
@@ -668,7 +692,7 @@ The center's WhatsApp message log (paginated). Numbers are masked.
 
 **Types:** `invoice`, `payment`, `test`, `service_reminder`, `debt_reminder` (carries `customer`).
 
-**Statuses:** `queued` waiting in the queue; `sent`; `failed` after 3 attempts (reason in `error`); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending.
+**Statuses:** `queued` waiting in the queue; `sent`; `failed` after 3 attempts (reason in `error`: a short translated text, such as the image could not be prepared or the message could not be sent); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending.
 Messages go out in the background, so the API answers before delivery. Follow them here.
 MD,
     ],

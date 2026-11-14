@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\UserRole;
 use App\Models\Concerns\BelongsToMaintenanceCenter;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -14,17 +13,18 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
 /**
- * A service-center account (owner, cashier, technician, technician-cashier).
+ * A service-center account. What it may do comes from its role.
  *
  * @property int $id
  * @property int|null $branch_id
+ * @property int $role_id
+ * @property Role $role
  * @property string $name
  * @property string|null $username
  * @property string $email
- * @property UserRole $role
  * @property bool $is_active
  */
-#[Fillable(['name', 'username', 'email', 'password', 'role', 'branch_id', 'is_active'])]
+#[Fillable(['name', 'username', 'email', 'password', 'role_id', 'branch_id', 'is_active'])]
 #[Hidden(['password'])]
 class User extends Authenticatable
 {
@@ -43,7 +43,6 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
-            'role' => UserRole::class,
             'is_active' => 'boolean',
         ];
     }
@@ -54,6 +53,18 @@ class User extends Authenticatable
     protected static function requiresMaintenanceCenterContext(): bool
     {
         return false;
+    }
+
+    /**
+     * Read without the maintenance center scope: Sanctum resolves the user
+     * before any center is in context, and the composite foreign key already
+     * keeps the role inside the user's own center.
+     *
+     * @return BelongsTo<Role, $this>
+     */
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class)->withoutGlobalScope('maintenance_center');
     }
 
     /**
@@ -74,11 +85,28 @@ class User extends Authenticatable
         return $this->hasOne(Employee::class)->withoutGlobalScope('branch');
     }
 
+    /**
+     * The role, loaded on first use: the authenticated user is resolved by
+     * Sanctum without relations, and lazy loading is off outside production.
+     */
+    public function currentRole(): Role
+    {
+        return $this->loadMissing('role')->role;
+    }
+
+    public function isOwner(): bool
+    {
+        return $this->currentRole()->is_owner;
+    }
+
+    public function actsAsTechnician(): bool
+    {
+        return $this->currentRole()->acts_as_technician;
+    }
+
     public function hasPermission(string $permission): bool
     {
-        $granted = $this->role->permissions();
-
-        return in_array('*', $granted, true) || in_array($permission, $granted, true);
+        return $this->currentRole()->grants($permission);
     }
 
     /**
@@ -86,8 +114,6 @@ class User extends Authenticatable
      */
     public function permissions(): array
     {
-        $granted = $this->role->permissions();
-
-        return in_array('*', $granted, true) ? config('rbac.permissions') : $granted;
+        return $this->currentRole()->grantedPermissions();
     }
 }

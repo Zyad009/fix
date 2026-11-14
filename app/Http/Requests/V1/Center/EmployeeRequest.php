@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests\V1\Center;
 
-use App\Enums\UserRole;
 use App\Http\Requests\AbstractFormRequest;
 use App\Models\Employee;
 use Illuminate\Validation\Rule;
@@ -32,7 +31,7 @@ class EmployeeRequest extends AbstractFormRequest
             'account.username' => ['exclude_without:account', ...$this->usernameRules($userId)],
             'account.email' => ['exclude_without:account', $accountRequired, 'email', 'max:255', Rule::unique('users', 'email')->ignore($userId)],
             'account.password' => ['exclude_without:account', $accountRequired, 'string', 'min:8', 'max:255'],
-            'account.role' => ['exclude_without:account', $accountRequired, Rule::in(UserRole::staffValues())],
+            'account.role' => ['exclude_without:account', $accountRequired, 'string', maintenanceCenterExists('roles', 'key')->where('is_owner', false)],
         ];
     }
 }

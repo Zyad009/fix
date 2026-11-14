@@ -230,16 +230,18 @@ function accessFor(Route $route): array
 
     $roles = [];
 
+    // Center roles are per-center rows now; the docs list which of the
+    // default roles reach the endpoint out of the box.
     if ($permission !== null) {
         $wanted = explode('|', $permission);
 
-        foreach (config('rbac.roles') as $role => $granted) {
-            if (in_array('*', $granted, true) || array_intersect($wanted, $granted)) {
+        foreach (config('rbac.defaults') as $role => $default) {
+            if ($default['is_owner'] || array_intersect($wanted, $default['permissions'])) {
                 $roles[] = $role;
             }
         }
     } elseif (str_starts_with($route->uri(), 'api/v1/center') && $auth !== 'none (public)') {
-        $roles = array_keys(config('rbac.roles'));
+        $roles = array_keys(config('rbac.defaults'));
     } elseif (str_starts_with($route->uri(), 'api/v1/admin') && $auth !== 'none (public)') {
         $roles = ['super admin'];
     }

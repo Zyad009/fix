@@ -2,21 +2,23 @@
 
 namespace App\Services\V1\Admin;
 
-use App\Enums\UserRole;
 use App\Models\Branch;
 use App\Models\Category;
 use App\Models\ExpenseCategory;
 use App\Models\MaintenanceCenter;
 use App\Models\User;
+use App\Services\V1\RoleService;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Creates a service center with everything it needs on day one: the owner
- * account, a default branch and the default catalog/expense categories.
+ * account, a default branch, the default roles and catalog/expense categories.
  */
 class MaintenanceCenterProvisioningService
 {
+    public function __construct(private readonly RoleService $roles) {}
+
     /**
      * @param  array{name: string, phone?: ?string, address?: ?string, plan?: ?string, subscription_ends_at?: ?string, cashier_max_discount?: numeric-string|int|null, owner: array{name: string, username?: ?string, email: string, password: string}, branch_name?: ?string}  $data
      */
@@ -37,7 +39,7 @@ class MaintenanceCenterProvisioningService
 
                 User::query()->create([
                     ...Arr::only($data['owner'], ['name', 'username', 'email', 'password']),
-                    'role' => UserRole::Owner,
+                    'role_id' => $this->roles->seedDefaults()->id,
                 ]);
 
                 $this->seedDefaults();

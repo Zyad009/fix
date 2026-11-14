@@ -28,7 +28,7 @@ class EmployeeResource extends JsonResource
                 'id' => $this->user->id,
                 'username' => $this->user->username,
                 'email' => $this->user->email,
-                'role' => $this->user->role->response(),
+                'role' => $this->user->currentRole()->response(),
                 'is_active' => $this->user->is_active,
             ] : null),
             // Positive: the center owes the employee; negative: the employee owes advances.
