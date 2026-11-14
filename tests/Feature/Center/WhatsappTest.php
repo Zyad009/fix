@@ -12,6 +12,8 @@ use App\Models\WhatsappMessage;
 use App\Services\V1\BalanceService;
 use App\Services\V1\DocumentImageService;
 use App\Services\V1\GowaWhatsappService;
+use App\Services\V1\InvoiceChangeService;
+use App\Services\V1\PrintService;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Queue;
@@ -85,7 +87,7 @@ class WhatsappTest extends CenterHttpTestCase
         $this->assertNotNull(array_values($receipts)[0]->receiptId);
     }
 
-    public function test_opening_balance_cancel_void_and_edit_send_nothing(): void
+    public function test_opening_balance_cancel_and_void_send_nothing(): void
     {
         $vehicle = $this->vehicle();
         $headers = $this->as($this->owner, $this->branch);
@@ -97,7 +99,6 @@ class WhatsappTest extends CenterHttpTestCase
         $receiptId = $this->postJson($this->url("orders/{$order}/payments"), ['amount' => 50], $headers)->json('data.id');
         $sent = count($this->jobs());
 
-        $this->putJson($this->url("orders/{$order}"), ['notes' => 'تعديل'], $headers)->assertOk();
         $this->patchJson($this->url("receipts/{$receiptId}/void"), ['reason' => 'خطأ'], $headers)->assertOk();
         $this->postJson($this->url("orders/{$order}/cancel"), ['reason' => 'خطأ'], $headers)->assertOk();
 
@@ -145,7 +146,7 @@ class WhatsappTest extends CenterHttpTestCase
         Http::fake(['*' => Http::response(['code' => 'SUCCESS', 'results' => ['message_id' => 'wa-1']])]);
         config(['services.gowa.url' => 'http://gowa.test']);
 
-        $this->jobs()[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
+        $this->jobs()[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class), app(InvoiceChangeService::class));
 
         Http::assertSent(fn (Request $request): bool => $request->url() === 'http://gowa.test/send/image'
             && $request->header('X-Device-Id') === ['device-1']
@@ -170,7 +171,7 @@ class WhatsappTest extends CenterHttpTestCase
         $job = $this->jobs()[0];
 
         try {
-            $job->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
+            $job->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class), app(InvoiceChangeService::class));
             $this->fail('The job must throw so the queue retries it.');
         } catch (RuntimeException $exception) {
             $this->assertSame('device offline', $exception->getMessage());
@@ -287,7 +288,7 @@ class WhatsappTest extends CenterHttpTestCase
 
         $this->fakeImage();
         Http::fake(['*' => Http::response(['code' => 'SUCCESS', 'results' => ['message_id' => 'wa-1']])]);
-        $this->jobs()[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
+        $this->jobs()[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class), app(InvoiceChangeService::class));
 
         $this->inMaintenanceCenter($this->maintenanceCenter);
         $this->assertSame($queued->id, WhatsappMessage::query()->sole()->id);
@@ -386,6 +387,174 @@ class WhatsappTest extends CenterHttpTestCase
     /**
      * Swaps headless Chrome for a temp file, returning that file's path.
      */
+    public function test_several_edits_of_a_completed_invoice_queue_one_delayed_update(): void
+    {
+        config(['services.gowa.invoice_update_delay' => 120]);
+        $order = $this->invoice($this->vehicle($this->customer('عميل', '01012345678')), '300');
+        $headers = $this->as($this->owner, $this->branch);
+
+        $items = $this->postJson($this->url("orders/{$order}/items"), ['name' => 'فلتر', 'qty' => 1, 'unit_price' => 50], $headers)->assertCreated()->json('data.order.items');
+        $this->putJson($this->url("orders/{$order}/items/{$items[1]['id']}"), ['qty' => 2], $headers)->assertOk();
+        $this->putJson($this->url("orders/{$order}"), ['discount' => 10, 'notes' => 'تعديل'], $headers)->assertOk();
+        $this->deleteJson($this->url("orders/{$order}/items/{$items[1]['id']}"), [], $headers)->assertOk();
+
+        $updates = $this->jobsOfType('invoice_updated');
+
+        $this->assertCount(1, $updates);
+        $this->assertSame($order, $updates[0]->orderId);
+        $this->assertSame('201012345678', $updates[0]->recipient);
+        $this->assertSame(120, $updates[0]->delay);
+    }
+
+    public function test_an_edit_after_the_pending_update_is_due_gets_its_own_message(): void
+    {
+        config(['services.gowa.invoice_update_delay' => 120]);
+        $order = $this->invoice($this->vehicle($this->customer('عميل', '01012345678')), '300');
+        $headers = $this->as($this->owner, $this->branch);
+
+        $this->putJson($this->url("orders/{$order}"), ['notes' => 'أول تعديل'], $headers)->assertOk();
+        $this->travel(3)->minutes();
+        $this->putJson($this->url("orders/{$order}"), ['notes' => 'تاني تعديل'], $headers)->assertOk();
+
+        $this->assertCount(2, $this->jobsOfType('invoice_updated'));
+    }
+
+    public function test_edits_the_customer_does_not_see_send_nothing(): void
+    {
+        $vehicle = $this->vehicle($this->customer('عميل', '01012345678'));
+        $order = $this->invoice($vehicle, '300');
+        $open = $this->openOrder($vehicle, [['name' => 'x', 'qty' => 1, 'unit_price' => 100]]);
+        $headers = $this->as($this->owner, $this->branch);
+        $itemId = $this->freshOrder($order)->items()->value('id');
+
+        $this->putJson($this->url("orders/{$order}"), ['notes' => null, 'discount' => 0], $headers)->assertOk();
+        $this->putJson($this->url("orders/{$order}/items/{$itemId}"), ['qty' => 1, 'unit_price' => 300], $headers)->assertOk();
+        $this->postJson($this->url("orders/{$open['id']}/items"), ['name' => 'y', 'qty' => 1, 'unit_price' => 10], $headers)->assertCreated();
+        $this->putJson($this->url("orders/{$open['id']}"), ['notes' => 'مفتوح'], $headers)->assertOk();
+
+        $this->assertCount(0, $this->jobsOfType('invoice_updated'));
+    }
+
+    public function test_a_disabled_invoice_message_skips_the_update_too(): void
+    {
+        $order = $this->invoice($this->vehicle($this->customer('عميل', '01012345678')), '300');
+        $this->maintenanceCenter->update(['whatsapp_invoice_enabled' => false]);
+
+        $this->putJson($this->url("orders/{$order}"), ['notes' => 'تعديل'], $this->as($this->owner, $this->branch))->assertOk();
+
+        $this->assertCount(0, $this->jobsOfType('invoice_updated'));
+        $this->inMaintenanceCenter($this->maintenanceCenter);
+        $this->assertSame(WhatsappMessageStatus::SkippedDisabled, WhatsappMessage::query()->where('type', 'invoice_updated')->sole()->status);
+    }
+
+    public function test_the_update_image_shows_what_changed_since_the_customer_last_got_the_invoice(): void
+    {
+        $order = $this->invoice($this->vehicle($this->customer('عميل', '01012345678')), '300');
+        $headers = $this->as($this->owner, $this->branch);
+        $itemId = $this->freshOrder($order)->items()->value('id');
+        Http::fake(['*' => Http::response(['code' => 'SUCCESS', 'results' => ['message_id' => 'wa-1']])]);
+        $this->fakeImage();
+        $this->runJob($this->jobs()[0]);
+
+        $this->travel(1)->minutes();
+        $added = $this->postJson($this->url("orders/{$order}/items"), ['name' => 'فلتر', 'qty' => 2, 'unit_price' => 100], $headers)->json('data.order.items.1.id');
+        $this->putJson($this->url("orders/{$order}/items/{$itemId}"), ['unit_price' => 250], $headers)->assertOk();
+        $this->putJson($this->url("orders/{$order}"), ['discount' => 20, 'notes' => 'تغيير الفلتر'], $headers)->assertOk();
+
+        $first = $this->captureUpdate($this->jobsOfType('invoice_updated')[0]);
+
+        $this->assertSame([
+            ['action' => 'added', 'name' => 'فلتر', 'old_qty' => null, 'new_qty' => 2.0, 'old_price' => null, 'new_price' => 100.0],
+            ['action' => 'updated', 'name' => 'خدمة', 'old_qty' => 1.0, 'new_qty' => 1.0, 'old_price' => 300.0, 'new_price' => 250.0],
+        ], $first['lines']);
+        $this->assertSame([['field' => 'discount', 'old' => '0.00', 'new' => '20.00'], ['field' => 'notes', 'old' => null, 'new' => 'تغيير الفلتر']], $first['fields']);
+        $this->assertSame([300.0, 430.0, 130.0], [$first['previous_total'], $first['total'], $first['difference']]);
+        Http::assertSent(fn (Request $request): bool => str_contains($request->body(), 'الإجمالي قبل التعديل: 300 جنيه') && str_contains($request->body(), 'الإجمالي بعد التعديل: 430 جنيه'));
+
+        $this->travel(1)->minutes();
+        $this->deleteJson($this->url("orders/{$order}/items/{$added}"), [], $headers)->assertOk();
+
+        $second = $this->captureUpdate($this->jobsOfType('invoice_updated')[1]);
+
+        $this->assertSame([['action' => 'removed', 'name' => 'فلتر', 'old_qty' => 2.0, 'new_qty' => null, 'old_price' => 100.0, 'new_price' => null]], $second['lines']);
+        $this->assertSame([[], 430.0, 230.0, -200.0], [$second['fields'], $second['previous_total'], $second['total'], $second['difference']]);
+    }
+
+    public function test_an_update_for_an_invoice_cancelled_before_sending_is_skipped(): void
+    {
+        $order = $this->invoice($this->vehicle($this->customer('عميل', '01012345678')), '300');
+        $headers = $this->as($this->owner, $this->branch);
+
+        $this->putJson($this->url("orders/{$order}"), ['notes' => 'تعديل'], $headers)->assertOk();
+        $this->postJson($this->url("orders/{$order}/cancel"), ['reason' => 'خطأ'], $headers)->assertOk();
+        Http::fake();
+
+        $this->runJob($this->jobsOfType('invoice_updated')[0]);
+
+        Http::assertNothingSent();
+        $this->inMaintenanceCenter($this->maintenanceCenter);
+        $this->assertSame(WhatsappMessageStatus::SkippedOrderCancelled, WhatsappMessage::query()->where('type', 'invoice_updated')->sole()->status);
+    }
+
+    public function test_the_update_image_renders(): void
+    {
+        $order = $this->invoice($this->vehicle($this->customer('عميل', '01012345678')), '300');
+        $this->putJson($this->url("orders/{$order}"), ['discount' => 20], $this->as($this->owner, $this->branch))->assertOk();
+        $this->inMaintenanceCenter($this->maintenanceCenter);
+        $changes = app(InvoiceChangeService::class)->unsent($this->freshOrder($order));
+
+        $html = view('whatsapp.invoice-update', [
+            ...app(PrintService::class)->invoiceData($this->freshOrder($order)),
+            'changes' => $changes,
+            'updated_at' => '2026-11-14 10:00',
+            'fonts' => [],
+            'logo' => null,
+        ])->render();
+
+        $this->assertStringContainsString('تم تعديل الفاتورة رقم', $html);
+        $this->assertStringContainsString('فاتورة معدلة', $html);
+        $this->assertStringContainsString('الإجمالي قبل التعديل', $html);
+        $this->assertStringContainsString('300.00 جنيه', $html);
+        $this->assertStringContainsString('280.00 جنيه', $html);
+    }
+
+    /**
+     * @return list<SendWhatsappMessageJob>
+     */
+    private function jobsOfType(string $type): array
+    {
+        return array_values(array_filter($this->jobs(), fn (SendWhatsappMessageJob $job): bool => $job->type === $type));
+    }
+
+    private function runJob(SendWhatsappMessageJob $job): void
+    {
+        $job->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class), app(InvoiceChangeService::class));
+    }
+
+    /**
+     * Runs an update job with the renderer faked and returns the change summary it rendered.
+     *
+     * @return array<string, mixed>
+     */
+    private function captureUpdate(SendWhatsappMessageJob $job): array
+    {
+        $captured = [];
+        $path = tempnam(sys_get_temp_dir(), 'wa');
+        file_put_contents($path, 'png');
+
+        $images = $this->createMock(DocumentImageService::class);
+        $images->method('invoice')->willReturn($path);
+        $images->method('invoiceUpdate')->willReturnCallback(function ($order, array $changes) use (&$captured, $path): string {
+            $captured = $changes;
+
+            return $path;
+        });
+
+        $job->handle(app(GowaWhatsappService::class), $images, app(BalanceService::class), app(InvoiceChangeService::class));
+
+        return $captured;
+    }
+
     private function fakeImage(): string
     {
         $path = tempnam(sys_get_temp_dir(), 'wa');

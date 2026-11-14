@@ -33,6 +33,8 @@ return [
         'username' => env('GOWA_USERNAME'),
         'password' => env('GOWA_PASSWORD'),
         'country_code' => env('GOWA_COUNTRY_CODE', '20'),
+        // Seconds an invoice-edit message waits so that several edits go out as one.
+        'invoice_update_delay' => (int) env('WHATSAPP_INVOICE_UPDATE_DELAY', 120),
     ],
 
     'browsershot' => [

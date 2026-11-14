@@ -12,6 +12,7 @@ use App\Models\WhatsappMessage;
 use App\Services\V1\BalanceService;
 use App\Services\V1\DocumentImageService;
 use App\Services\V1\GowaWhatsappService;
+use App\Services\V1\InvoiceChangeService;
 use App\Support\PhoneNormalizer;
 use Closure;
 use Illuminate\Bus\Queueable;
@@ -49,11 +50,11 @@ class SendWhatsappMessageJob implements ShouldQueue
         $this->onQueue('notifications');
     }
 
-    public function handle(GowaWhatsappService $gowa, DocumentImageService $images, BalanceService $balances): void
+    public function handle(GowaWhatsappService $gowa, DocumentImageService $images, BalanceService $balances, InvoiceChangeService $changes): void
     {
         app()->setLocale('ar');
 
-        $this->inMaintenanceCenter(function () use ($gowa, $images, $balances): void {
+        $this->inMaintenanceCenter(function () use ($gowa, $images, $balances, $changes): void {
             $type = WhatsappMessageType::from($this->type);
             $debt = $type === WhatsappMessageType::DebtReminder ? $balances->customerBalance((int) $this->customerId) : null;
 
@@ -63,9 +64,16 @@ class SendWhatsappMessageJob implements ShouldQueue
                 return;
             }
 
+            if ($type === WhatsappMessageType::InvoiceUpdated && $this->order()->isCancelled()) {
+                $this->record(WhatsappMessageStatus::SkippedOrderCancelled, []);
+
+                return;
+            }
+
             $providerMessageId = match ($type) {
                 WhatsappMessageType::Test => $gowa->sendText($this->recipient, __('messages.whatsapp_test_body', ['center' => maintenanceCenterContext()->maintenanceCenter()->name]), $this->deviceId),
                 WhatsappMessageType::Invoice => $this->sendInvoice($gowa, $images),
+                WhatsappMessageType::InvoiceUpdated => $this->sendInvoiceUpdate($gowa, $images, $changes),
                 WhatsappMessageType::Payment => $this->sendReceipt($gowa, $images),
                 WhatsappMessageType::ServiceReminder => $gowa->sendText($this->recipient, $this->serviceReminderText(), $this->deviceId),
                 WhatsappMessageType::DebtReminder => $gowa->sendText($this->recipient, __('messages.whatsapp_debt_reminder_body', [
@@ -97,7 +105,7 @@ class SendWhatsappMessageJob implements ShouldQueue
 
     private function sendInvoice(GowaWhatsappService $gowa, DocumentImageService $images): string
     {
-        $order = Order::query()->withoutGlobalScope('branch')->findOrFail($this->orderId);
+        $order = $this->order();
 
         return $this->sendImage($gowa, $images->invoice($order), __('messages.whatsapp_invoice_caption', [
             'center' => maintenanceCenterContext()->maintenanceCenter()->name,
@@ -106,6 +114,30 @@ class SendWhatsappMessageJob implements ShouldQueue
             'paid' => formatNumber($order->paid),
             'remaining' => $order->remaining()->toFloat(),
         ]));
+    }
+
+    /**
+     * The invoice as it is now, marked as an edit, with what changed since the
+     * customer last received it.
+     */
+    private function sendInvoiceUpdate(GowaWhatsappService $gowa, DocumentImageService $images, InvoiceChangeService $changes): string
+    {
+        $order = $this->order();
+        $summary = $changes->unsent($order, $this->messageId);
+
+        return $this->sendImage($gowa, $images->invoiceUpdate($order, $summary), __('messages.whatsapp_invoice_updated_caption', [
+            'center' => maintenanceCenterContext()->maintenanceCenter()->name,
+            'number' => $order->order_no,
+            'previous' => $summary['previous_total'],
+            'total' => formatNumber($order->total),
+            'paid' => formatNumber($order->paid),
+            'remaining' => $order->remaining()->toFloat(),
+        ]));
+    }
+
+    private function order(): Order
+    {
+        return Order::query()->withoutGlobalScope('branch')->findOrFail($this->orderId);
     }
 
     private function sendReceipt(GowaWhatsappService $gowa, DocumentImageService $images): string

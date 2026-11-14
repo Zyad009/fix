@@ -15,6 +15,7 @@ enum WhatsappMessageStatus: string
     case SkippedNoDevice = 'skipped_no_device';
     case SkippedInvalidPhone = 'skipped_invalid_phone';
     case SkippedNoDebt = 'skipped_no_debt';
+    case SkippedOrderCancelled = 'skipped_order_cancelled';
 
     public const LABELS = [
         'queued' => ['ar' => 'قيد الإرسال', 'en' => 'Queued'],
@@ -24,5 +25,6 @@ enum WhatsappMessageStatus: string
         'skipped_no_device' => ['ar' => 'لم تُرسل: واتساب غير مربوط', 'en' => 'Skipped: WhatsApp not connected'],
         'skipped_invalid_phone' => ['ar' => 'لم تُرسل: رقم غير صالح', 'en' => 'Skipped: invalid phone'],
         'skipped_no_debt' => ['ar' => 'لم تُرسل: المديونية اتسددت قبل الإرسال', 'en' => 'Skipped: debt settled before sending'],
+        'skipped_order_cancelled' => ['ar' => 'لم تُرسل: الفاتورة اتلغت قبل الإرسال', 'en' => 'Skipped: invoice cancelled before sending'],
     ];
 }

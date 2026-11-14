@@ -41,6 +41,7 @@ class OrderService
         private readonly CustomerService $customers,
         private readonly AuditLogService $audit,
         private readonly WhatsappNotifier $whatsapp,
+        private readonly InvoiceChangeService $changes,
     ) {}
 
     /**
@@ -173,8 +174,13 @@ class OrderService
                 : [];
 
             if ($order->isCompleted()) {
-                $this->audit->record($order, AuditEvent::Updated, $old, $order->only([...self::HEADER_FIELDS, 'discount']));
+                $new = $order->only([...self::HEADER_FIELDS, 'discount']);
+                $this->audit->record($order, AuditEvent::Updated, $old, $new);
                 $this->vehicles->refreshLastVisit($order->vehicle_id);
+
+                if ($this->changes->changedFields($old, $new) !== []) {
+                    $this->whatsapp->invoiceUpdated($order);
+                }
             }
 
             return ['order' => $this->load($order), 'warnings' => $warnings];

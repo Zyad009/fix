@@ -24,6 +24,7 @@ class OrderItemService
         private readonly OrderTotalsService $totals,
         private readonly StockService $stock,
         private readonly AuditLogService $audit,
+        private readonly WhatsappNotifier $whatsapp,
     ) {}
 
     /**
@@ -36,6 +37,7 @@ class OrderItemService
             $order = $this->guard->lockEditable($order);
             $warnings = $this->addLines($order, [$data]);
             $this->totals->recalculate($order);
+            $this->whatsapp->invoiceUpdated($order);
 
             return ['order' => $order, 'warnings' => $warnings];
         });
@@ -95,6 +97,10 @@ class OrderItemService
                 $qtyChange = BigDecimal::of($item->qty)->minus($old['qty']);
                 $warnings = $this->moveStock($order, $item->product_id, $qtyChange->negated());
                 $this->audit->record($order, AuditEvent::ItemUpdated, ['item_id' => $item->id, ...$old], ['item_id' => $item->id, ...$item->only(['name', 'qty', 'unit_price', 'unit_cost'])]);
+
+                if ($item->wasChanged(['name', 'qty', 'unit_price'])) {
+                    $this->whatsapp->invoiceUpdated($order);
+                }
             }
 
             $this->totals->recalculate($order);
@@ -116,6 +122,7 @@ class OrderItemService
 
             $item->delete();
             $this->totals->recalculate($order);
+            $this->whatsapp->invoiceUpdated($order);
 
             return $order;
         });

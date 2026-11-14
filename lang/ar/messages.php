@@ -108,6 +108,7 @@ return [
 برجاء السداد في أقرب وقت.:contact',
     'whatsapp_contact_line' => '
 للتواصل: :phone',
+    'whatsapp_invoice_updated_caption' => "✏️ تنبيه: تم تعديل الفاتورة رقم :number\n:center\nالإجمالي قبل التعديل: :previous جنيه\nالإجمالي بعد التعديل: :total جنيه\nالمدفوع: :paid جنيه\nالمتبقي: :remaining جنيه\nالصورة المرفقة هي النسخة المحدثة من الفاتورة.",
     'whatsapp_payment_caption' => "تم استلام دفعتكم بنجاح ✅\n:center\nإيصال رقم :number\nالمبلغ: :amount جنيه\nإجمالي المديونية المتبقية: :debt جنيه",
     // Roles & permissions
     'owner_role_locked' => 'دور المالك ثابت: معاه كل الصلاحيات ومينفعش يتعدل أو يتمسح.',

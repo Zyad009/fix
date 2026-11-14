@@ -12,6 +12,7 @@ use App\Models\WhatsappMessage;
 use App\Services\V1\BalanceService;
 use App\Services\V1\DocumentImageService;
 use App\Services\V1\GowaWhatsappService;
+use App\Services\V1\InvoiceChangeService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -237,7 +238,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
         Http::fake(['*' => Http::response(['code' => 'SUCCESS', 'results' => ['message_id' => 'wa-9']])]);
         config(['services.gowa.url' => 'http://gowa.test']);
 
-        $this->reminders('debt_reminder')[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
+        $this->reminders('debt_reminder')[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class), app(InvoiceChangeService::class));
 
         Http::assertSent(fn (Request $request): bool => $request->url() === 'http://gowa.test/send/message'
             && str_contains($request['message'], '1,200.00')
@@ -257,7 +258,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
         $this->pay($orderId, '500', 0);
         Http::fake();
 
-        $this->reminders('debt_reminder')[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
+        $this->reminders('debt_reminder')[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class), app(InvoiceChangeService::class));
 
         Http::assertNothingSent();
         $this->inMaintenanceCenter($this->maintenanceCenter);
@@ -274,7 +275,7 @@ class WhatsappReminderTest extends CenterHttpTestCase
         Http::fake(['*' => Http::response(['code' => 'SUCCESS', 'results' => ['message_id' => 'wa-1']])]);
         config(['services.gowa.url' => 'http://gowa.test']);
 
-        $this->reminders('service_reminder')[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class));
+        $this->reminders('service_reminder')[0]->handle(app(GowaWhatsappService::class), app(DocumentImageService::class), app(BalanceService::class), app(InvoiceChangeService::class));
 
         Http::assertSent(fn (Request $request): bool => str_contains($request['message'], 'س ص 123')
             && str_contains($request['message'], '2026-11-04'));

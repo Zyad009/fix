@@ -151,7 +151,7 @@ MD,
         'ar' => <<<'MD'
 تعديل إعدادات المركز (owner)، ومنها رسائل واتساب الأوتوماتيك. الرد فيه `whatsapp_connected`، ورقم الإرسال (device) بيحدده الأدمن بس.
 
-- `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`: صورة الفاتورة وصورة الإيصال.
+- `whatsapp_invoice_enabled` و `whatsapp_payment_enabled`: صورة الفاتورة وصورة الإيصال. `whatsapp_invoice_enabled` بيتحكم كمان في إشعار تعديل الفاتورة المقفولة.
 - `whatsapp_service_reminder_enabled`: تذكير قبل معاد الصيانة الجاية بيوم. مقفول افتراضياً.
 - `whatsapp_debt_reminder_enabled` و `debt_reminder_days` (1 لـ 365، الافتراضي 30): تذكير المديونية. مقفول افتراضياً.
 
@@ -162,7 +162,7 @@ MD,
         'en' => <<<'MD'
 Update center settings (owner), including the automatic WhatsApp messages. The response includes `whatsapp_connected`; the sending device is set by the admin only.
 
-- `whatsapp_invoice_enabled`, `whatsapp_payment_enabled`: invoice and receipt images.
+- `whatsapp_invoice_enabled`, `whatsapp_payment_enabled`: invoice and receipt images. `whatsapp_invoice_enabled` also controls the edit notice of a completed invoice.
 - `whatsapp_service_reminder_enabled`: a reminder the day before the next service date. Off by default.
 - `whatsapp_debt_reminder_enabled` and `debt_reminder_days` (1–365, default 30): debt reminder. Off by default.
 
@@ -501,20 +501,20 @@ MD,
         'en' => 'Order details with lines, payments, vehicle and customer. Technicians see neither costs nor closed orders. `whatsapp`: the invoice\'s latest WhatsApp message `{id, status, recipient, error, sent_at, created_at}`; `status` is `queued`, `sent`, `failed` (reason in `error`: a short translated text for the user; technical details stay in the server log) or `skipped_*`. `null` when no message exists.',
     ],
     'center.orders.update' => [
-        'ar' => 'تعديل رأس الأوردر: العداد، الفني، الخصم، الصيانة الجاية، الملاحظات. الفاتورة المقفولة: owner بس، وبيتسجل في الـ audit. الإجمالي مايقلش عن المدفوع.',
-        'en' => 'Update the order header: odometer, technician, discount, next service, notes. Completed invoices: owner only, audited. The total cannot drop below what was paid.',
+        'ar' => 'تعديل رأس الأوردر: العداد، الفني، الخصم، الصيانة الجاية، الملاحظات. الفاتورة المقفولة: owner بس، وبيتسجل في الـ audit. الإجمالي مايقلش عن المدفوع. لو الفاتورة مقفولة، العميل بيوصله على واتساب إشعار تعديل (صورة الفاتورة المحدثة فيها التعديلات والإجمالي قبل وبعد). التعديلات المتتالية بتتجمع في رسالة واحدة بتتبعت بعد دقيقتين (`WHATSAPP_INVOICE_UPDATE_DELAY`). تغيير الفني لوحده مابيبعتش حاجة.',
+        'en' => 'Update the order header: odometer, technician, discount, next service, notes. Completed invoices: owner only, audited. The total cannot drop below what was paid. On a completed invoice the customer gets a WhatsApp edit notice (the updated invoice image with what changed and the total before/after). Consecutive edits are batched into one message sent after two minutes (`WHATSAPP_INVOICE_UPDATE_DELAY`). Changing only the technician sends nothing.',
     ],
     'center.orders.items.store' => [
-        'ar' => 'إضافة بند: من الكتالوج (الاسم والسعر والتكلفة بيتنسخوا) أو صنف حر. على فاتورة مقفولة (owner) المخزون بيتظبط فوراً.',
-        'en' => 'Add a line: from the catalog (name/price/cost are snapshotted) or a free line. On a completed invoice (owner) stock is adjusted immediately.',
+        'ar' => 'إضافة بند: من الكتالوج (الاسم والسعر والتكلفة بيتنسخوا) أو صنف حر. على فاتورة مقفولة (owner) المخزون بيتظبط فوراً. لو الفاتورة مقفولة، العميل بيوصله على واتساب إشعار تعديل (صورة الفاتورة المحدثة فيها التعديلات والإجمالي قبل وبعد). التعديلات المتتالية بتتجمع في رسالة واحدة بتتبعت بعد دقيقتين (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
+        'en' => 'Add a line: from the catalog (name/price/cost are snapshotted) or a free line. On a completed invoice (owner) stock is adjusted immediately. On a completed invoice the customer gets a WhatsApp edit notice (the updated invoice image with what changed and the total before/after). Consecutive edits are batched into one message sent after two minutes (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
     ],
     'center.orders.items.update' => [
-        'ar' => 'تعديل بند (الكمية/السعر/الاسم). الإجماليات بتتحسب من جديد في نفس الـ transaction.',
-        'en' => 'Update a line (qty/price/name). Totals are recalculated in the same transaction.',
+        'ar' => 'تعديل بند (الكمية/السعر/الاسم). الإجماليات بتتحسب من جديد في نفس الـ transaction. لو الفاتورة مقفولة، العميل بيوصله على واتساب إشعار تعديل (صورة الفاتورة المحدثة فيها التعديلات والإجمالي قبل وبعد). التعديلات المتتالية بتتجمع في رسالة واحدة بتتبعت بعد دقيقتين (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
+        'en' => 'Update a line (qty/price/name). Totals are recalculated in the same transaction. On a completed invoice the customer gets a WhatsApp edit notice (the updated invoice image with what changed and the total before/after). Consecutive edits are batched into one message sent after two minutes (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
     ],
     'center.orders.items.destroy' => [
-        'ar' => 'حذف بند. الإجماليات بتتحسب من جديد.',
-        'en' => 'Remove a line. Totals are recalculated.',
+        'ar' => 'حذف بند. الإجماليات بتتحسب من جديد. لو الفاتورة مقفولة، العميل بيوصله على واتساب إشعار تعديل (صورة الفاتورة المحدثة فيها التعديلات والإجمالي قبل وبعد). التعديلات المتتالية بتتجمع في رسالة واحدة بتتبعت بعد دقيقتين (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
+        'en' => 'Remove a line. Totals are recalculated. On a completed invoice the customer gets a WhatsApp edit notice (the updated invoice image with what changed and the total before/after). Consecutive edits are batched into one message sent after two minutes (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
     ],
     'center.orders.complete' => [
         'ar' => 'قفل أوردر مفتوح → فاتورة: المخزون بيتخصم، وآخر عداد وزيارة للعربية بيتحدثوا، وصورة الفاتورة بتتبعت للعميل على واتساب. `payments` اختيارية (`method` افتراضي `cash`). الأوردر الفاضي مايتقفلش.',
@@ -682,17 +682,17 @@ MD,
         'ar' => <<<'MD'
 سجل رسائل واتساب بتاعة المركز (paginated). الرقم متخفي.
 
-**الأنواع:** `invoice` فاتورة، `payment` إيصال، `test` تجربة، `service_reminder` تذكير صيانة، `debt_reminder` تذكير مديونية (فيه `customer`).
+**الأنواع:** `invoice` فاتورة، `invoice_updated` إشعار تعديل فاتورة مقفولة، `payment` إيصال، `test` تجربة، `service_reminder` تذكير صيانة، `debt_reminder` تذكير مديونية (فيه `customer`).
 
-**الحالات:** `queued` قيد الإرسال (لسه في الطابور)، `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`: نص مترجم مختصر، زي تعذّر تجهيز الصورة أو تعذّر الإرسال)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال.
+**الحالات:** `queued` قيد الإرسال (لسه في الطابور)، `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`: نص مترجم مختصر، زي تعذّر تجهيز الصورة أو تعذّر الإرسال)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال، `skipped_order_cancelled` الفاتورة اتلغت قبل إرسال إشعار التعديل.
 الرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.
 MD,
         'en' => <<<'MD'
 The center's WhatsApp message log (paginated). Numbers are masked.
 
-**Types:** `invoice`, `payment`, `test`, `service_reminder`, `debt_reminder` (carries `customer`).
+**Types:** `invoice`, `invoice_updated` edit notice of a completed invoice, `payment`, `test`, `service_reminder`, `debt_reminder` (carries `customer`).
 
-**Statuses:** `queued` waiting in the queue; `sent`; `failed` after 3 attempts (reason in `error`: a short translated text, such as the image could not be prepared or the message could not be sent); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending.
+**Statuses:** `queued` waiting in the queue; `sent`; `failed` after 3 attempts (reason in `error`: a short translated text, such as the image could not be prepared or the message could not be sent); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending; `skipped_order_cancelled` the invoice was cancelled before its edit notice went out.
 Messages go out in the background, so the API answers before delivery. Follow them here.
 MD,
     ],

@@ -36,6 +36,26 @@ class WhatsappNotifier
         $this->automatic(WhatsappMessageType::Invoice, maintenanceCenterContext()->maintenanceCenter()->whatsapp_invoice_enabled, $order->customer_id, orderId: $order->id);
     }
 
+    /**
+     * A completed invoice was edited. Several edits in a row (line by line)
+     * become one message: the send waits a short while, renders the invoice
+     * as it is then, and later edits join a message that has not started yet.
+     */
+    public function invoiceUpdated(Order $order): void
+    {
+        if (! $order->isCompleted() || $order->is_opening_balance || $this->hasPendingUpdate($order)) {
+            return;
+        }
+
+        $this->automatic(
+            WhatsappMessageType::InvoiceUpdated,
+            maintenanceCenterContext()->maintenanceCenter()->whatsapp_invoice_enabled,
+            $order->customer_id,
+            orderId: $order->id,
+            delay: $this->invoiceUpdateDelay(),
+        );
+    }
+
     public function paymentCollected(PaymentReceipt $receipt): void
     {
         $this->automatic(WhatsappMessageType::Payment, maintenanceCenterContext()->maintenanceCenter()->whatsapp_payment_enabled, $receipt->customer_id, receiptId: $receipt->id);
@@ -124,7 +144,7 @@ class WhatsappNotifier
             ->paginate($filters['per_page'] ?? config('paginate.default'));
     }
 
-    private function automatic(WhatsappMessageType $type, bool $enabled, ?int $customerId, ?int $orderId = null, ?int $receiptId = null): void
+    private function automatic(WhatsappMessageType $type, bool $enabled, ?int $customerId, ?int $orderId = null, ?int $receiptId = null, int $delay = 0): void
     {
         $maintenanceCenter = maintenanceCenterContext()->maintenanceCenter();
         $recipient = PhoneNormalizer::toWhatsapp($this->customerPhone($customerId));
@@ -150,7 +170,7 @@ class WhatsappNotifier
         }
 
         // After commit, and a queue outage is only reported: the sale is already saved.
-        DB::afterCommit(fn () => rescue(fn () => $this->dispatch($maintenanceCenter, $type, $recipient, $orderId, $receiptId, $customerId)));
+        DB::afterCommit(fn () => rescue(fn () => $this->dispatch($maintenanceCenter, $type, $recipient, $orderId, $receiptId, $customerId, $delay)));
     }
 
     private function manual(WhatsappMessageType $type, ?string $phone, ?int $orderId = null, ?int $receiptId = null, ?int $customerId = null): void
@@ -188,7 +208,7 @@ class WhatsappNotifier
      * The row is logged as queued right away, so the invoice shows the message
      * while it waits; the job settles the same row (sent/failed/skipped).
      */
-    private function dispatch(MaintenanceCenter $maintenanceCenter, WhatsappMessageType $type, string $recipient, ?int $orderId, ?int $receiptId, ?int $customerId = null): void
+    private function dispatch(MaintenanceCenter $maintenanceCenter, WhatsappMessageType $type, string $recipient, ?int $orderId, ?int $receiptId, ?int $customerId = null, int $delay = 0): void
     {
         $message = WhatsappMessage::query()->create([
             'type' => $type,
@@ -208,7 +228,27 @@ class WhatsappNotifier
             $receiptId,
             $customerId,
             $message->id,
-        );
+        )->delay($delay);
+    }
+
+    /**
+     * An update message still waiting for its delay already covers this edit,
+     * because the invoice is rendered when it is sent. One that is due (or
+     * running) may have rendered already, so a new edit gets its own message.
+     */
+    private function hasPendingUpdate(Order $order): bool
+    {
+        return WhatsappMessage::query()
+            ->where('order_id', $order->id)
+            ->where('type', WhatsappMessageType::InvoiceUpdated)
+            ->where('status', WhatsappMessageStatus::Queued)
+            ->where('created_at', '>', now()->subSeconds(max($this->invoiceUpdateDelay() - 10, 0)))
+            ->exists();
+    }
+
+    private function invoiceUpdateDelay(): int
+    {
+        return (int) config('services.gowa.invoice_update_delay');
     }
 
     /**

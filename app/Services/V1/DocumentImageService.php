@@ -36,6 +36,18 @@ class DocumentImageService
         return $this->render('whatsapp.invoice', $this->print->invoiceData($order));
     }
 
+    /**
+     * @param  array<string, mixed>  $changes  {@see InvoiceChangeService::unsent()}
+     */
+    public function invoiceUpdate(Order $order, array $changes): string
+    {
+        return $this->render('whatsapp.invoice-update', [
+            ...$this->print->invoiceData($order),
+            'changes' => $changes,
+            'updated_at' => now()->setTimezone(maintenanceCenterContext()->maintenanceCenter()->timezone)->format('Y-m-d H:i'),
+        ]);
+    }
+
     public function receipt(PaymentReceipt $receipt): string
     {
         return $this->render('whatsapp.receipt', $this->print->receiptData($receipt));

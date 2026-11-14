@@ -108,6 +108,7 @@ Your outstanding balance is :amount EGP.
 Please settle it at your earliest convenience.:contact',
     'whatsapp_contact_line' => '
 Contact us: :phone',
+    'whatsapp_invoice_updated_caption' => "✏️ Notice: invoice #:number was updated\n:center\nTotal before the update: :previous EGP\nTotal after the update: :total EGP\nPaid: :paid EGP\nRemaining: :remaining EGP\nThe attached image is the updated invoice.",
     'whatsapp_payment_caption' => "Payment received ✅\n:center\nReceipt #:number\nAmount: :amount EGP\nRemaining debt: :debt EGP",
     // Roles & permissions
     'owner_role_locked' => 'The owner role is fixed: it holds every permission and cannot be edited or deleted.',
