@@ -284,6 +284,7 @@ class OrderService
             'items' => fn ($query) => $query->orderBy('id'),
             'payments' => fn ($query) => $query->with('receipt:id,receipt_no')->orderBy('id'),
             'latestInvoiceWhatsapp',
+            'inspection.items',
         ]);
     }
 

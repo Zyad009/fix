@@ -3427,6 +3427,58 @@
             ]
         },
         {
+            "name": "center / inspection",
+            "item": [
+                {
+                    "name": "center.inspection.checklist",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/inspection/checklist",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "inspection",
+                                "checklist"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nقائمة الفحص الفني الثابتة: أقسام (المحرك، الفتيس، الفرامل...) وجوه كل قسم البنود بمفاتيحها وأسمائها بلغة الـ `lang`. الفرونت يرسم الشاشة منها ويبعت `key` البند في الحفظ.\n\n---\n\n### 🇬🇧 English\n\nThe fixed technical inspection checklist: sections (engine, transmission, brakes...) each with its item keys and labels in the `lang` language. The frontend draws the form from it and sends each item `key` when saving.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/inspection/checklist` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                }
+            ]
+        },
+        {
             "name": "center / options",
             "item": [
                 {
@@ -3688,7 +3740,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nأوردر مفتوح لعربية متسجلة (العربية لسه في الشغل)، يتقفل بعدين من `orders/{id}/complete`. الشرح الكامل للحقول في الـ request التاني.\n\n---\n\n### 🇬🇧 English\n\nAn open order for a registered vehicle (still being worked on), completed later via `orders/{id}/complete`. Full field docs are on the other request.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.create` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `vehicle_id` | ⚠️ | required_without:vehicle · integer · exists:vehicles · nullable |\n| `odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `technician_id` | — | integer · nullable |\n| `discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `next_service_odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `next_service_date` | — | date_format:Y-m-d · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `items` | — | array · max:100 |\n| `items.*.product_id` | — | integer · exists:products · nullable |\n| `items.*.name` | ⚠️ | required_without:items.*.product_id · string · max:255 · nullable |\n| `items.*.kind` | — | in: part, service · nullable |\n| `items.*.qty` | ✅ | decimal:0,2 · gt:0 · max:99999999 |\n| `items.*.unit_price` | ⚠️ | required_without:items.*.product_id · decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `items.*.unit_cost` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `vehicle` | ⚠️ | array · prohibits:vehicle_id |\n| `vehicle.plate_number` | ✅ | string · max:30 |\n| `vehicle.vin` | — | string · max:50 · nullable |\n| `vehicle.car_make_id` | — | integer · exists:car_makes · nullable |\n| `vehicle.car_model_id` | — | integer · exists:car_models · nullable |\n| `vehicle.year` | — | integer · min:1950 · max:2027 · nullable |\n| `vehicle.color` | — | string · max:50 · nullable |\n| `vehicle.notes` | — | string · max:2000 · nullable |\n| `customer` | ⚠️ | required_with:vehicle · array |\n| `customer.id` | — | integer · exists:customers · nullable |\n| `customer.name` | ⚠️ | required_without:customer.id · string · max:255 · nullable |\n| `customer.phone` | ⚠️ | required_without:customer.id · string · regex:/^01[0125]\\d{8}$/ · nullable |\n| `complete` | — | boolean |\n| `payments` | ⚠️ | prohibited_unless:complete,true · array · max:5 |\n| `payments.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `payments.*.method` | — | in: cash, instapay, wallet, card, bank · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
+                        "description": "### 🇪🇬 العربية\n\nأوردر مفتوح لعربية متسجلة (العربية لسه في الشغل)، يتقفل بعدين من `orders/{id}/complete`. الشرح الكامل للحقول في الـ request التاني.\n\n---\n\n### 🇬🇧 English\n\nAn open order for a registered vehicle (still being worked on), completed later via `orders/{id}/complete`. Full field docs are on the other request.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.create` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `vehicle_id` | ⚠️ | required_without:vehicle · integer · exists:vehicles · nullable |\n| `odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `technician_id` | — | integer · nullable |\n| `discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `next_service_odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `next_service_date` | — | date_format:Y-m-d · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `items` | — | array · max:100 |\n| `items.*.product_id` | — | integer · exists:products · nullable |\n| `items.*.routine_service_id` | ⚠️ | integer · prohibits:items.*.product_id · exists:routine_services · nullable |\n| `items.*.name` | ⚠️ | required_without_all:items.*.product_id,items.*.routine_service_id · string · max:255 · nullable |\n| `items.*.kind` | — | in: part, service · nullable |\n| `items.*.qty` | ✅ | decimal:0,2 · gt:0 · max:99999999 |\n| `items.*.unit_price` | ⚠️ | required_without:items.*.product_id · decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `items.*.unit_cost` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `vehicle` | ⚠️ | array · prohibits:vehicle_id |\n| `vehicle.plate_number` | ✅ | string · max:30 |\n| `vehicle.vin` | — | string · max:50 · nullable |\n| `vehicle.car_make_id` | — | integer · exists:car_makes · nullable |\n| `vehicle.car_model_id` | — | integer · exists:car_models · nullable |\n| `vehicle.year` | — | integer · min:1950 · max:2027 · nullable |\n| `vehicle.color` | — | string · max:50 · nullable |\n| `vehicle.notes` | — | string · max:2000 · nullable |\n| `customer` | ⚠️ | required_with:vehicle · array |\n| `customer.id` | — | integer · exists:customers · nullable |\n| `customer.name` | ⚠️ | required_without:customer.id · string · max:255 · nullable |\n| `customer.phone` | ⚠️ | required_without:customer.id · string · regex:/^01[0125]\\d{8}$/ · nullable |\n| `complete` | — | boolean |\n| `payments` | ⚠️ | prohibited_unless:complete,true · array · max:5 |\n| `payments.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `payments.*.method` | — | in: cash, instapay, wallet, card, bank · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"vehicle_id\": 1,\n    \"odometer\": 52000,\n    \"technician_id\": null,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"qty\": 1\n        },\n        {\n            \"name\": \"مصنعية\",\n            \"qty\": 1,\n            \"unit_price\": 200\n        }\n    ],\n    \"discount\": 0,\n    \"next_service_odometer\": 57000,\n    \"next_service_date\": \"2027-01-15\"\n}"
@@ -3742,7 +3794,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\n**زرار \"حفظ الفاتورة\".** بيعمل الأوردر، ولو `complete: true` بيقفله فاتورة ويحصّل في نفس الـ call (transaction واحدة: لو أي حاجة فشلت مفيش حاجة بتتسجل).\n\n**العربية — واحد من الاتنين:**\n- `vehicle_id`: عربية متسجلة (من البحث).\n- أو `customer` + `vehicle` من الشاشة:\n  - `customer`: `{id}` لعميل موجود، أو `{name, phone}` (لو التليفون متسجل بيتستخدم العميل الموجود).\n  - `vehicle`: لو اللوحة متسجلة لنفس العميل بتتستخدم؛ لو **لعميل تاني → 422**.\n  - محتاج صلاحية إضافة عملاء (الفني العادي → 403).\n\n**البنود:** من الكتالوج `{product_id, qty}` (+ `unit_price` لو عنده صلاحية تغيير السعر)، أو صنف حر `{name, qty, unit_price}`.\n**الخصم:** مبلغ (النسبة يحسبها الفرونت). الكاشير ليه حد أقصى.\n**القفل:** `complete: true` + `payments: [{amount, method?}]` (`method` افتراضي `cash`).\n**الفني الافتراضي:** لو اللي فاتح \"فني\" أو \"فني وكاشير\" ومابعتش `technician_id` → بيتحط هو.\n\n**الرد:** `{order, warnings[]}` — الأوردر فيه `parts_total` و `services_total` و `subtotal`, `discount`, `total`, `paid`, `remaining`. التحذيرات: العداد أقل من آخر قراءة أو المخزون نقص (من غير منع).\n\n---\n\n### 🇬🇧 English\n\n**The \"save invoice\" button.** Creates the order; with `complete: true` it also completes it and collects payments in the same call (one transaction: on any failure nothing is saved).\n\n**Vehicle — one of:**\n- `vehicle_id`: a registered vehicle (from search).\n- or `customer` + `vehicle` typed on the screen:\n  - `customer`: `{id}` of an existing customer, or `{name, phone}` (a known phone reuses that customer).\n  - `vehicle`: a plate already registered to the same customer is reused; registered to **another customer → 422**.\n  - Requires the add-customers permission (plain technician → 403).\n\n**Lines:** catalog `{product_id, qty}` (+ `unit_price` with the price-override permission) or free line `{name, qty, unit_price}`.\n**Discount:** an amount (the frontend converts percentages). Cashiers have a cap.\n**Complete:** `complete: true` + `payments: [{amount, method?}]` (`method` defaults to `cash`).\n**Default technician:** a technician / technician-cashier who omits `technician_id` becomes the technician.\n\n**Returns:** `{order, warnings[]}` — the order includes `parts_total`, `services_total`, `subtotal`, `discount`, `total`, `paid`, `remaining`. Warnings: odometer below the last reading, or stock went short (never blocking).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.create` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `vehicle_id` | ⚠️ | required_without:vehicle · integer · exists:vehicles · nullable |\n| `odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `technician_id` | — | integer · nullable |\n| `discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `next_service_odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `next_service_date` | — | date_format:Y-m-d · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `items` | — | array · max:100 |\n| `items.*.product_id` | — | integer · exists:products · nullable |\n| `items.*.name` | ⚠️ | required_without:items.*.product_id · string · max:255 · nullable |\n| `items.*.kind` | — | in: part, service · nullable |\n| `items.*.qty` | ✅ | decimal:0,2 · gt:0 · max:99999999 |\n| `items.*.unit_price` | ⚠️ | required_without:items.*.product_id · decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `items.*.unit_cost` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `vehicle` | ⚠️ | array · prohibits:vehicle_id |\n| `vehicle.plate_number` | ✅ | string · max:30 |\n| `vehicle.vin` | — | string · max:50 · nullable |\n| `vehicle.car_make_id` | — | integer · exists:car_makes · nullable |\n| `vehicle.car_model_id` | — | integer · exists:car_models · nullable |\n| `vehicle.year` | — | integer · min:1950 · max:2027 · nullable |\n| `vehicle.color` | — | string · max:50 · nullable |\n| `vehicle.notes` | — | string · max:2000 · nullable |\n| `customer` | ⚠️ | required_with:vehicle · array |\n| `customer.id` | — | integer · exists:customers · nullable |\n| `customer.name` | ⚠️ | required_without:customer.id · string · max:255 · nullable |\n| `customer.phone` | ⚠️ | required_without:customer.id · string · regex:/^01[0125]\\d{8}$/ · nullable |\n| `complete` | — | boolean |\n| `payments` | ⚠️ | prohibited_unless:complete,true · array · max:5 |\n| `payments.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `payments.*.method` | — | in: cash, instapay, wallet, card, bank · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
+                        "description": "### 🇪🇬 العربية\n\n**زرار \"حفظ الفاتورة\".** بيعمل الأوردر، ولو `complete: true` بيقفله فاتورة ويحصّل في نفس الـ call (transaction واحدة: لو أي حاجة فشلت مفيش حاجة بتتسجل).\n\n**العربية — واحد من الاتنين:**\n- `vehicle_id`: عربية متسجلة (من البحث).\n- أو `customer` + `vehicle` من الشاشة:\n  - `customer`: `{id}` لعميل موجود، أو `{name, phone}` (لو التليفون متسجل بيتستخدم العميل الموجود).\n  - `vehicle`: لو اللوحة متسجلة لنفس العميل بتتستخدم؛ لو **لعميل تاني → 422**.\n  - محتاج صلاحية إضافة عملاء (الفني العادي → 403).\n\n**البنود:** من الكتالوج `{product_id, qty}` (+ `unit_price` لو عنده صلاحية تغيير السعر)، أو خدمة اعتيادية `{routine_service_id, qty, unit_price}` (السعر بيكتبه الكاشير، والمقترح من `routine-services`)، أو صنف حر `{name, qty, unit_price}`.\n**الخصم:** مبلغ (النسبة يحسبها الفرونت). الكاشير ليه حد أقصى.\n**القفل:** `complete: true` + `payments: [{amount, method?}]` (`method` افتراضي `cash`).\n**الفني الافتراضي:** لو اللي فاتح \"فني\" أو \"فني وكاشير\" ومابعتش `technician_id` → بيتحط هو.\n\n**الرد:** `{order, warnings[]}` — الأوردر فيه `parts_total` و `services_total` و `subtotal`, `discount`, `total`, `paid`, `remaining`. التحذيرات: العداد أقل من آخر قراءة أو المخزون نقص (من غير منع).\n\n---\n\n### 🇬🇧 English\n\n**The \"save invoice\" button.** Creates the order; with `complete: true` it also completes it and collects payments in the same call (one transaction: on any failure nothing is saved).\n\n**Vehicle — one of:**\n- `vehicle_id`: a registered vehicle (from search).\n- or `customer` + `vehicle` typed on the screen:\n  - `customer`: `{id}` of an existing customer, or `{name, phone}` (a known phone reuses that customer).\n  - `vehicle`: a plate already registered to the same customer is reused; registered to **another customer → 422**.\n  - Requires the add-customers permission (plain technician → 403).\n\n**Lines:** catalog `{product_id, qty}` (+ `unit_price` with the price-override permission), routine service `{routine_service_id, qty, unit_price}` (typed price; suggested by `routine-services`) or free line `{name, qty, unit_price}`.\n**Discount:** an amount (the frontend converts percentages). Cashiers have a cap.\n**Complete:** `complete: true` + `payments: [{amount, method?}]` (`method` defaults to `cash`).\n**Default technician:** a technician / technician-cashier who omits `technician_id` becomes the technician.\n\n**Returns:** `{order, warnings[]}` — the order includes `parts_total`, `services_total`, `subtotal`, `discount`, `total`, `paid`, `remaining`. Warnings: odometer below the last reading, or stock went short (never blocking).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.create` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `vehicle_id` | ⚠️ | required_without:vehicle · integer · exists:vehicles · nullable |\n| `odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `technician_id` | — | integer · nullable |\n| `discount` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `next_service_odometer` | — | integer · min:0 · max:9999999 · nullable |\n| `next_service_date` | — | date_format:Y-m-d · nullable |\n| `notes` | — | string · max:2000 · nullable |\n| `items` | — | array · max:100 |\n| `items.*.product_id` | — | integer · exists:products · nullable |\n| `items.*.routine_service_id` | ⚠️ | integer · prohibits:items.*.product_id · exists:routine_services · nullable |\n| `items.*.name` | ⚠️ | required_without_all:items.*.product_id,items.*.routine_service_id · string · max:255 · nullable |\n| `items.*.kind` | — | in: part, service · nullable |\n| `items.*.qty` | ✅ | decimal:0,2 · gt:0 · max:99999999 |\n| `items.*.unit_price` | ⚠️ | required_without:items.*.product_id · decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `items.*.unit_cost` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `vehicle` | ⚠️ | array · prohibits:vehicle_id |\n| `vehicle.plate_number` | ✅ | string · max:30 |\n| `vehicle.vin` | — | string · max:50 · nullable |\n| `vehicle.car_make_id` | — | integer · exists:car_makes · nullable |\n| `vehicle.car_model_id` | — | integer · exists:car_models · nullable |\n| `vehicle.year` | — | integer · min:1950 · max:2027 · nullable |\n| `vehicle.color` | — | string · max:50 · nullable |\n| `vehicle.notes` | — | string · max:2000 · nullable |\n| `customer` | ⚠️ | required_with:vehicle · array |\n| `customer.id` | — | integer · exists:customers · nullable |\n| `customer.name` | ⚠️ | required_without:customer.id · string · max:255 · nullable |\n| `customer.phone` | ⚠️ | required_without:customer.id · string · regex:/^01[0125]\\d{8}$/ · nullable |\n| `complete` | — | boolean |\n| `payments` | ⚠️ | prohibited_unless:complete,true · array · max:5 |\n| `payments.*.amount` | ✅ | decimal:0,2 · gt:0 · max:9999999999 |\n| `payments.*.method` | — | in: cash, instapay, wallet, card, bank · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"customer\": {\n        \"name\": \"محمد علي\",\n        \"phone\": \"01012345678\"\n    },\n    \"vehicle\": {\n        \"plate_number\": \"أ ب ج 1234\",\n        \"vin\": null,\n        \"car_make_id\": 1,\n        \"car_model_id\": null,\n        \"year\": 2019\n    },\n    \"odometer\": 45000,\n    \"items\": [\n        {\n            \"product_id\": 1,\n            \"qty\": 1\n        },\n        {\n            \"name\": \"مصنعية\",\n            \"qty\": 1,\n            \"unit_price\": 300\n        }\n    ],\n    \"discount\": 50,\n    \"next_service_odometer\": 50000,\n    \"next_service_date\": \"2027-01-15\",\n    \"complete\": true,\n    \"payments\": [\n        {\n            \"amount\": 300,\n            \"method\": \"cash\"\n        }\n    ]\n}"
@@ -3915,10 +3967,10 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإضافة بند: من الكتالوج (الاسم والسعر والتكلفة بيتنسخوا) أو صنف حر. على فاتورة مقفولة (owner) المخزون بيتظبط فوراً. لو الفاتورة مقفولة، العميل بيوصله على واتساب إشعار تعديل (صورة الفاتورة المحدثة فيها التعديلات والإجمالي قبل وبعد). التعديلات المتتالية بتتجمع في رسالة واحدة بتتبعت بعد دقيقتين (`WHATSAPP_INVOICE_UPDATE_DELAY`).\n\n---\n\n### 🇬🇧 English\n\nAdd a line: from the catalog (name/price/cost are snapshotted) or a free line. On a completed invoice (owner) stock is adjusted immediately. On a completed invoice the customer gets a WhatsApp edit notice (the updated invoice image with what changed and the total before/after). Consecutive edits are batched into one message sent after two minutes (`WHATSAPP_INVOICE_UPDATE_DELAY`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders/{order}/items` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.create` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `product_id` | — | integer · exists:products · nullable |\n| `name` | ⚠️ | required_without:product_id · string · max:255 · nullable |\n| `kind` | — | in: part, service · nullable |\n| `qty` | ✅ | decimal:0,2 · gt:0 · max:99999999 |\n| `unit_price` | ⚠️ | required_without:product_id · decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `unit_cost` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإضافة بند: من الكتالوج (الاسم والسعر والتكلفة بيتنسخوا)، أو خدمة اعتيادية `routine_service_id` + `unit_price` (الاسم بيتنسخ من الخدمة والسعر إجباري، والخدمة الموقوفة → 422)، أو صنف حر. على فاتورة مقفولة (owner) المخزون بيتظبط فوراً. لو الفاتورة مقفولة، العميل بيوصله على واتساب إشعار تعديل (صورة الفاتورة المحدثة فيها التعديلات والإجمالي قبل وبعد). التعديلات المتتالية بتتجمع في رسالة واحدة بتتبعت بعد دقيقتين (`WHATSAPP_INVOICE_UPDATE_DELAY`).\n\n---\n\n### 🇬🇧 English\n\nAdd a line: from the catalog (name/price/cost are snapshotted), a routine service `routine_service_id` + `unit_price` (name snapshotted from the service, price required, inactive service → 422) or a free line. On a completed invoice (owner) stock is adjusted immediately. On a completed invoice the customer gets a WhatsApp edit notice (the updated invoice image with what changed and the total before/after). Consecutive edits are batched into one message sent after two minutes (`WHATSAPP_INVOICE_UPDATE_DELAY`).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders/{order}/items` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.create` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `product_id` | — | integer · exists:products · nullable |\n| `routine_service_id` | ⚠️ | integer · prohibits:product_id · exists:routine_services · nullable |\n| `name` | ⚠️ | required_without_all:product_id,routine_service_id · string · max:255 · nullable |\n| `kind` | — | in: part, service · nullable |\n| `qty` | ✅ | decimal:0,2 · gt:0 · max:99999999 |\n| `unit_price` | ⚠️ | required_without:product_id · decimal:0,2 · min:0 · max:9999999999 · nullable |\n| `unit_cost` | — | decimal:0,2 · min:0 · max:9999999999 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"product_id\": 1,\n    \"qty\": 1\n}"
+                            "raw": "{\n    \"routine_service_id\": 1,\n    \"qty\": 1,\n    \"unit_price\": 450\n}"
                         }
                     }
                 },
@@ -4289,6 +4341,232 @@
                             ]
                         },
                         "description": "### 🇪🇬 العربية\n\nطباعة الفاتورة: `output=json` (الافتراضي، الفرونت يرسمها) أو `output=pdf` عربي RTL بمقاس `size=a4` (افتراضي) أو `thermal` (80mm).\n\n---\n\n### 🇬🇧 English\n\nPrint the invoice: `output=json` (default, the frontend renders it) or `output=pdf` (Arabic RTL) in `size=a4` (default) or `thermal` (80mm).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/orders/{order}/print` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `size` | — | in:a4,thermal · nullable · **default: `a4`** |\n| `output` | — | in:json,pdf · nullable · **default: `json`** |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
+                    }
+                },
+                {
+                    "name": "center.orders.inspection.show",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/orders/:order/inspection",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "orders",
+                                ":order",
+                                "inspection"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "order",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nالفحص الفني للفاتورة، أو `data: null` لو مفيش فحص. `sections` فيها كل بنود القائمة، والبند اللي ما اتفحصش `status` بتاعه `null`. `summary` فيها عدد كل حالة.\n\n---\n\n### 🇬🇧 English\n\nThe invoice's technical inspection, or `data: null` when none. `sections` lists every checklist item; an item not inspected has `status: null`. `summary` counts each result.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/orders/{order}/inspection` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
+                    "name": "center.orders.inspection.update",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/orders/:order/inspection",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "orders",
+                                ":order",
+                                "inspection"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "order",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nحفظ الفحص الفني (إضافة أو تعديل). **البنود المبعوتة بتستبدل القديمة كلها**: ابعت كل البنود اللي اتفحصت، وأي بند مش مبعوت يبقى \"لم يُفحص\". `status`: `ok` سليم · `attention` يحتاج متابعة · `urgent` لازم يتغير. نفس قواعد تعديل الفاتورة: الملغية مقفولة، والمقفولة محتاجة صلاحية تعديل الفاتورة المقفولة. فاتورة فحص بس = فاتورة بندها خدمة \"فحص فني\".\n\n---\n\n### 🇬🇧 English\n\nSave the technical inspection (create or edit). **The items sent replace all stored ones**: send every inspected item; any item left out counts as not inspected. `status`: `ok` · `attention` · `urgent`. Same rules as editing the invoice: cancelled invoices are locked and closed ones need the edit-closed-invoices permission. An inspection-only invoice is an invoice whose line is an \"inspection\" service.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/orders/{order}/inspection` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.inspect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `items` | — | array |\n| `items.*.item` | ✅ | string · distinct · in: engine_condition,engine_oil,oil_leak,engine_belt,belt_bearing,spark_plugs,air_filter,engine_mounts,radiator_coolant,cooling_fan,exhaust_smoke,transmission_condition,transmission_oil,gear_shifting,clutch,transmission_mount,driveshaft,brake_fluid,front_pads,rear_pads,front_discs,rear_discs,handbrake,abs,front_shocks,rear_shocks,control_arms,wheel_bearings,front_suspension,rear_suspension,steering_rack,steering_wheel,wheel_alignment,battery,alternator,starter,headlights,rear_lights_signals,dashboard_warnings,air_conditioning,power_windows_mirrors,tire_front_right,tire_front_left,tire_rear_right,tire_rear_left,spare_tire,engine_pull,front_gears,rear_gears,steering_noise,braking_stability,vehicle_pull,abnormal_vibration,suspension_noise,chassis,accident_signs,windshield,doors_handles |\n| `items.*.status` | ✅ | in: ok, attention, urgent |\n| `items.*.note` | — | string · max:500 · nullable |\n| `diagnostic_result` | — | string · max:5000 · nullable |\n| `notes` | — | string · max:2000 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional. الحقول اللي فيها `.*.` جوه كل عنصر في الـ list، و ✅ عليها يعني مطلوبة جوه العنصر / `.*.` fields belong to each list item; ✅ there means required within the item.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"items\": [\n        {\n            \"item\": \"engine_oil\",\n            \"status\": \"ok\"\n        },\n        {\n            \"item\": \"front_pads\",\n            \"status\": \"urgent\",\n            \"note\": \"التيل خلصان\"\n        },\n        {\n            \"item\": \"battery\",\n            \"status\": \"attention\",\n            \"note\": \"ضعيفة شوية\"\n        }\n    ],\n    \"diagnostic_result\": \"P0300 - Random misfire\",\n    \"notes\": \"محتاجة متابعة بعد شهر\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "center.orders.inspection.destroy",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/orders/:order/inspection",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "orders",
+                                ":order",
+                                "inspection"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "order",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nمسح الفحص الفني للفاتورة، بنفس قواعد تعديل الفاتورة.\n\n---\n\n### 🇬🇧 English\n\nDelete the invoice's technical inspection, under the same rules as editing the invoice.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `DELETE /api/v1/center/orders/{order}/inspection` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.inspect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
+                    "name": "center.orders.inspection.print",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/orders/:order/inspection/print?output=pdf",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "orders",
+                                ":order",
+                                "inspection",
+                                "print"
+                            ],
+                            "query": [
+                                {
+                                    "key": "output",
+                                    "value": "pdf"
+                                }
+                            ],
+                            "variable": [
+                                {
+                                    "key": "order",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nطباعة تقرير الفحص: `output=json` (الافتراضي) أو `output=pdf` A4 عربي. التقرير فيه البنود اللي اتفحصت بس، مع بيانات العميل والعربية والعداد ونتيجة جهاز كشف الأعطال. لو مفيش فحص بيرجع 404.\n\n---\n\n### 🇬🇧 English\n\nPrint the inspection report: `output=json` (default) or `output=pdf` (A4, Arabic). It lists only inspected items, with the customer, vehicle, odometer and the diagnostic scanner result. 404 when there is no inspection.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/orders/{order}/inspection/print` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `output` | — | in:json,pdf · nullable · **default: `json`** |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 }
             ]
@@ -5640,7 +5918,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nإضافة دور: `name` و`permissions` (من الكتالوج) و`acts_as_technician` اختياري (لو `true` الأوردرات اللي الحساب يفتحها بتتسجل باسمه كفني). الـ `key` بيتعمل لوحده (`role_12`) ومابيتغيرش. أي دور غير المالك بيبقى مربوط بفرع واحد.\n\n---\n\n### 🇬🇧 English\n\nCreate a role: `name`, `permissions` (from the catalog) and optional `acts_as_technician` (when `true`, orders the account opens default to it as the technician). The `key` is generated (`role_12`) and never changes. Every role other than the owner is pinned to one branch.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/roles` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:100 · unique:roles |\n| `acts_as_technician` | — | boolean |\n| `permissions` | ✅ | array |\n| `permissions.*` | — | string · distinct · in: settings.manage,users.manage,audit.view,customers.view,customers.manage,catalog.view,catalog.manage,stock.manage,costs.view,orders.view,orders.view_closed,orders.create,orders.price_override,orders.discount,orders.discount_unlimited,orders.complete,orders.edit_completed,orders.cancel_completed,payments.collect,payments.void,opening_balances.manage,expenses.view,expenses.manage,expenses.void,payroll.manage,reports.view |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nإضافة دور: `name` و`permissions` (من الكتالوج) و`acts_as_technician` اختياري (لو `true` الأوردرات اللي الحساب يفتحها بتتسجل باسمه كفني). الـ `key` بيتعمل لوحده (`role_12`) ومابيتغيرش. أي دور غير المالك بيبقى مربوط بفرع واحد.\n\n---\n\n### 🇬🇧 English\n\nCreate a role: `name`, `permissions` (from the catalog) and optional `acts_as_technician` (when `true`, orders the account opens default to it as the technician). The `key` is generated (`role_12`) and never changes. Every role other than the owner is pinned to one branch.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/roles` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:100 · unique:roles |\n| `acts_as_technician` | — | boolean |\n| `permissions` | ✅ | array |\n| `permissions.*` | — | string · distinct · in: settings.manage,users.manage,audit.view,customers.view,customers.manage,catalog.view,catalog.manage,stock.manage,costs.view,orders.view,orders.view_closed,orders.create,orders.price_override,orders.discount,orders.discount_unlimited,orders.complete,orders.edit_completed,orders.cancel_completed,orders.inspect,payments.collect,payments.void,opening_balances.manage,expenses.view,expenses.manage,expenses.void,payroll.manage,reports.view |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"name\": \"مشرف ورشة\",\n    \"acts_as_technician\": true,\n    \"permissions\": [\n        \"customers.view\",\n        \"orders.view\",\n        \"orders.view_closed\",\n        \"orders.create\",\n        \"orders.complete\",\n        \"orders.edit_completed\",\n        \"reports.view\"\n    ]\n}"
@@ -5752,7 +6030,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nتعديل الاسم أو الصلاحيات أو `acts_as_technician`. التعديل بيتطبق على الحسابات اللي عليها الدور من الطلب الجاي. دور المالك مينفعش يتعدل (422). بيتسجل في سجل العمليات.\n\n---\n\n### 🇬🇧 English\n\nUpdate the name, permissions or `acts_as_technician`. Accounts holding the role get the change from their next request. The owner role cannot be edited (422). Logged in the audit log.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/roles/{role}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:100 · unique:roles |\n| `acts_as_technician` | — | boolean |\n| `permissions` | — | array |\n| `permissions.*` | — | string · distinct · in: settings.manage,users.manage,audit.view,customers.view,customers.manage,catalog.view,catalog.manage,stock.manage,costs.view,orders.view,orders.view_closed,orders.create,orders.price_override,orders.discount,orders.discount_unlimited,orders.complete,orders.edit_completed,orders.cancel_completed,payments.collect,payments.void,opening_balances.manage,expenses.view,expenses.manage,expenses.void,payroll.manage,reports.view |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "description": "### 🇪🇬 العربية\n\nتعديل الاسم أو الصلاحيات أو `acts_as_technician`. التعديل بيتطبق على الحسابات اللي عليها الدور من الطلب الجاي. دور المالك مينفعش يتعدل (422). بيتسجل في سجل العمليات.\n\n---\n\n### 🇬🇧 English\n\nUpdate the name, permissions or `acts_as_technician`. Accounts holding the role get the change from their next request. The owner role cannot be edited (422). Logged in the audit log.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/roles/{role}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | — | string · max:100 · unique:roles |\n| `acts_as_technician` | — | boolean |\n| `permissions` | — | array |\n| `permissions.*` | — | string · distinct · in: settings.manage,users.manage,audit.view,customers.view,customers.manage,catalog.view,catalog.manage,stock.manage,costs.view,orders.view,orders.view_closed,orders.create,orders.price_override,orders.discount,orders.discount_unlimited,orders.complete,orders.edit_completed,orders.cancel_completed,orders.inspect,payments.collect,payments.void,opening_balances.manage,expenses.view,expenses.manage,expenses.void,payroll.manage,reports.view |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
                         "body": {
                             "mode": "raw",
                             "raw": "{\n    \"permissions\": [\n        \"customers.view\",\n        \"orders.view\",\n        \"orders.create\"\n    ]\n}"
@@ -5809,6 +6087,386 @@
                             ]
                         },
                         "description": "### 🇪🇬 العربية\n\nحذف دور. مرفوض لدور المالك (422)، ولأي دور عليه حسابات حتى لو موقوفة (409).\n\n---\n\n### 🇬🇧 English\n\nDelete a role. Refused for the owner role (422) and for any role held by accounts, suspended ones included (409).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `DELETE /api/v1/center/roles/{role}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `roles.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                }
+            ]
+        },
+        {
+            "name": "center / routine-services",
+            "item": [
+                {
+                    "name": "center.routine-services.index",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/routine-services?is_active=1",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "routine-services"
+                            ],
+                            "query": [
+                                {
+                                    "key": "is_active",
+                                    "value": "1"
+                                }
+                            ],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nالخدمات الاعتيادية (اسم + تفعيل، من غير سعر)، مترتبة **من الأكتر استخدامًا**. كل خدمة معاها `usage_count` (بنود الفواتير غير الملغية)، و`last_used_at`، و`suggested_price`: أكتر سعر اتكرر في آخر 3 شهور (التعادل → الأحدث)، ولو مفيش استخدام فيها → آخر سعر، ولو ما اتستخدمتش خالص → `null`. شاشة الفاتورة تبعت `is_active=1`.\n\n---\n\n### 🇬🇧 English\n\nRoutine services (name + active, no price), ordered **most used first**. Each has `usage_count` (lines on non-cancelled invoices), `last_used_at` and `suggested_price`: the most frequent price of the last 3 months (tie → newest), else the last price used, else `null`. The invoice screen sends `is_active=1`.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/routine-services` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `catalog.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `q` | — | string · max:100 · nullable |\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable · **default: 50** |\n| `is_active` | — | boolean · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
+                    }
+                },
+                {
+                    "name": "center.routine-services.store",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/routine-services",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "routine-services"
+                            ],
+                            "query": [],
+                            "variable": []
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nإضافة خدمة اعتيادية. الاسم مايتكررش في المركز.\n\n---\n\n### 🇬🇧 English\n\nCreate a routine service. The name is unique within the center.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/routine-services` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `catalog.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:100 · unique:routine_services |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"غسيل موتور\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "center.routine-services.show",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/routine-services/:routine_service",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "routine-services",
+                                ":routine_service"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "routine_service",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nتفاصيل الخدمة مع `prices`: توزيع الأسعار في آخر 3 شهور (كل سعر اتعمل كام مرة)، الأكتر الأول.\n\n---\n\n### 🇬🇧 English\n\nService details with `prices`: the price distribution of the last 3 months (each price and how often it was used), most used first.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/routine-services/{routine_service}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `catalog.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
+                    "name": "center.routine-services.update",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/routine-services/:routine_service",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "routine-services",
+                                ":routine_service"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "routine_service",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nتغيير اسم الخدمة. الفواتير القديمة بتفضل بالاسم القديم (البند snapshot).\n\n---\n\n### 🇬🇧 English\n\nRename the service. Past invoices keep the old name (lines are snapshots).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PUT /api/v1/center/routine-services/{routine_service}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `catalog.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `name` | ✅ | string · max:100 · unique:routine_services |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional.",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"غسيل المحرك\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "center.routine-services.destroy",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/routine-services/:routine_service",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "routine-services",
+                                ":routine_service"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "routine_service",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nحذف خدمة. **الخدمة اللي اتستخدمت في أي فاتورة (حتى الملغية) مينفعش تتمسح → 409**، أوقفها بدل كده. الخدمة الافتراضية الممسوحة مابترجعش تاني مع الـ seeder.\n\n---\n\n### 🇬🇧 English\n\nDelete a service. **A service used on any invoice (cancelled ones included) cannot be deleted → 409**; deactivate it instead. A deleted default is not recreated by the seeder.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `DELETE /api/v1/center/routine-services/{routine_service}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `catalog.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
+                    "name": "center.routine-services.toggle",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/routine-services/toggle/:id",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "routine-services",
+                                "toggle",
+                                ":id"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nإيقاف/تفعيل خدمة (الموقوفة مينفعش تتضاف لفاتورة).\n\n---\n\n### 🇬🇧 English\n\nDeactivate/activate a service (inactive services cannot be added to invoices).\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `PATCH /api/v1/center/routine-services/toggle/{id}` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `catalog.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
+                },
+                {
+                    "name": "center.routine-services.history",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/routine-services/:routine_service/history",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "routine-services",
+                                ":routine_service",
+                                "history"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "routine_service",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nسجل استخدام الخدمة (paginated، الأحدث الأول) من كل الفروع: رقم الفاتورة وحالتها، الفرع، العميل، اللوحة، الكمية والسعر والتاريخ. الفواتير الملغية مش ظاهرة.\n\n---\n\n### 🇬🇧 English\n\nUsage history (paginated, newest first) across all branches: invoice number and status, branch, customer, plate, qty, price and date. Cancelled invoices are excluded.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/routine-services/{routine_service}/history` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view_closed` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 }
             ]

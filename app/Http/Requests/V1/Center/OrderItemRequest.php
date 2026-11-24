@@ -27,7 +27,8 @@ class OrderItemRequest extends AbstractFormRequest
     }
 
     /**
-     * A catalog line (product_id) or a free line (name + unit_price).
+     * A catalog line (product_id), a routine service line (routine_service_id
+     * + unit_price) or a free line (name + unit_price).
      *
      * @return array<string, mixed>
      */
@@ -35,7 +36,8 @@ class OrderItemRequest extends AbstractFormRequest
     {
         return [
             $prefix.'product_id' => ['nullable', 'integer', maintenanceCenterExists('products', withoutTrashed: true)],
-            $prefix.'name' => ['required_without:'.$prefix.'product_id', 'nullable', 'string', 'max:255'],
+            $prefix.'routine_service_id' => ['nullable', 'integer', 'prohibits:'.$prefix.'product_id', maintenanceCenterExists('routine_services', withoutTrashed: true)],
+            $prefix.'name' => ['required_without_all:'.$prefix.'product_id,'.$prefix.'routine_service_id', 'nullable', 'string', 'max:255'],
             $prefix.'kind' => ['nullable', Rule::enum(ProductKind::class)],
             $prefix.'qty' => ['required', 'decimal:0,2', 'gt:0', 'max:99999999'],
             $prefix.'unit_price' => ['required_without:'.$prefix.'product_id', 'nullable', 'decimal:0,2', 'min:0', 'max:9999999999'],

@@ -27,6 +27,7 @@ $groups = [
         'orders.complete',
         'orders.edit_completed',
         'orders.cancel_completed',
+        'orders.inspect',
     ],
     'payments' => ['payments.collect', 'payments.void', 'opening_balances.manage'],
     'expenses' => ['expenses.view', 'expenses.manage', 'expenses.void'],
@@ -44,6 +45,7 @@ $cashier = [
     'orders.price_override',
     'orders.discount',
     'orders.complete',
+    'orders.inspect',
     'payments.collect',
     'expenses.view',
     'expenses.manage',
@@ -82,7 +84,7 @@ return [
         'technician' => [
             'is_owner' => false,
             'acts_as_technician' => true,
-            'permissions' => ['customers.view', 'catalog.view', 'orders.view', 'orders.create'],
+            'permissions' => ['customers.view', 'catalog.view', 'orders.view', 'orders.create', 'orders.inspect'],
         ],
     ],
 

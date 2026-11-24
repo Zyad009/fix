@@ -39,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
             'payment' => Models\Payment::class,
             'expense_category' => Models\ExpenseCategory::class,
             'expense' => Models\Expense::class,
+            'routine_service' => Models\RoutineService::class,
         ]);
     }
 }

@@ -45,16 +45,19 @@ $bodies = [
     'center.products.store' => ['category_id' => 1, 'name' => 'زيت 5W30', 'barcode' => '6221234567890', 'kind' => 'part', 'sale_price' => 850, 'cost_price' => 700, 'track_stock' => true],
     'center.products.update' => ['sale_price' => 900, 'barcode' => '6221234567890'],
     'center.products.stock' => ['qty' => 20, 'reason' => 'جرد'],
+    'center.routine-services.store' => ['name' => 'غسيل موتور'],
+    'center.routine-services.update' => ['name' => 'غسيل المحرك'],
 
     // Orders
     'center.orders.store' => ['vehicle_id' => 1, 'items' => [['product_id' => 1, 'qty' => 1]]],
     'center.orders.update' => ['discount' => 50, 'technician_id' => 1, 'notes' => 'ملاحظة'],
-    'center.orders.items.store' => ['product_id' => 1, 'qty' => 1],
+    'center.orders.items.store' => ['routine_service_id' => 1, 'qty' => 1, 'unit_price' => 450],
     'center.orders.items.update' => ['qty' => 2],
     'center.orders.complete' => ['payments' => [['amount' => 500, 'method' => 'cash'], ['amount' => 100]]],
     'center.orders.cancel' => ['reason' => 'العميل رجع'],
     'center.orders.payments' => ['amount' => 200],
     'center.receipts.void' => ['reason' => 'مبلغ مسجل بالغلط'],
+    'center.orders.inspection.update' => ['items' => [['item' => 'engine_oil', 'status' => 'ok'], ['item' => 'front_pads', 'status' => 'urgent', 'note' => 'التيل خلصان'], ['item' => 'battery', 'status' => 'attention', 'note' => 'ضعيفة شوية']], 'diagnostic_result' => 'P0300 - Random misfire', 'notes' => 'محتاجة متابعة بعد شهر'],
 
     // Employees & payroll
     'center.employees.store' => ['name' => 'حسن', 'job_title' => 'ميكانيكي', 'base_salary' => 6000, 'hired_at' => '2026-01-01', 'account' => ['username' => 'hassan', 'email' => 'hassan@dawar.test', 'password' => 'secret123', 'role' => 'technician_cashier']],
@@ -76,6 +79,7 @@ $queries = [
     'center.customers.statement' => 'from=2026-10-01&to=2026-10-31',
     'center.customers.unpaid-orders' => 'vehicle_id=',
     'center.pos.catalog' => 'q=6221234567890',
+    'center.routine-services.index' => 'is_active=1',
     'center.payroll.preview' => 'period=2026-10',
     'center.reports.sales' => 'from=2026-10-01&to=2026-10-31',
     'center.reports.profit' => 'from=2026-10-01&to=2026-10-31',
@@ -83,5 +87,6 @@ $queries = [
     'center.reports.service-due' => 'days=7',
     'center.reports.debts' => 'sort=amount',
     'center.orders.print' => 'output=pdf&size=thermal',
+    'center.orders.inspection.print' => 'output=pdf',
     'center.receipts.print' => 'output=json',
 ];

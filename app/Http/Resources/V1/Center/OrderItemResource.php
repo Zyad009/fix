@@ -18,7 +18,8 @@ class OrderItemResource extends JsonResource
         return [
             'id' => $this->id,
             'product_id' => $this->product_id,
-            'is_free_item' => $this->product_id === null,
+            'routine_service_id' => $this->routine_service_id,
+            'is_free_item' => $this->product_id === null && $this->routine_service_id === null,
             'name' => $this->name,
             'kind' => $this->kind->response(),
             'qty' => formatNumber($this->qty),

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الفحص الفني — للفرونت</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e4df;
+    --accent: #0f766e; --accent-soft: #e6f4f2; --new: #1d4ed8; --new-soft: #e8efff;
+    --warn: #b45309; --warn-soft: #fdf3e4; --danger: #b91c1c; --danger-soft: #fdecec; --code-bg: #f1f1ee;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514; --card: #1e1e1c; --text: #ecece8; --muted: #a3a39c; --line: #33332f;
+      --accent: #2dd4bf; --accent-soft: #123330; --new: #93b4ff; --new-soft: #1a2540;
+      --warn: #fbbf24; --warn-soft: #362a12; --danger: #fca5a5; --danger-soft: #3a1717; --code-bg: #262623;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.75 "Segoe UI", Tahoma, "Noto Sans Arabic", system-ui, sans-serif; padding: 0 16px; }
+  main { max-width: 900px; margin: 0 auto; padding-block: 40px 80px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+  h3 { font-size: 1.08rem; margin: 28px 0 8px; }
+  p { margin: 8px 0; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .88em; background: var(--code-bg);
+    padding: 1px 6px; border-radius: 5px; direction: ltr; unicode-bidi: embed; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; direction: ltr; text-align: left; font-size: .86rem; line-height: 1.6; margin: 10px 0; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0; }
+  .table-wrap { overflow-x: auto; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: .93rem; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.ltr { direction: ltr; text-align: left; white-space: nowrap; }
+  .note { border-inline-start: 4px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .ok { border-inline-start: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .m { font-weight: 700; margin-inline-end: 6px; }
+  .m-get { color: var(--accent); } .m-put { color: var(--warn); } .m-del { color: var(--danger); }
+  ul, ol { padding-inline-start: 22px; margin: 6px 0; }
+  li { margin: 3px 0; }
+  .muted { color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>الفحص الفني</h1>
+<p class="sub">ميزة جديدة: الفني بيسجّل فحص للعربية جوه الفاتورة، والفحص بيتطبع للعميل. كل المسارات تحت <code>/api/v1/center</code>.</p>
+
+<div class="ok">
+  <strong>مفيش حاجة موجودة اتكسرت.</strong> كل التغييرات إضافة: 5 APIs جديدة، وحقل جديد <code>inspection_summary</code> في الفاتورة، وصلاحية جديدة <code>orders.inspect</code>.
+</div>
+
+<h2>1. الفكرة</h2>
+<ul>
+  <li><strong>كل فاتورة ليها فحص واحد بس، وهو اختياري.</strong> بيتفتح من شاشة الفاتورة.</li>
+  <li><strong>قائمة الفحص ثابتة لكل المراكز:</strong> 8 أقسام، وفيهم 58 بند.</li>
+  <li><strong>كل بند ليه حالة من التلاتة دول، ومعاها ملاحظة اختيارية:</strong>
+    <ul>
+      <li>🟢 <code>ok</code> سليم</li>
+      <li>🟡 <code>attention</code> يحتاج متابعة</li>
+      <li>🔴 <code>urgent</code> لازم يتغير</li>
+    </ul>
+    والبند اللي مالوش حالة بيتحسب "لم يُفحص".
+  </li>
+  <li><strong>على الفحص كله:</strong> خانة لنتيجة <strong>جهاز كشف الأعطال</strong>، وخانة <strong>ملاحظات</strong>.</li>
+  <li><strong>فاتورة فحص بس:</strong> مفيش نوع جديد للفاتورة. هي فاتورة عادية بندها الوحيد خدمة "فحص فني"، وهي من الخدمات الاعتيادية الافتراضية، فهي موجودة عند كل مركز. شوف تقرير الخدمات الاعتيادية. علشان كده الدفع والمديونية وواتساب شغالين عليها عادي.</li>
+</ul>
+
+<h2>2. الـ APIs</h2>
+<div class="table-wrap"><table>
+  <tr><th>الـ API</th><th>الصلاحية</th><th>بيعمل إيه</th></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/inspection/checklist</td><td><code>orders.view</code></td><td>الأقسام والبنود بأسمائها حسب الـ header <code>lang</code>. الشاشة بتترسم منها</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/orders/{id}/inspection</td><td><code>orders.view</code></td><td>فحص الفاتورة، أو <code>data: null</code> لو مفيش فحص</td></tr>
+  <tr><td class="ltr"><span class="m m-put">PUT</span>/orders/{id}/inspection</td><td><code>orders.inspect</code></td><td>حفظ الفحص، سواء أول مرة أو تعديل</td></tr>
+  <tr><td class="ltr"><span class="m m-del">DELETE</span>/orders/{id}/inspection</td><td><code>orders.inspect</code></td><td>مسح الفحص</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/orders/{id}/inspection/print</td><td><code>orders.view</code></td><td><code>output=json</code> (الافتراضي) أو <code>output=pdf</code> بمقاس A4</td></tr>
+</table></div>
+
+<h3>قائمة الفحص</h3>
+<pre><code>GET /inspection/checklist
+{ "data": [
+  { "key": "engine", "label": "المحرك",
+    "items": [ { "key": "engine_condition", "label": "حالة المحرك" },
+               { "key": "engine_oil", "label": "زيت المحرك" }, ... ] },
+  { "key": "transmission", "label": "ناقل الحركة", "items": [ ... ] },
+  ...
+] }</code></pre>
+<p class="muted">ترتيب الأقسام: المحرك، ناقل الحركة، الفرامل، العفشة والتوجيه، الكهرباء والتكييف، الكاوتش، اختبار القيادة، الشاسيه والبودي. ينفع كل قسم يبقى tab زي شاشة المنافس.</p>
+
+<h3>الحفظ</h3>
+<pre><code>PUT /orders/15/inspection
+{
+  "items": [
+    { "item": "engine_oil", "status": "ok" },
+    { "item": "front_pads", "status": "urgent", "note": "التيل خلصان" },
+    { "item": "battery", "status": "attention" }
+  ],
+  "diagnostic_result": "P0300 - Random misfire",
+  "notes": "محتاجة متابعة بعد شهر"
+}</code></pre>
+<div class="note">
+  <strong>مهم:</strong> كل حفظ بيستبدل البنود القديمة كلها. ابعت كل البنود اللي ليها حالة كل مرة، مش البند اللي اتغير بس. أي بند مش مبعوت هيتحسب "لم يُفحص"، وده ينطبق كمان على <code>diagnostic_result</code> و<code>notes</code>.
+</div>
+<div class="table-wrap"><table>
+  <tr><th>الحقل</th><th>القواعد</th></tr>
+  <tr><td class="ltr">items</td><td>مطلوب ولازم يبقى array، وينفع يبقى فاضي <code>[]</code></td></tr>
+  <tr><td class="ltr">items.*.item</td><td><code>key</code> بند من قائمة الفحص، ومينفعش يتكرر</td></tr>
+  <tr><td class="ltr">items.*.status</td><td><code>ok</code> أو <code>attention</code> أو <code>urgent</code></td></tr>
+  <tr><td class="ltr">items.*.note</td><td>اختياري، لحد 500 حرف</td></tr>
+  <tr><td class="ltr">diagnostic_result</td><td>اختياري، لحد 5000 حرف</td></tr>
+  <tr><td class="ltr">notes</td><td>اختياري، لحد 2000 حرف</td></tr>
+</table></div>
+
+<h3>الـ response (العرض والحفظ)</h3>
+<pre><code>{
+  "id": 3, "order_id": 15,
+  "summary": { "ok": 1, "attention": 1, "urgent": 1, "not_checked": 55 },
+  "sections": [
+    { "key": "brakes", "label": "الفرامل", "items": [
+      { "key": "brake_fluid", "label": "زيت الفرامل", "status": null, "note": null },
+      { "key": "front_pads", "label": "تيل أمامي",
+        "status": { "label": "لازم يتغير", "value": "urgent" }, "note": "التيل خلصان" } ] },
+    ...
+  ],
+  "diagnostic_result": "P0300 - Random misfire",
+  "notes": "محتاجة متابعة بعد شهر",
+  "inspected_by": "حسن",
+  "updated_at": 1795000000
+}</code></pre>
+<p><code>sections</code> فيها كل بنود القائمة بقيمها الحالية، فتقدر تملا الفورم منها مباشرة في التعديل.</p>
+
+<h2>3. الفحص في الفاتورة</h2>
+<p><code>GET /orders/{id}</code> بقى فيه حقل جديد:</p>
+<pre><code>"inspection_summary": { "ok": 12, "attention": 3, "urgent": 1, "not_checked": 42 }   // أو null لو مفيش فحص</code></pre>
+<p>استخدمه علشان تعرض في شاشة الفاتورة زرار "إضافة فحص" لو القيمة <code>null</code>، أو "عرض الفحص" ومعاه الأعداد الملونة لو فيه فحص.</p>
+
+<h2>4. القواعد</h2>
+<div class="table-wrap"><table>
+  <tr><th>الحالة</th><th>اللي يحصل</th></tr>
+  <tr><td>فاتورة مفتوحة</td><td>أي حد معاه <code>orders.inspect</code> يقدر يحفظ</td></tr>
+  <tr><td>فاتورة مقفولة</td><td>محتاجة كمان <code>orders.edit_completed</code>، وإلا يرجع <code>403</code>. الفني العادي ما بيشوفش الفواتير المقفولة أصلًا، فبيرجعله <code>404</code></td></tr>
+  <tr><td>فاتورة ملغية أو رصيد افتتاحي</td><td>مقفولة، ويرجع <code>422</code></td></tr>
+  <tr><td>طباعة أو مسح فاتورة مفيهاش فحص</td><td><code>404</code> ومعاه رسالة "الفاتورة دي مفيهاش فحص فني."</td></tr>
+  <tr><td>فاتورة من مركز تاني</td><td><code>404</code></td></tr>
+</table></div>
+<p><strong>الصلاحية الجديدة <code>orders.inspect</code></strong> اسمها في شاشة الأدوار "تسجيل الفحص الفني". الأدوار الافتراضية كلها بتاخدها: المالك، والكاشير، والفني والكاشير، والفني.</p>
+
+<h2>5. الطباعة</h2>
+<ul>
+  <li><code>output=pdf</code> بيرجّع PDF مقاس A4 بالعربي. فيه:
+    <ul>
+      <li>بيانات المركز والعميل والعربية والعداد</li>
+      <li>ملخص بالألوان</li>
+      <li>البنود اللي اتفحصت بس، متقسمة على الأقسام</li>
+      <li>نتيجة جهاز كشف الأعطال والملاحظات</li>
+      <li>مكان لتوقيع الفاحص والعميل</li>
+    </ul>
+  </li>
+  <li><code>output=json</code> بيرجّع نفس البيانات لو حابب ترسم التقرير بنفسك.</li>
+  <li>العداد بيتاخد من <code>odometer</code> بتاع الفاتورة، فخلّي الفني يدخّله في الفاتورة.</li>
+</ul>
+
+<h2>6. المطلوب من الفرونت</h2>
+<ol>
+  <li><strong>شاشة الفحص</strong> من الفاتورة:
+    <ul>
+      <li>tab لكل قسم من <code>/inspection/checklist</code>.</li>
+      <li>كل بند فيه 3 أزرار حالة ملونة، وخانة ملاحظة.</li>
+      <li>تحت الأقسام خانة لجهاز كشف الأعطال، وخانة ملاحظات.</li>
+    </ul>
+  </li>
+  <li>زرار <strong>حفظ</strong> يبعت كل البنود اللي ليها حالة في <code>PUT</code> واحد.</li>
+  <li>في <strong>شاشة الفاتورة</strong> اعرض <code>inspection_summary</code>، وزرار "طباعة الفحص".</li>
+  <li>اخفي أزرار التعديل لو المستخدم معهوش <code>orders.inspect</code> (من <code>auth/me</code>)، أو لو الفاتورة مقفولة وهو معهوش <code>orders.edit_completed</code>.</li>
+</ol>
+<p class="muted">الأمثلة الكاملة موجودة في Postman collection تحت مسارات <code>inspection</code>.</p>
+
+</main>
+</body>
+</html>

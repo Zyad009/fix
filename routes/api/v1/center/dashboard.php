@@ -6,12 +6,14 @@ use App\Http\Controllers\V1\Center\CustomerController;
 use App\Http\Controllers\V1\Center\EmployeeController;
 use App\Http\Controllers\V1\Center\ExpenseCategoryController;
 use App\Http\Controllers\V1\Center\ExpenseController;
+use App\Http\Controllers\V1\Center\InspectionController;
 use App\Http\Controllers\V1\Center\LookupController;
 use App\Http\Controllers\V1\Center\OrderController;
 use App\Http\Controllers\V1\Center\ProductController;
 use App\Http\Controllers\V1\Center\ReceiptController;
 use App\Http\Controllers\V1\Center\ReportController;
 use App\Http\Controllers\V1\Center\RoleController;
+use App\Http\Controllers\V1\Center\RoutineServiceController;
 use App\Http\Controllers\V1\Center\SettingsController;
 use App\Http\Controllers\V1\Center\UserController;
 use App\Http\Controllers\V1\Center\VehicleController;
@@ -59,6 +61,9 @@ Route::middleware(['auth:sanctum', 'maintenance_center', 'branch', 'subscription
     Route::toggleActive('products', ProductController::class);
     Route::post('products/{product}/image', [ProductController::class, 'image'])->name('products.image');
     Route::patch('products/{product}/stock', [ProductController::class, 'stock'])->name('products.stock');
+    Route::apiResource('routine-services', RoutineServiceController::class);
+    Route::toggleActive('routine-services', RoutineServiceController::class);
+    Route::get('routine-services/{routine_service}/history', [RoutineServiceController::class, 'history'])->name('routine-services.history');
 
     // Orders (= invoices)
     Route::post('orders/{order}/whatsapp', [WhatsappController::class, 'sendInvoice'])->name('orders.whatsapp');
@@ -75,6 +80,14 @@ Route::middleware(['auth:sanctum', 'maintenance_center', 'branch', 'subscription
         Route::post('complete', 'complete')->name('complete');
         Route::post('cancel', 'cancel')->name('cancel');
         Route::post('payments', 'pay')->name('payments');
+        Route::get('print', 'print')->name('print');
+    });
+
+    Route::get('inspection/checklist', [InspectionController::class, 'checklist'])->name('inspection.checklist');
+    Route::prefix('orders/{order}/inspection')->name('orders.inspection.')->controller(InspectionController::class)->group(function (): void {
+        Route::get('/', 'show')->name('show');
+        Route::put('/', 'update')->name('update');
+        Route::delete('/', 'destroy')->name('destroy');
         Route::get('print', 'print')->name('print');
     });
 

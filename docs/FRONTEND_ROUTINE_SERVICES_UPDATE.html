@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الخدمات الاعتيادية — للفرونت</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e4df;
+    --accent: #0f766e; --accent-soft: #e6f4f2; --new: #1d4ed8; --new-soft: #e8efff;
+    --warn: #b45309; --warn-soft: #fdf3e4; --danger: #b91c1c; --danger-soft: #fdecec; --code-bg: #f1f1ee;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514; --card: #1e1e1c; --text: #ecece8; --muted: #a3a39c; --line: #33332f;
+      --accent: #2dd4bf; --accent-soft: #123330; --new: #93b4ff; --new-soft: #1a2540;
+      --warn: #fbbf24; --warn-soft: #362a12; --danger: #fca5a5; --danger-soft: #3a1717; --code-bg: #262623;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.75 "Segoe UI", Tahoma, "Noto Sans Arabic", system-ui, sans-serif; padding: 0 16px; }
+  main { max-width: 900px; margin: 0 auto; padding-block: 40px 80px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.35rem; margin: 48px 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+  h3 { font-size: 1.08rem; margin: 28px 0 8px; }
+  p { margin: 8px 0; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .88em; background: var(--code-bg);
+    padding: 1px 6px; border-radius: 5px; direction: ltr; unicode-bidi: embed; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; direction: ltr; text-align: left; font-size: .86rem; line-height: 1.6; margin: 10px 0; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .table-wrap { overflow-x: auto; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: .93rem; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.ltr { direction: ltr; text-align: left; white-space: nowrap; }
+  .note { border-inline-start: 4px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .ok { border-inline-start: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .m { font-weight: 700; margin-inline-end: 6px; }
+  .m-get { color: var(--accent); } .m-post { color: var(--new); } .m-put { color: var(--warn); } .m-del { color: var(--danger); }
+  ul, ol { padding-inline-start: 22px; margin: 6px 0; }
+  li { margin: 3px 0; }
+  .muted { color: var(--muted); font-size: .9rem; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>الخدمات الاعتيادية</h1>
+<p class="sub">ميزة جديدة: قائمة بالخدمات اللي بتتكرر في المركز، زي تغيير الزيت أو تركيب الكاوتش. الخدمة دي مالهاش سعر ثابت، والكاشير بيكتب سعرها في كل فاتورة. كل المسارات تحت <code>/api/v1/center</code>.</p>
+
+<div class="ok">
+  <strong>مفيش حاجة موجودة اتكسرت.</strong> كل التغييرات إضافة:
+  <ul>
+    <li>7 APIs جديدة.</li>
+    <li>نوع بند جديد في الفاتورة: <code>routine_service_id</code>.</li>
+    <li>حقل جديد في البند: <code>routine_service_id</code>.</li>
+  </ul>
+  منتجات الكتالوج اللي نوعها "خدمة" لسه شغالة زي ما هي.
+</div>
+
+<h2>1. الفكرة</h2>
+<ul>
+  <li><strong>كل خدمة فيها اسم وتفعيل بس، ومفيش سعر.</strong></li>
+  <li><strong>القائمة بترجع مترتبة من الأكتر استخدامًا للأقل.</strong> وكل خدمة بيرجع معاها:
+    <ul>
+      <li><code>usage_count</code>: عدد مرات الاستخدام.</li>
+      <li><code>suggested_price</code>: السعر المقترح.</li>
+    </ul>
+  </li>
+  <li><strong>السعر المقترح</strong> هو أكتر سعر اتكرر في آخر 3 شهور.
+    <ul>
+      <li>لو سعرين اتكرروا نفس العدد، بيطلع الأحدث.</li>
+      <li>لو الخدمة ما اتستخدمتش في الـ 3 شهور، بيطلع آخر سعر اتعمل.</li>
+      <li>لو ما اتستخدمتش خالص، بيطلع <code>null</code>.</li>
+    </ul>
+    مثال: تغيير الزيت اتعمل مرتين بـ 500 ومرة بـ 450، فالسعر المقترح 500.
+  </li>
+  <li><strong>الفواتير الملغية مش بتتحسب</strong>، لا في العدد ولا في السعر المقترح ولا في السجل.</li>
+  <li><strong>الخدمة اللي اتستخدمت في أي فاتورة مينفعش تتمسح خالص</strong>، حتى لو الفاتورة ملغية. أوقفها بدل كده.</li>
+  <li><strong>كل مركز بيبدأ بـ 25 خدمة افتراضية</strong>، والمراكز الموجودة اتضافت لها. المركز يقدر يغيّر اسمها ويوقّفها، ويمسح أي خدمة ما اتستخدمتش.</li>
+  <li><strong>"فحص فني" بقت خدمة افتراضية.</strong> فاتورة الفحص بس هي فاتورة بندها الوحيد الخدمة دي.</li>
+</ul>
+
+<h2>2. الـ APIs</h2>
+<div class="table-wrap"><table>
+  <tr><th>الـ API</th><th>الصلاحية</th><th>بيعمل إيه</th></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/routine-services</td><td><code>catalog.view</code></td><td>القائمة مترتبة بالاستخدام، والـ filters: <code>q</code> و<code>is_active</code> و<code>per_page</code> (الافتراضي 50، والحد الأقصى 100)</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/routine-services/{id}</td><td><code>catalog.view</code></td><td>تفاصيل الخدمة، ومعاها <code>prices</code>: توزيع الأسعار في آخر 3 شهور</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/routine-services/{id}/history</td><td><code>orders.view_closed</code></td><td>سجل الاستخدام paginated، الأحدث الأول، ومن كل الفروع</td></tr>
+  <tr><td class="ltr"><span class="m m-post">POST</span>/routine-services</td><td><code>catalog.manage</code></td><td>إضافة <code>{name}</code>. الاسم مينفعش يتكرر في المركز</td></tr>
+  <tr><td class="ltr"><span class="m m-put">PUT</span>/routine-services/{id}</td><td><code>catalog.manage</code></td><td>تغيير الاسم. الفواتير القديمة بتفضل بالاسم القديم</td></tr>
+  <tr><td class="ltr"><span class="m m-put">PATCH</span>/routine-services/toggle/{id}</td><td><code>catalog.manage</code></td><td>إيقاف أو تفعيل</td></tr>
+  <tr><td class="ltr"><span class="m m-del">DELETE</span>/routine-services/{id}</td><td><code>catalog.manage</code></td><td>مسح خدمة. لو اتستخدمت قبل كده بيرجع <code>409</code></td></tr>
+</table></div>
+<p class="muted">مفيش صلاحيات جديدة. الشاشة دي بتستخدم نفس صلاحيات الكتالوج.</p>
+
+<h3>القائمة</h3>
+<pre><code>GET /routine-services?is_active=1
+{ "data": [
+  { "id": 1, "name": "تغيير زيت المحرك", "is_active": true,
+    "usage_count": 42, "suggested_price": 500, "last_used_at": 1795000000 },
+  { "id": 12, "name": "تركيب كاوتش", "is_active": true,
+    "usage_count": 17, "suggested_price": 50, "last_used_at": 1794900000 },
+  { "id": 25, "name": "فحص فني", "is_active": true,
+    "usage_count": 0, "suggested_price": null, "last_used_at": null },
+  ...
+], "pagination": { ... } }</code></pre>
+
+<h3>التفاصيل</h3>
+<pre><code>GET /routine-services/1
+{ "data": { "id": 1, "name": "تغيير زيت المحرك", "is_active": true,
+  "usage_count": 42, "suggested_price": 500, "last_used_at": 1795000000,
+  "prices": [ { "price": 500, "uses": 20 }, { "price": 450, "uses": 6 } ] } }</code></pre>
+
+<h3>سجل الاستخدام</h3>
+<pre><code>GET /routine-services/1/history
+{ "data": [
+  { "id": 310, "order_id": 88, "order_no": 1043,
+    "status": { "label": "مقفول (فاتورة)", "value": "completed" },
+    "branch": "الفرع الرئيسي", "customer": "محمد علي", "plate_number": "س ص ع 123",
+    "qty": 1, "unit_price": 450, "used_at": 1795000000 },
+  ...
+], "pagination": { ... } }</code></pre>
+
+<h2>3. الخدمة في الفاتورة</h2>
+<p>فيه نوع بند جديد. بيتبعت في <code>items</code> وقت إنشاء الفاتورة <code>POST /orders</code>، أو بيتضاف للفاتورة بـ <code>POST /orders/{id}/items</code>:</p>
+<pre><code>{ "routine_service_id": 1, "qty": 1, "unit_price": 450 }</code></pre>
+<div class="table-wrap"><table>
+  <tr><th>الحالة</th><th>اللي يحصل</th></tr>
+  <tr><td>البند اتعمل</td><td>اسم البند بيتاخد من الخدمة، ونوعه <code>service</code>. وفي الـ response بيرجع <code>routine_service_id</code> و<code>is_free_item: false</code></td></tr>
+  <tr><td>من غير <code>unit_price</code></td><td><code>422</code>. السعر إجباري، فاملاه من <code>suggested_price</code> وسيب الكاشير يعدّله</td></tr>
+  <tr><td>خدمة متوقفة</td><td><code>422</code></td></tr>
+  <tr><td><code>product_id</code> و<code>routine_service_id</code> مع بعض</td><td><code>422</code></td></tr>
+  <tr><td>تعديل البند <code>PUT /orders/{id}/items/{item}</code></td><td>السعر والكمية بس. الاسم مقفول على اسم الخدمة</td></tr>
+  <tr><td>تغيير السعر</td><td>مش محتاج صلاحية تغيير السعر، لأن الخدمة مالهاش سعر ثابت</td></tr>
+</table></div>
+<div class="note">
+  <strong>شكل البند في الفاتورة:</strong>
+  <ul>
+    <li><code>product_id</code> معاه قيمة: بند من الكتالوج.</li>
+    <li><code>routine_service_id</code> معاه قيمة: خدمة اعتيادية.</li>
+    <li>الاتنين <code>null</code>: صنف حر، وساعتها <code>is_free_item: true</code>.</li>
+  </ul>
+</div>
+
+<h2>4. المطلوب من الفرونت</h2>
+<ol>
+  <li><strong>شاشة إدارة الخدمات الاعتيادية</strong> جوه الكتالوج. فيها:
+    <ul>
+      <li>القائمة، ومع كل خدمة عدد مرات الاستخدام والسعر المقترح.</li>
+      <li>إضافة خدمة، وتغيير اسمها، وإيقافها.</li>
+      <li>المسح. ولو رجع <code>409</code>، اعرض الرسالة واقترح الإيقاف بدل المسح.</li>
+      <li>صفحة سجل الاستخدام.</li>
+    </ul>
+  </li>
+  <li><strong>شاشة الفاتورة</strong>: قسم أو tab "خدمات اعتيادية". بيجيب <code>GET /routine-services?is_active=1</code> ويعرضها كأزرار بالترتيب اللي جاي، يعني الأكتر استخدامًا الأول.</li>
+  <li>لما الكاشير يختار خدمة، افتح خانة السعر وفيها <code>suggested_price</code>، ويقدر يغيّره. ولو السعر المقترح <code>null</code> سيب الخانة فاضية وخليها إجبارية.</li>
+  <li>اخفي أزرار الإدارة لو المستخدم معهوش <code>catalog.manage</code>، واخفي السجل لو معهوش <code>orders.view_closed</code>.</li>
+</ol>
+<p class="muted">الأمثلة الكاملة موجودة في Postman collection تحت مسارات <code>routine-services</code>.</p>
+
+</main>
+</body>
+</html>

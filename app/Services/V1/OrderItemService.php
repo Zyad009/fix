@@ -8,6 +8,7 @@ use App\Exceptions\BusinessRuleException;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\RoutineService;
 use App\Support\Money;
 use Brick\Math\BigDecimal;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Invoice lines. Catalog lines snapshot name/price/cost from the product at
  * the moment they are added; free lines are typed by hand (product_id NULL).
+ * Routine service lines snapshot the service name and take a typed price.
  * On a completed invoice (owner only) stock follows every change immediately.
  */
 class OrderItemService
@@ -82,7 +84,7 @@ class OrderItemService
 
             $attributes = array_intersect_key($data, array_flip(['qty', 'unit_price']));
 
-            if ($item->product_id === null) {
+            if ($item->product_id === null && $item->routine_service_id === null) {
                 $attributes += array_intersect_key($data, array_flip(['name', 'kind']));
 
                 if (array_key_exists('unit_cost', $data) && actor()?->hasPermission('costs.view')) {
@@ -134,6 +136,10 @@ class OrderItemService
      */
     private function buildLine(array $data): array
     {
+        if (! empty($data['routine_service_id'])) {
+            return $this->routineServiceLine($data);
+        }
+
         if (empty($data['product_id'])) {
             return [
                 'product_id' => null,
@@ -164,6 +170,29 @@ class OrderItemService
             'qty' => $data['qty'],
             'unit_price' => $unitPrice,
             'unit_cost' => $product->cost_price,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function routineServiceLine(array $data): array
+    {
+        $service = RoutineService::query()->findOrFail($data['routine_service_id']);
+
+        if (! $service->is_active) {
+            throw new BusinessRuleException(__('messages.routine_service_inactive'), 422);
+        }
+
+        return [
+            'product_id' => null,
+            'routine_service_id' => $service->id,
+            'name' => $service->name,
+            'kind' => ProductKind::Service->value,
+            'qty' => $data['qty'],
+            'unit_price' => $data['unit_price'],
+            'unit_cost' => null,
         ];
     }
 

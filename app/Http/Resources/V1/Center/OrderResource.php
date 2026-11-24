@@ -46,6 +46,7 @@ class OrderResource extends JsonResource
                 'sent_at' => $this->latestInvoiceWhatsapp->sent_at?->timestamp,
                 'created_at' => $this->latestInvoiceWhatsapp->created_at?->timestamp,
             ] : null),
+            'inspection_summary' => $this->whenLoaded('inspection', fn () => $this->inspection?->summary()),
             'notes' => $this->notes,
             'cancel_reason' => $this->cancel_reason,
             'created_at' => $this->created_at?->timestamp,

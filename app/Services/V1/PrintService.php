@@ -3,11 +3,13 @@
 namespace App\Services\V1;
 
 use App\Enums\ProductKind;
+use App\Models\Inspection;
 use App\Models\MaintenanceCenter;
 use App\Models\Order;
 use App\Models\PaymentReceipt;
 use App\Support\Money;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use Mpdf\Mpdf;
 use Mpdf\Output\Destination;
@@ -84,6 +86,38 @@ class PrintService
                 'receipt_no' => $payment->receipt?->receipt_no,
                 'paid_at' => $this->localTime($payment->paid_at),
             ])->values()->all(),
+        ];
+    }
+
+    /**
+     * The inspection report: the invoice header (center, customer, vehicle,
+     * odometer) plus only the inspected items, grouped by section.
+     *
+     * @return array<string, mixed>
+     */
+    public function inspectionData(Order $order, Inspection $inspection): array
+    {
+        $invoice = $this->invoiceData($order);
+
+        $sections = array_values(array_filter(array_map(fn (array $section): array => [
+            'label' => $section['label'],
+            'items' => array_values(array_map(fn (array $item): array => [
+                'label' => $item['label'],
+                'status' => $item['status']->response(),
+                'note' => $item['note'],
+            ], array_filter($section['items'], fn (array $item): bool => $item['status'] !== null))),
+        ], $inspection->report()), fn (array $section): bool => $section['items'] !== []));
+
+        return [
+            ...Arr::only($invoice, ['center', 'invoice', 'customer', 'vehicle']),
+            'inspection' => [
+                'summary' => $inspection->summary(),
+                'sections' => $sections,
+                'diagnostic_result' => $inspection->diagnostic_result,
+                'notes' => $inspection->notes,
+                'inspected_by' => $inspection->inspector?->name,
+                'inspected_at' => $this->localTime($inspection->updated_at),
+            ],
         ];
     }
 

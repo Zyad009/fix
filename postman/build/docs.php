@@ -453,6 +453,39 @@ MD,
     ],
 
     // =====================================================================
+    // Center — routine services
+    // =====================================================================
+
+    'center.routine-services.index' => [
+        'ar' => 'الخدمات الاعتيادية (اسم + تفعيل، من غير سعر)، مترتبة **من الأكتر استخدامًا**. كل خدمة معاها `usage_count` (بنود الفواتير غير الملغية)، و`last_used_at`، و`suggested_price`: أكتر سعر اتكرر في آخر 3 شهور (التعادل → الأحدث)، ولو مفيش استخدام فيها → آخر سعر، ولو ما اتستخدمتش خالص → `null`. شاشة الفاتورة تبعت `is_active=1`.',
+        'en' => 'Routine services (name + active, no price), ordered **most used first**. Each has `usage_count` (lines on non-cancelled invoices), `last_used_at` and `suggested_price`: the most frequent price of the last 3 months (tie → newest), else the last price used, else `null`. The invoice screen sends `is_active=1`.',
+    ],
+    'center.routine-services.store' => [
+        'ar' => 'إضافة خدمة اعتيادية. الاسم مايتكررش في المركز.',
+        'en' => 'Create a routine service. The name is unique within the center.',
+    ],
+    'center.routine-services.show' => [
+        'ar' => 'تفاصيل الخدمة مع `prices`: توزيع الأسعار في آخر 3 شهور (كل سعر اتعمل كام مرة)، الأكتر الأول.',
+        'en' => 'Service details with `prices`: the price distribution of the last 3 months (each price and how often it was used), most used first.',
+    ],
+    'center.routine-services.update' => [
+        'ar' => 'تغيير اسم الخدمة. الفواتير القديمة بتفضل بالاسم القديم (البند snapshot).',
+        'en' => 'Rename the service. Past invoices keep the old name (lines are snapshots).',
+    ],
+    'center.routine-services.destroy' => [
+        'ar' => 'حذف خدمة. **الخدمة اللي اتستخدمت في أي فاتورة (حتى الملغية) مينفعش تتمسح → 409**، أوقفها بدل كده. الخدمة الافتراضية الممسوحة مابترجعش تاني مع الـ seeder.',
+        'en' => 'Delete a service. **A service used on any invoice (cancelled ones included) cannot be deleted → 409**; deactivate it instead. A deleted default is not recreated by the seeder.',
+    ],
+    'center.routine-services.toggle' => [
+        'ar' => 'إيقاف/تفعيل خدمة (الموقوفة مينفعش تتضاف لفاتورة).',
+        'en' => 'Deactivate/activate a service (inactive services cannot be added to invoices).',
+    ],
+    'center.routine-services.history' => [
+        'ar' => 'سجل استخدام الخدمة (paginated، الأحدث الأول) من كل الفروع: رقم الفاتورة وحالتها، الفرع، العميل، اللوحة، الكمية والسعر والتاريخ. الفواتير الملغية مش ظاهرة.',
+        'en' => 'Usage history (paginated, newest first) across all branches: invoice number and status, branch, customer, plate, qty, price and date. Cancelled invoices are excluded.',
+    ],
+
+    // =====================================================================
     // Center — orders
     // =====================================================================
 
@@ -471,7 +504,7 @@ MD,
   - `vehicle`: لو اللوحة متسجلة لنفس العميل بتتستخدم؛ لو **لعميل تاني → 422**.
   - محتاج صلاحية إضافة عملاء (الفني العادي → 403).
 
-**البنود:** من الكتالوج `{product_id, qty}` (+ `unit_price` لو عنده صلاحية تغيير السعر)، أو صنف حر `{name, qty, unit_price}`.
+**البنود:** من الكتالوج `{product_id, qty}` (+ `unit_price` لو عنده صلاحية تغيير السعر)، أو خدمة اعتيادية `{routine_service_id, qty, unit_price}` (السعر بيكتبه الكاشير، والمقترح من `routine-services`)، أو صنف حر `{name, qty, unit_price}`.
 **الخصم:** مبلغ (النسبة يحسبها الفرونت). الكاشير ليه حد أقصى.
 **القفل:** `complete: true` + `payments: [{amount, method?}]` (`method` افتراضي `cash`).
 **الفني الافتراضي:** لو اللي فاتح "فني" أو "فني وكاشير" ومابعتش `technician_id` → بيتحط هو.
@@ -488,7 +521,7 @@ MD,
   - `vehicle`: a plate already registered to the same customer is reused; registered to **another customer → 422**.
   - Requires the add-customers permission (plain technician → 403).
 
-**Lines:** catalog `{product_id, qty}` (+ `unit_price` with the price-override permission) or free line `{name, qty, unit_price}`.
+**Lines:** catalog `{product_id, qty}` (+ `unit_price` with the price-override permission), routine service `{routine_service_id, qty, unit_price}` (typed price; suggested by `routine-services`) or free line `{name, qty, unit_price}`.
 **Discount:** an amount (the frontend converts percentages). Cashiers have a cap.
 **Complete:** `complete: true` + `payments: [{amount, method?}]` (`method` defaults to `cash`).
 **Default technician:** a technician / technician-cashier who omits `technician_id` becomes the technician.
@@ -505,8 +538,8 @@ MD,
         'en' => 'Update the order header: odometer, technician, discount, next service, notes. Completed invoices: owner only, audited. The total cannot drop below what was paid. On a completed invoice the customer gets a WhatsApp edit notice (the updated invoice image with what changed and the total before/after). Consecutive edits are batched into one message sent after two minutes (`WHATSAPP_INVOICE_UPDATE_DELAY`). Changing only the technician sends nothing.',
     ],
     'center.orders.items.store' => [
-        'ar' => 'إضافة بند: من الكتالوج (الاسم والسعر والتكلفة بيتنسخوا) أو صنف حر. على فاتورة مقفولة (owner) المخزون بيتظبط فوراً. لو الفاتورة مقفولة، العميل بيوصله على واتساب إشعار تعديل (صورة الفاتورة المحدثة فيها التعديلات والإجمالي قبل وبعد). التعديلات المتتالية بتتجمع في رسالة واحدة بتتبعت بعد دقيقتين (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
-        'en' => 'Add a line: from the catalog (name/price/cost are snapshotted) or a free line. On a completed invoice (owner) stock is adjusted immediately. On a completed invoice the customer gets a WhatsApp edit notice (the updated invoice image with what changed and the total before/after). Consecutive edits are batched into one message sent after two minutes (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
+        'ar' => 'إضافة بند: من الكتالوج (الاسم والسعر والتكلفة بيتنسخوا)، أو خدمة اعتيادية `routine_service_id` + `unit_price` (الاسم بيتنسخ من الخدمة والسعر إجباري، والخدمة الموقوفة → 422)، أو صنف حر. على فاتورة مقفولة (owner) المخزون بيتظبط فوراً. لو الفاتورة مقفولة، العميل بيوصله على واتساب إشعار تعديل (صورة الفاتورة المحدثة فيها التعديلات والإجمالي قبل وبعد). التعديلات المتتالية بتتجمع في رسالة واحدة بتتبعت بعد دقيقتين (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
+        'en' => 'Add a line: from the catalog (name/price/cost are snapshotted), a routine service `routine_service_id` + `unit_price` (name snapshotted from the service, price required, inactive service → 422) or a free line. On a completed invoice (owner) stock is adjusted immediately. On a completed invoice the customer gets a WhatsApp edit notice (the updated invoice image with what changed and the total before/after). Consecutive edits are batched into one message sent after two minutes (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
     ],
     'center.orders.items.update' => [
         'ar' => 'تعديل بند (الكمية/السعر/الاسم). الإجماليات بتتحسب من جديد في نفس الـ transaction. لو الفاتورة مقفولة، العميل بيوصله على واتساب إشعار تعديل (صورة الفاتورة المحدثة فيها التعديلات والإجمالي قبل وبعد). التعديلات المتتالية بتتجمع في رسالة واحدة بتتبعت بعد دقيقتين (`WHATSAPP_INVOICE_UPDATE_DELAY`).',
@@ -531,6 +564,28 @@ MD,
     'center.orders.print' => [
         'ar' => 'طباعة الفاتورة: `output=json` (الافتراضي، الفرونت يرسمها) أو `output=pdf` عربي RTL بمقاس `size=a4` (افتراضي) أو `thermal` (80mm).',
         'en' => 'Print the invoice: `output=json` (default, the frontend renders it) or `output=pdf` (Arabic RTL) in `size=a4` (default) or `thermal` (80mm).',
+    ],
+
+    // Technical inspection
+    'center.inspection.checklist' => [
+        'ar' => 'قائمة الفحص الفني الثابتة: أقسام (المحرك، الفتيس، الفرامل...) وجوه كل قسم البنود بمفاتيحها وأسمائها بلغة الـ `lang`. الفرونت يرسم الشاشة منها ويبعت `key` البند في الحفظ.',
+        'en' => 'The fixed technical inspection checklist: sections (engine, transmission, brakes...) each with its item keys and labels in the `lang` language. The frontend draws the form from it and sends each item `key` when saving.',
+    ],
+    'center.orders.inspection.show' => [
+        'ar' => 'الفحص الفني للفاتورة، أو `data: null` لو مفيش فحص. `sections` فيها كل بنود القائمة، والبند اللي ما اتفحصش `status` بتاعه `null`. `summary` فيها عدد كل حالة.',
+        'en' => 'The invoice\'s technical inspection, or `data: null` when none. `sections` lists every checklist item; an item not inspected has `status: null`. `summary` counts each result.',
+    ],
+    'center.orders.inspection.update' => [
+        'ar' => 'حفظ الفحص الفني (إضافة أو تعديل). **البنود المبعوتة بتستبدل القديمة كلها**: ابعت كل البنود اللي اتفحصت، وأي بند مش مبعوت يبقى "لم يُفحص". `status`: `ok` سليم · `attention` يحتاج متابعة · `urgent` لازم يتغير. نفس قواعد تعديل الفاتورة: الملغية مقفولة، والمقفولة محتاجة صلاحية تعديل الفاتورة المقفولة. فاتورة فحص بس = فاتورة بندها خدمة "فحص فني".',
+        'en' => 'Save the technical inspection (create or edit). **The items sent replace all stored ones**: send every inspected item; any item left out counts as not inspected. `status`: `ok` · `attention` · `urgent`. Same rules as editing the invoice: cancelled invoices are locked and closed ones need the edit-closed-invoices permission. An inspection-only invoice is an invoice whose line is an "inspection" service.',
+    ],
+    'center.orders.inspection.destroy' => [
+        'ar' => 'مسح الفحص الفني للفاتورة، بنفس قواعد تعديل الفاتورة.',
+        'en' => 'Delete the invoice\'s technical inspection, under the same rules as editing the invoice.',
+    ],
+    'center.orders.inspection.print' => [
+        'ar' => 'طباعة تقرير الفحص: `output=json` (الافتراضي) أو `output=pdf` A4 عربي. التقرير فيه البنود اللي اتفحصت بس، مع بيانات العميل والعربية والعداد ونتيجة جهاز كشف الأعطال. لو مفيش فحص بيرجع 404.',
+        'en' => 'Print the inspection report: `output=json` (default) or `output=pdf` (A4, Arabic). It lists only inspected items, with the customer, vehicle, odometer and the diagnostic scanner result. 404 when there is no inspection.',
     ],
 
     // =====================================================================
@@ -850,10 +905,13 @@ $fieldsOnly = [
     'center.vehicles.payments' => ['amount', 'method', 'notes'],
     'center.pos.catalog' => ['q'],
     'center.categories.index' => ['is_active'],
+    'center.routine-services.index' => ['q', 'is_active', ...$paging],
+    'center.routine-services.history' => $paging,
     'center.products.index' => ['q', 'category_id', 'kind', 'is_active', 'format', ...$paging],
     'center.orders.index' => ['q', 'status', 'vehicle_id', 'customer_id', 'technician_id', 'include_opening_balance', 'from', 'to', 'format', ...$paging],
     'center.orders.payments' => ['amount', 'method', 'notes'],
     'center.orders.print' => ['output', 'size'],
+    'center.orders.inspection.print' => ['output'],
     'center.receipts.index' => ['q', 'customer_id', 'method', 'voided', 'from', 'to', ...$paging],
     'center.receipts.print' => ['output', 'size'],
     'center.employees.index' => ['q', 'is_active', ...$paging],
@@ -881,7 +939,9 @@ $fieldNotes = [
     ],
     'center.expenses.store' => $cashDefault + ['spent_at' => 'default: today'],
     'center.reports.service-due' => ['days' => 'default: 7'],
+    'center.routine-services.index' => ['per_page' => 'default: 50'],
     'center.orders.print' => ['output' => 'default: `json`', 'size' => 'default: `a4`'],
+    'center.orders.inspection.print' => ['output' => 'default: `json`'],
     'center.receipts.print' => ['output' => 'default: `json`', 'size' => 'default: `thermal`'],
     'center.reports.sales' => ['from' => 'default: today', 'to' => 'default: `from`'],
     'center.reports.profit' => ['from' => 'default: today', 'to' => 'default: `from`'],

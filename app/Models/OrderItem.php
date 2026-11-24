@@ -10,11 +10,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Invoice line. Name, price and cost are snapshots taken at sale time, so
- * later catalog changes never alter past invoices. product_id NULL = free item.
+ * later catalog changes never alter past invoices. product_id NULL = free item,
+ * unless routine_service_id is set (a routine service with a typed price).
  *
  * @property int $id
  * @property int $order_id
  * @property int|null $product_id
+ * @property int|null $routine_service_id
  * @property string $name
  * @property ProductKind $kind
  * @property string $qty
@@ -22,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $unit_cost
  * @property string $line_total
  */
-#[Fillable(['order_id', 'product_id', 'name', 'kind', 'qty', 'unit_price', 'unit_cost', 'created_by'])]
+#[Fillable(['order_id', 'product_id', 'routine_service_id', 'name', 'kind', 'qty', 'unit_price', 'unit_cost', 'created_by'])]
 class OrderItem extends Model
 {
     use BelongsToMaintenanceCenter;
@@ -55,5 +57,13 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class)->withTrashed();
+    }
+
+    /**
+     * @return BelongsTo<RoutineService, $this>
+     */
+    public function routineService(): BelongsTo
+    {
+        return $this->belongsTo(RoutineService::class)->withTrashed();
     }
 }

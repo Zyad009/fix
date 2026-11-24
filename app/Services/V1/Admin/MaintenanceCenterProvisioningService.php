@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Category;
 use App\Models\ExpenseCategory;
 use App\Models\MaintenanceCenter;
+use App\Models\RoutineService;
 use App\Models\User;
 use App\Services\V1\RoleService;
 use Illuminate\Support\Arr;
@@ -13,7 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Creates a service center with everything it needs on day one: the owner
- * account, a default branch, the default roles and catalog/expense categories.
+ * account, a default branch, the default roles, catalog/expense categories
+ * and routine services.
  */
 class MaintenanceCenterProvisioningService
 {
@@ -57,6 +59,10 @@ class MaintenanceCenterProvisioningService
 
         foreach (ExpenseCategory::DEFAULTS as $name) {
             ExpenseCategory::query()->create(['name' => $name]);
+        }
+
+        foreach (RoutineService::DEFAULTS as $name) {
+            RoutineService::query()->create(['name' => $name]);
         }
     }
 }

@@ -156,6 +156,14 @@ class Order extends Model
     }
 
     /**
+     * @return HasOne<Inspection, $this>
+     */
+    public function inspection(): HasOne
+    {
+        return $this->hasOne(Inspection::class);
+    }
+
+    /**
      * The last WhatsApp message of this invoice (its status on the invoice screen).
      *
      * @return HasOne<WhatsappMessage, $this>
