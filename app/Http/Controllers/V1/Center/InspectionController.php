@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Services\V1\InspectionService;
 use App\Services\V1\OrderGuard;
 use App\Services\V1\PrintService;
+use App\Services\V1\WhatsappNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -23,13 +24,15 @@ class InspectionController extends Controller implements HasMiddleware
         protected InspectionService $inspectionService,
         protected PrintService $printService,
         protected OrderGuard $guard,
+        protected WhatsappNotifier $notifier,
     ) {}
 
     public static function middleware(): array
     {
         return [
             new Middleware('permission:orders.view', only: ['checklist', 'show', 'print']),
-            new Middleware('permission:orders.inspect', only: ['update', 'destroy']),
+            new Middleware('permission:orders.inspect', only: ['update', 'destroy', 'whatsapp']),
+            new Middleware('throttle:10,1', only: ['whatsapp']),
         ];
     }
 
@@ -92,6 +95,21 @@ class InspectionController extends Controller implements HasMiddleware
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => 'inline; filename="inspection-'.$order->order_no.'.pdf"',
             ]);
+        } catch (\Throwable $th) {
+            return $this->failed($th);
+        }
+    }
+
+    /**
+     * Send the inspection report PDF to the customer on WhatsApp.
+     */
+    public function whatsapp(Order $order): JsonResponse
+    {
+        try {
+            $this->guard->ensureVisible($order);
+            $this->notifier->sendInspection($order);
+
+            return $this->response([], __('messages.whatsapp_queued'));
         } catch (\Throwable $th) {
             return $this->failed($th);
         }

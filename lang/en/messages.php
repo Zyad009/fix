@@ -158,6 +158,8 @@ Contact us: :phone',
     ],
     // Technical inspection
     'inspection_not_found' => 'This invoice has no technical inspection.',
+    'whatsapp_inspection_not_sendable' => 'The inspection of a cancelled invoice cannot be sent.',
+    'whatsapp_inspection_caption' => "Your vehicle's technical inspection report from :center 🔧\nInvoice no. :number",
     'inspection_sections' => [
         'engine' => 'Engine',
         'transmission' => 'Transmission',

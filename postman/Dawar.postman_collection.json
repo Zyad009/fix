@@ -4568,6 +4568,60 @@
                         },
                         "description": "### 🇪🇬 العربية\n\nطباعة تقرير الفحص: `output=json` (الافتراضي) أو `output=pdf` A4 عربي. التقرير فيه البنود اللي اتفحصت بس، مع بيانات العميل والعربية والعداد ونتيجة جهاز كشف الأعطال. لو مفيش فحص بيرجع 404.\n\n---\n\n### 🇬🇧 English\n\nPrint the inspection report: `output=json` (default) or `output=pdf` (A4, Arabic). It lists only inspected items, with the customer, vehicle, odometer and the diagnostic scanner result. 404 when there is no inspection.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/orders/{order}/inspection/print` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.view` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `output` | — | in:json,pdf · nullable · **default: `json`** |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
+                },
+                {
+                    "name": "center.orders.inspection.whatsapp",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "lang",
+                                "value": "{{lang}}",
+                                "description": "ar (default) | en"
+                            },
+                            {
+                                "key": "X-Branch-Id",
+                                "value": "{{branch_id}}",
+                                "disabled": true,
+                                "description": "Owner only: act in one branch / للـ owner: يشتغل على فرع معين"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base_url}}/center/orders/:order/inspection/whatsapp",
+                            "host": [
+                                "{{base_url}}"
+                            ],
+                            "path": [
+                                "center",
+                                "orders",
+                                ":order",
+                                "inspection",
+                                "whatsapp"
+                            ],
+                            "query": [],
+                            "variable": [
+                                {
+                                    "key": "order",
+                                    "value": "1"
+                                }
+                            ]
+                        },
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{token}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "description": "### 🇪🇬 العربية\n\nإرسال تقرير الفحص للعميل على واتساب كملف PDF (نفس الـ PDF اللي بيتطبع A4). ينفع على فاتورة مفتوحة أو مقفولة. التقرير **بيتبعت تلقائي** كمان مع صورة الفاتورة لما فاتورة فيها فحص تتقفل (تحت نفس مفتاح رسالة الفاتورة في الإعدادات). حالة آخر إرسال بتظهر في `whatsapp` في رد الفحص. الفاتورة الملغية → 422، مفيش فحص → 404، واتساب مش مربوط → 422.\n\n---\n\n### 🇬🇧 English\n\nSend the inspection report to the customer on WhatsApp as a PDF file (the same A4 PDF that prints). Works on open and completed invoices. The report is **also sent automatically** after the invoice image when an invoice with an inspection is completed (under the same invoice-message switch in settings). The latest send status is `whatsapp` in the inspection response. Cancelled invoice → 422, no inspection → 404, WhatsApp not connected → 422.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `POST /api/v1/center/orders/{order}/inspection/whatsapp` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `orders.inspect` |\n| Roles / الأدوار | `owner`, `cashier`, `technician_cashier`, `technician` |\n\n---\n\n### 📥 Body parameters / المدخلات\n\n_لا يوجد / none_"
+                    }
                 }
             ]
         },
@@ -7699,7 +7753,7 @@
                                 }
                             ]
                         },
-                        "description": "### 🇪🇬 العربية\n\nسجل رسائل واتساب بتاعة المركز (paginated). الرقم متخفي.\n\n**الأنواع:** `invoice` فاتورة، `invoice_updated` إشعار تعديل فاتورة مقفولة، `payment` إيصال، `test` تجربة، `service_reminder` تذكير صيانة، `debt_reminder` تذكير مديونية (فيه `customer`).\n\n**الحالات:** `queued` قيد الإرسال (لسه في الطابور)، `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`: نص مترجم مختصر، زي تعذّر تجهيز الصورة أو تعذّر الإرسال)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال، `skipped_order_cancelled` الفاتورة اتلغت قبل إرسال إشعار التعديل.\nالرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.\n\n---\n\n### 🇬🇧 English\n\nThe center's WhatsApp message log (paginated). Numbers are masked.\n\n**Types:** `invoice`, `invoice_updated` edit notice of a completed invoice, `payment`, `test`, `service_reminder`, `debt_reminder` (carries `customer`).\n\n**Statuses:** `queued` waiting in the queue; `sent`; `failed` after 3 attempts (reason in `error`: a short translated text, such as the image could not be prepared or the message could not be sent); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending; `skipped_order_cancelled` the invoice was cancelled before its edit notice went out.\nMessages go out in the background, so the API answers before delivery. Follow them here.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/whatsapp/messages` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n| `type` | — | in: invoice, invoice_updated, payment, test, service_reminder, debt_reminder · nullable |\n| `status` | — | in: queued, sent, failed, skipped_disabled, skipped_no_device, skipped_invalid_phone, skipped_no_debt, skipped_order_cancelled · nullable |\n| `from` | — | date_format:Y-m-d · nullable |\n| `to` | — | date_format:Y-m-d · after_or_equal:from · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
+                        "description": "### 🇪🇬 العربية\n\nسجل رسائل واتساب بتاعة المركز (paginated). الرقم متخفي.\n\n**الأنواع:** `invoice` فاتورة، `invoice_updated` إشعار تعديل فاتورة مقفولة، `payment` إيصال، `test` تجربة، `service_reminder` تذكير صيانة، `debt_reminder` تذكير مديونية (فيه `customer`).\n\n**الحالات:** `queued` قيد الإرسال (لسه في الطابور)، `sent` أُرسلت، `failed` فشلت بعد 3 محاولات (السبب في `error`: نص مترجم مختصر، زي تعذّر تجهيز الصورة أو تعذّر الإرسال)، `skipped_disabled` الرسالة موقوفة، `skipped_no_device` واتساب مش مربوط، `skipped_invalid_phone` رقم غلط، `skipped_no_debt` المديونية اتسددت قبل الإرسال، `skipped_order_cancelled` الفاتورة اتلغت قبل إرسال إشعار التعديل.\nالرسائل بتتبعت في الخلفية، فالـ API بيرد قبل ما الرسالة توصل. متابعتها من هنا.\n\n---\n\n### 🇬🇧 English\n\nThe center's WhatsApp message log (paginated). Numbers are masked.\n\n**Types:** `invoice`, `invoice_updated` edit notice of a completed invoice, `payment`, `test`, `service_reminder`, `debt_reminder` (carries `customer`).\n\n**Statuses:** `queued` waiting in the queue; `sent`; `failed` after 3 attempts (reason in `error`: a short translated text, such as the image could not be prepared or the message could not be sent); `skipped_disabled` message switched off; `skipped_no_device` WhatsApp not connected; `skipped_invalid_phone` bad number; `skipped_no_debt` debt settled before sending; `skipped_order_cancelled` the invoice was cancelled before its edit notice went out.\nMessages go out in the background, so the API answers before delivery. Follow them here.\n\n---\n\n### 🔐 Access\n\n| | |\n|---|---|\n| Endpoint | `GET /api/v1/center/whatsapp/messages` |\n| Auth / المصادقة | Bearer token (center) |\n| Permission / الصلاحية | `settings.manage` |\n| Roles / الأدوار | `owner` |\n\n---\n\n### 📥 Query parameters / المدخلات\n\n| Field | Required | Rules |\n|---|:-:|---|\n| `page` | — | integer · min:1 · nullable |\n| `per_page` | — | integer · min:1 · max:100 · nullable |\n| `type` | — | in: invoice, invoice_updated, inspection, payment, test, service_reminder, debt_reminder · nullable |\n| `status` | — | in: queued, sent, failed, skipped_disabled, skipped_no_device, skipped_invalid_phone, skipped_no_debt, skipped_order_cancelled · nullable |\n| `from` | — | date_format:Y-m-d · nullable |\n| `to` | — | date_format:Y-m-d · after_or_equal:from · nullable |\n\n✅ مطلوب / required · ⚠️ مطلوب بشرط / conditional · — اختياري / optional."
                     }
                 }
             ]

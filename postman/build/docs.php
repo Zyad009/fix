@@ -583,6 +583,10 @@ MD,
         'ar' => 'مسح الفحص الفني للفاتورة، بنفس قواعد تعديل الفاتورة.',
         'en' => 'Delete the invoice\'s technical inspection, under the same rules as editing the invoice.',
     ],
+    'center.orders.inspection.whatsapp' => [
+        'ar' => 'إرسال تقرير الفحص للعميل على واتساب كملف PDF (نفس الـ PDF اللي بيتطبع A4). ينفع على فاتورة مفتوحة أو مقفولة. التقرير **بيتبعت تلقائي** كمان مع صورة الفاتورة لما فاتورة فيها فحص تتقفل (تحت نفس مفتاح رسالة الفاتورة في الإعدادات). حالة آخر إرسال بتظهر في `whatsapp` في رد الفحص. الفاتورة الملغية → 422، مفيش فحص → 404، واتساب مش مربوط → 422.',
+        'en' => 'Send the inspection report to the customer on WhatsApp as a PDF file (the same A4 PDF that prints). Works on open and completed invoices. The report is **also sent automatically** after the invoice image when an invoice with an inspection is completed (under the same invoice-message switch in settings). The latest send status is `whatsapp` in the inspection response. Cancelled invoice → 422, no inspection → 404, WhatsApp not connected → 422.',
+    ],
     'center.orders.inspection.print' => [
         'ar' => 'طباعة تقرير الفحص: `output=json` (الافتراضي) أو `output=pdf` A4 عربي. التقرير فيه البنود اللي اتفحصت بس، مع بيانات العميل والعربية والعداد ونتيجة جهاز كشف الأعطال. لو مفيش فحص بيرجع 404.',
         'en' => 'Print the inspection report: `output=json` (default) or `output=pdf` (A4, Arabic). It lists only inspected items, with the customer, vehicle, odometer and the diagnostic scanner result. 404 when there is no inspection.',

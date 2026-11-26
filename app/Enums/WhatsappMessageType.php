@@ -10,6 +10,7 @@ enum WhatsappMessageType: string
 
     case Invoice = 'invoice';
     case InvoiceUpdated = 'invoice_updated';
+    case Inspection = 'inspection';
     case Payment = 'payment';
     case Test = 'test';
     case ServiceReminder = 'service_reminder';
@@ -18,6 +19,7 @@ enum WhatsappMessageType: string
     public const LABELS = [
         'invoice' => ['ar' => 'فاتورة', 'en' => 'Invoice'],
         'invoice_updated' => ['ar' => 'تعديل فاتورة', 'en' => 'Invoice update'],
+        'inspection' => ['ar' => 'تقرير فحص فني', 'en' => 'Inspection report'],
         'payment' => ['ar' => 'إيصال سداد', 'en' => 'Payment receipt'],
         'test' => ['ar' => 'رسالة تجربة', 'en' => 'Test message'],
         'service_reminder' => ['ar' => 'تذكير بمعاد الصيانة', 'en' => 'Service reminder'],

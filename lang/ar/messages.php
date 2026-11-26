@@ -158,6 +158,8 @@ return [
     ],
     // Technical inspection
     'inspection_not_found' => 'الفاتورة دي مفيهاش فحص فني.',
+    'whatsapp_inspection_not_sendable' => 'مينفعش تبعت فحص فاتورة ملغية.',
+    'whatsapp_inspection_caption' => "تقرير الفحص الفني لعربيتك من :center 🔧\nفاتورة رقم :number",
     'inspection_sections' => [
         'engine' => 'المحرك',
         'transmission' => 'ناقل الحركة',

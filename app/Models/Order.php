@@ -172,4 +172,14 @@ class Order extends Model
     {
         return $this->hasOne(WhatsappMessage::class)->ofMany(['id' => 'max'], fn ($query) => $query->where('type', WhatsappMessageType::Invoice));
     }
+
+    /**
+     * The latest inspection report message.
+     *
+     * @return HasOne<WhatsappMessage, $this>
+     */
+    public function latestInspectionWhatsapp(): HasOne
+    {
+        return $this->hasOne(WhatsappMessage::class)->ofMany(['id' => 'max'], fn ($query) => $query->where('type', WhatsappMessageType::Inspection));
+    }
 }

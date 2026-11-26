@@ -45,7 +45,10 @@ class InspectionService
 
     public function find(Order $order): ?Inspection
     {
-        return $order->inspection()->with(['items', 'inspector:id,name'])->first();
+        $inspection = $order->inspection()->with(['items', 'inspector:id,name'])->first();
+        $inspection?->setRelation('order', $order->loadMissing('latestInspectionWhatsapp'));
+
+        return $inspection;
     }
 
     public function findOrFail(Order $order): Inspection

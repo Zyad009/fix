@@ -89,6 +89,7 @@ Route::middleware(['auth:sanctum', 'maintenance_center', 'branch', 'subscription
         Route::put('/', 'update')->name('update');
         Route::delete('/', 'destroy')->name('destroy');
         Route::get('print', 'print')->name('print');
+        Route::post('whatsapp', 'whatsapp')->name('whatsapp');
     });
 
     // Receipts

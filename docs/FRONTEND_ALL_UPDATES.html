@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>كل التحديثات — للفرونت</title>
+<style>
+  :root {
+    --bg: #f7f7f5; --card: #ffffff; --text: #1d1d1b; --muted: #6b6b66; --line: #e4e4df;
+    --accent: #0f766e; --accent-soft: #e6f4f2; --new: #1d4ed8; --new-soft: #e8efff;
+    --warn: #b45309; --warn-soft: #fdf3e4; --danger: #b91c1c; --danger-soft: #fdecec; --code-bg: #f1f1ee;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151514; --card: #1e1e1c; --text: #ecece8; --muted: #a3a39c; --line: #33332f;
+      --accent: #2dd4bf; --accent-soft: #123330; --new: #93b4ff; --new-soft: #1a2540;
+      --warn: #fbbf24; --warn-soft: #362a12; --danger: #fca5a5; --danger-soft: #3a1717; --code-bg: #262623;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.75 "Segoe UI", Tahoma, "Noto Sans Arabic", system-ui, sans-serif; padding: 0 16px; }
+  main { max-width: 920px; margin: 0 auto; padding-block: 40px 80px; }
+  h1 { font-size: 1.9rem; margin: 0 0 4px; }
+  h2 { font-size: 1.35rem; margin: 52px 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--line); }
+  h3 { font-size: 1.08rem; margin: 28px 0 8px; }
+  p { margin: 8px 0; }
+  a { color: var(--new); }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  code { font-family: Consolas, "Cascadia Mono", monospace; font-size: .88em; background: var(--code-bg);
+    padding: 1px 6px; border-radius: 5px; direction: ltr; unicode-bidi: embed; }
+  pre { background: var(--code-bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+    overflow-x: auto; direction: ltr; text-align: left; font-size: .86rem; line-height: 1.6; margin: 10px 0; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .table-wrap { overflow-x: auto; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: .93rem; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; vertical-align: top; }
+  th { background: var(--code-bg); font-weight: 600; white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.ltr { direction: ltr; text-align: left; white-space: nowrap; }
+  .note { border-inline-start: 4px solid var(--warn); background: var(--warn-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .ok { border-inline-start: 4px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 8px; margin: 12px 0; }
+  .m { font-weight: 700; margin-inline-end: 6px; }
+  .m-get { color: var(--accent); } .m-post { color: var(--new); } .m-put { color: var(--warn); } .m-del { color: var(--danger); }
+  .tag { display: inline-block; font-size: .78rem; font-weight: 600; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+  .tag-new { background: var(--new-soft); color: var(--new); }
+  .tag-chg { background: var(--warn-soft); color: var(--warn); }
+  .tag-old { background: var(--code-bg); color: var(--muted); }
+  ul, ol { padding-inline-start: 22px; margin: 6px 0; }
+  li { margin: 3px 0; }
+  .muted { color: var(--muted); font-size: .9rem; }
+  nav ol { columns: 2; column-gap: 32px; }
+  @media (max-width: 600px) { nav ol { columns: 1; } }
+</style>
+</head>
+<body>
+<main>
+
+<h1>كل التحديثات الجديدة في الـ API</h1>
+<p class="sub">التقرير ده بيجمع كل اللي اتضاف في الباك ومحتاج شغل في الفرونت. كل المسارات تحت <code>/api/v1/center</code>، وكل الرسائل جاية باللغة اللي في الـ header <code>lang</code>.</p>
+
+<div class="ok">
+  <strong>مفيش حاجة شغالة عندك هتتكسر.</strong> كل التغييرات إضافة: حقول جديدة في ردود موجودة، وAPIs جديدة. فيه حاجة واحدة بس اتشدّدت، وهي <strong>رقم موبايل العميل</strong> (القسم 4).
+</div>
+
+<nav>
+<h3>المحتوى</h3>
+<ol>
+  <li><a href="#overview">نظرة سريعة</a></li>
+  <li><a href="#roles">الأدوار والصلاحيات</a></li>
+  <li><a href="#whatsapp">حالة الواتساب وإعادة الإرسال</a></li>
+  <li><a href="#phone">رقم الموبايل المصري</a></li>
+  <li><a href="#edit-notice">إشعار تعديل الفاتورة</a></li>
+  <li><a href="#inspection">الفحص الفني</a></li>
+  <li><a href="#routine">الخدمات الاعتيادية</a></li>
+  <li><a href="#todo">المطلوب من الفرونت بالترتيب</a></li>
+</ol>
+</nav>
+
+<h2 id="overview">1. نظرة سريعة</h2>
+<div class="table-wrap"><table>
+  <tr><th>الميزة</th><th>النوع</th><th>شغل الفرونت</th><th>تقرير تفصيلي</th></tr>
+  <tr><td>الأدوار والصلاحيات</td><td><span class="tag tag-new">جديد</span></td><td>شاشة أدوار، وإظهار الأزرار حسب الصلاحيات</td><td class="ltr">FRONTEND_ROLES_UPDATE.html</td></tr>
+  <tr><td>حالة واتساب الفاتورة وإعادة الإرسال</td><td><span class="tag tag-new">جديد</span></td><td>badge للحالة، وزرار إعادة إرسال برقم مصحَّح</td><td>القسم 3 هنا</td></tr>
+  <tr><td>رقم الموبايل المصري</td><td><span class="tag tag-chg">اتغير</span></td><td>validation في الفورم</td><td>القسم 4 هنا</td></tr>
+  <tr><td>إشعار تعديل الفاتورة المقفولة</td><td><span class="tag tag-new">جديد</span></td><td>رسالة توضيحية بس</td><td>القسم 5 هنا</td></tr>
+  <tr><td>الفحص الفني</td><td><span class="tag tag-new">جديد</span></td><td>شاشة فحص من الفاتورة، وطباعة</td><td class="ltr">FRONTEND_INSPECTION_UPDATE.html</td></tr>
+  <tr><td>الخدمات الاعتيادية</td><td><span class="tag tag-new">جديد</span></td><td>شاشة إدارة، وقسم في الفاتورة</td><td class="ltr">FRONTEND_ROUTINE_SERVICES_UPDATE.html</td></tr>
+  <tr><td>الدخول بالـ username، ولوحة الأدمن</td><td><span class="tag tag-old">اتسلّم قبل كده</span></td><td>—</td><td class="ltr">FRONTEND_MAINTENANCE_CENTER_UPDATE.html</td></tr>
+  <tr><td>صورة الشاسيه، والتذكيرات، وسجل رسايل الواتساب</td><td><span class="tag tag-old">اتسلّم قبل كده</span></td><td>—</td><td class="ltr">FRONTEND_UPDATE.html</td></tr>
+</table></div>
+<p class="muted">التقارير التفصيلية كلها في فولدر <code>docs/</code> في الباك. وكل الأمثلة الكاملة في Postman collection.</p>
+
+<!-- ================================================================== -->
+<h2 id="roles">2. الأدوار والصلاحيات</h2>
+<p>كل مركز بقى ليه أدواره. المالك يقدر يعمل دور جديد، ويختار صلاحياته، ويعدّله، ويمسحه.</p>
+<ul>
+  <li><strong>اعتمد على <code>permissions</code> اللي راجعة من <code>auth/me</code></strong> في إظهار وإخفاء أي زرار، مش على اسم الدور. الأدوار ممكن تبقى بأسماء المالك عملها.</li>
+  <li><code>options.roles</code> بقت جاية من أدوار المركز نفسه.</li>
+  <li><code>technician_cashier</code> بقى يقدر يعدّل الفاتورة المقفولة، لكن مش يلغيها.</li>
+</ul>
+<div class="table-wrap"><table>
+  <tr><th>الـ API</th><th>بيعمل إيه</th></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/roles/permissions</td><td>كل الصلاحيات متقسمة مجموعات، وبأسمائها. شاشة الدور بتترسم منها</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/roles · <span class="m m-post">POST</span>/roles</td><td>القائمة والإضافة</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span> <span class="m m-put">PUT</span> <span class="m m-del">DELETE</span> /roles/{id}</td><td>العرض والتعديل والمسح. دور المالك مقفول</td></tr>
+</table></div>
+<p><strong>صلاحية جديدة اتضافت بعد تقرير الأدوار:</strong> <code>orders.inspect</code>، واسمها "تسجيل الفحص الفني". هتظهر لوحدها في <code>/roles/permissions</code>، والأدوار الافتراضية كلها بتاخدها.</p>
+<p class="muted">التفاصيل الكاملة، وقائمة الصلاحيات، والقواعد في <code>FRONTEND_ROLES_UPDATE.html</code>.</p>
+
+<!-- ================================================================== -->
+<h2 id="whatsapp">3. حالة الواتساب وإعادة الإرسال</h2>
+<h3>حالة آخر رسالة على الفاتورة</h3>
+<p><code>GET /orders</code> و<code>GET /orders/{id}</code> بقى في كل فاتورة حقل <code>whatsapp</code>. ده آخر رسالة اتبعتت للعميل عن الفاتورة دي، أو <code>null</code> لو مفيش:</p>
+<pre><code>"whatsapp": {
+  "id": 51,
+  "status": { "label": "فشلت", "value": "failed" },
+  "recipient": "01012345678",
+  "error": "تعذّر إرسال الرسالة على واتساب. تأكد من الرقم واتصال واتساب ثم أعد الإرسال.",
+  "sent_at": null,
+  "created_at": 1795000000
+}</code></pre>
+<div class="table-wrap"><table>
+  <tr><th><code>status.value</code></th><th>المعنى</th><th>يتعرض إزاي</th></tr>
+  <tr><td class="ltr">queued</td><td>قيد الإرسال</td><td>رمادي ⏳</td></tr>
+  <tr><td class="ltr">sent</td><td>أُرسلت</td><td>أخضر ✓</td></tr>
+  <tr><td class="ltr">failed</td><td>فشلت، والسبب في <code>error</code></td><td>أحمر، ومعاه زرار إعادة الإرسال</td></tr>
+  <tr><td class="ltr">skipped_*</td><td>ما اتبعتتش، زي إن الواتساب مش مربوط أو الرقم غلط. السبب في <code>status.label</code></td><td>أصفر، ومعاه زرار إعادة الإرسال</td></tr>
+</table></div>
+<p><code>error</code> نص مترجم ومختصر، ينفع يتعرض للمستخدم زي ما هو. التفاصيل الفنية بتفضل في لوج السيرفر بس. القيمتين الممكنتين:</p>
+<ul>
+  <li>"تعذّر تجهيز صورة المستند..."</li>
+  <li>"تعذّر إرسال الرسالة على واتساب..."</li>
+</ul>
+<p class="muted">الحالة بتتغير من <code>queued</code> بعد ثواني. فبعد الإرسال اعمل refresh للفاتورة، أو اعمل polling خفيف كل كام ثانية لحد ما الحالة تتغير.</p>
+
+<h3>إعادة الإرسال برقم مصحَّح</h3>
+<p>لو العميل كاتب رقمه غلط، الكاشير يكتب الرقم الصح. الرقم بيتعدّل على العميل نفسه، والفاتورة بتتبعت تاني:</p>
+<pre><code>POST /orders/{id}/whatsapp/resend
+{ "phone": "01112345678" }
+
+→ 200 { "msg": "...", "data": [] }</code></pre>
+<div class="table-wrap"><table>
+  <tr><th>الحالة</th><th>اللي يحصل</th></tr>
+  <tr><td>الصلاحيات</td><td><code>orders.complete</code> و<code>customers.manage</code> مع بعض</td></tr>
+  <tr><td>الرقم مش موبايل مصري</td><td><code>422</code>. شوف القسم 4</td></tr>
+  <tr><td>الرقم ده مسجّل لعميل تاني</td><td><code>422</code> "الرقم ده مسجل لعميل تاني."، ومفيش حاجة بتتغير</td></tr>
+  <tr><td>الفاتورة مش مقفولة، أو الواتساب مقفول في الإعدادات</td><td><code>422</code>، ومفيش حاجة بتتغير</td></tr>
+  <tr><td>أكتر من 10 مرات في الدقيقة</td><td><code>429</code></td></tr>
+</table></div>
+<p>ولو عايز تعيد الإرسال لنفس الرقم من غير تعديل، فيه <code>POST /orders/{id}/whatsapp</code> زي الأول.</p>
+<p><strong>الشاشة المقترحة:</strong> لما الحالة <code>failed</code> أو <code>skipped_*</code>، اعرض زرار "إعادة الإرسال". الزرار يفتح نافذة فيها الرقم الحالي <code>recipient</code> جاهز للتعديل، وزرار إرسال.</p>
+
+<!-- ================================================================== -->
+<h2 id="phone">4. رقم الموبايل المصري <span class="tag tag-chg">اتغير</span></h2>
+<p>رقم العميل لازم يبقى <strong>11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015</strong>، وإلا بيرجع <code>422</code> ومعاه رسالة "رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015."</p>
+<ul>
+  <li><strong>الأماكن اللي بيتطبق فيها:</strong> فورم العميل (إضافة وتعديل)، والعميل الجديد من شاشة الفاتورة <code>customer.phone</code>، ورقم تجربة الواتساب، وإعادة الإرسال.</li>
+  <li><strong>الباك بينضّف الرقم قبل ما يتأكد منه:</strong> الأرقام العربية <code>٠١٠</code> بتتحول عادي، وأي حاجة مش رقم بتتشال، زي المسافات والشرَط.</li>
+  <li><strong>الرقم بكود الدولة مش مقبول:</strong> <code>+20</code> أو <code>0020</code> في الأول بيرجع <code>422</code>. ابعت الرقم المحلي اللي بيبدأ بـ <code>01</code>، أو شيل كود الدولة في الفرونت قبل ما تبعت.</li>
+  <li>الأرقام القديمة المتسجلة مش بتتغير، إلا لما حد يعدّلها.</li>
+</ul>
+<p class="muted">يفضّل تعمل نفس الشرط في الفورم علشان المستخدم يعرف الغلط قبل ما يبعت: <code>^01[0125][0-9]{8}$</code></p>
+
+<!-- ================================================================== -->
+<h2 id="edit-notice">5. إشعار تعديل الفاتورة المقفولة</h2>
+<p>لما فاتورة مقفولة تتعدّل، العميل بيوصله على واتساب صورة الفاتورة الجديدة. الصورة متعلّم فيها اللي اتغير، ومعاها الإجمالي قبل التعديل وبعده. التعديلات اللي بتعمل كده:</p>
+<ul>
+  <li>إضافة بند، أو تعديله، أو مسحه.</li>
+  <li>الخصم، والعداد، والصيانة الجاية، والملاحظات.</li>
+</ul>
+<ul>
+  <li>التعديلات اللي ورا بعض بتتجمع في <strong>رسالة واحدة</strong> بتتبعت بعد دقيقتين من آخر تعديل.</li>
+  <li>تغيير الفني لوحده مش بيبعت حاجة.</li>
+  <li>في سجل رسايل الواتساب <code>GET /whatsapp/messages</code> فيه نوع جديد: <code>invoice_updated</code> "تعديل فاتورة".</li>
+</ul>
+<p><strong>المطلوب من الفرونت:</strong> مفيش API جديد. بس يفضّل لما المستخدم يعدّل فاتورة مقفولة تظهرله رسالة صغيرة: "العميل هيوصله إشعار بالتعديل على واتساب". وضيف <code>invoice_updated</code> لفلتر النوع في شاشة سجل الرسايل لو الفلتر مكتوب يدوي.</p>
+
+<!-- ================================================================== -->
+<h2 id="inspection">6. الفحص الفني</h2>
+<p>الفني بيسجّل فحص للعربية جوه الفاتورة، والتقرير بيتطبع للعميل.</p>
+<ul>
+  <li><strong>كل فاتورة ليها فحص واحد، وهو اختياري.</strong> قائمة الفحص ثابتة: 8 أقسام فيهم 58 بند. الأقسام هي المحرك، وناقل الحركة، والفرامل، والعفشة، والكهرباء، والكاوتش، واختبار القيادة، والشاسيه.</li>
+  <li><strong>كل بند ليه حالة ومعاها ملاحظة اختيارية:</strong> 🟢 <code>ok</code> و🟡 <code>attention</code> و🔴 <code>urgent</code>. والبند اللي مالوش حالة بيتحسب "لم يُفحص".</li>
+  <li><strong>على الفحص كله</strong> خانة لنتيجة جهاز كشف الأعطال <code>diagnostic_result</code>، وخانة ملاحظات <code>notes</code>.</li>
+  <li><strong>فاتورة الفحص بس</strong> هي فاتورة بندها الوحيد خدمة "فحص فني". ودي موجودة جاهزة في الخدمات الاعتيادية (القسم 7).</li>
+</ul>
+<div class="table-wrap"><table>
+  <tr><th>الـ API</th><th>الصلاحية</th><th>بيعمل إيه</th></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/inspection/checklist</td><td><code>orders.view</code></td><td>الأقسام والبنود. الشاشة بتترسم منها، tab لكل قسم</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/orders/{id}/inspection</td><td><code>orders.view</code></td><td>الفحص، أو <code>data: null</code> لو مفيش</td></tr>
+  <tr><td class="ltr"><span class="m m-put">PUT</span>/orders/{id}/inspection</td><td><code>orders.inspect</code></td><td>حفظ. <strong>كل حفظ بيستبدل البنود كلها</strong>، فابعت كل البنود اللي ليها حالة</td></tr>
+  <tr><td class="ltr"><span class="m m-del">DELETE</span>/orders/{id}/inspection</td><td><code>orders.inspect</code></td><td>مسح</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/orders/{id}/inspection/print</td><td><code>orders.view</code></td><td><code>output=pdf</code> (A4 بالعربي) أو <code>json</code></td></tr>
+  <tr><td class="ltr"><span class="m m-post">POST</span>/orders/{id}/inspection/whatsapp</td><td><code>orders.inspect</code></td><td><strong>جديد:</strong> يبعت تقرير الفحص للعميل على واتساب كملف PDF</td></tr>
+</table></div>
+<h3>إرسال التقرير للعميل على واتساب <span class="tag tag-new">جديد</span></h3>
+<ul>
+  <li><strong>تلقائي:</strong> لما فاتورة فيها فحص تتقفل، العميل بيوصله صورة الفاتورة، وبعدها <strong>ملف PDF</strong> بتقرير الفحص. وده بيمشي على نفس مفتاح "رسالة الفاتورة" اللي في الإعدادات.</li>
+  <li><strong>زرار "ابعت الفحص للعميل":</strong> <code>POST /orders/{id}/inspection/whatsapp</code> من غير body. بيشتغل على الفاتورة المفتوحة والمقفولة، وينفع يتداس أكتر من مرة، مثلًا بعد تعديل الفحص.</li>
+  <li><strong>حالة آخر إرسال</strong> بترجع في رد <code>GET /orders/{id}/inspection</code> في حقل <code>whatsapp</code>، بنفس شكل <code>whatsapp</code> بتاع الفاتورة (القسم 3)، أو <code>null</code> لو التقرير ما اتبعتش.</li>
+  <li><strong>الأخطاء:</strong> فاتورة ملغية بترجع <code>422</code>، ومفيش فحص <code>404</code>، والواتساب مش مربوط <code>422</code>، وأكتر من 10 مرات في الدقيقة <code>429</code>.</li>
+  <li>في سجل رسايل الواتساب فيه نوع جديد: <code>inspection</code> "تقرير فحص فني".</li>
+</ul>
+<pre><code>PUT /orders/15/inspection
+{ "items": [
+    { "item": "engine_oil", "status": "ok" },
+    { "item": "front_pads", "status": "urgent", "note": "التيل خلصان" } ],
+  "diagnostic_result": "P0300 - Random misfire",
+  "notes": "محتاجة متابعة بعد شهر" }</code></pre>
+<p><strong>في الفاتورة:</strong> <code>GET /orders/{id}</code> بقى فيه <code>inspection_summary</code>. شكله <code>{ok, attention, urgent, not_checked}</code>، أو <code>null</code> لو مفيش فحص.</p>
+<p><strong>قواعد التعديل هي نفس قواعد تعديل الفاتورة:</strong></p>
+<ul>
+  <li>الفاتورة الملغية بترجع <code>422</code>.</li>
+  <li>الفاتورة المقفولة محتاجة <code>orders.edit_completed</code>، وإلا بترجع <code>403</code>.</li>
+</ul>
+<p class="muted">التفاصيل وشكل الردود كاملة في <code>FRONTEND_INSPECTION_UPDATE.html</code>.</p>
+
+<!-- ================================================================== -->
+<h2 id="routine">7. الخدمات الاعتيادية</h2>
+<p>دي قائمة بالخدمات اللي بتتكرر في المركز، زي تغيير الزيت أو تركيب الكاوتش. <strong>الخدمة مالهاش سعر ثابت</strong>: الكاشير بيكتب السعر في كل فاتورة، والسيستم بيقترح عليه سعر.</p>
+<ul>
+  <li><strong>القائمة مترتبة من الأكتر استخدامًا للأقل.</strong> كل خدمة بيرجع معاها:
+    <ul>
+      <li><code>usage_count</code>: عدد مرات الاستخدام.</li>
+      <li><code>suggested_price</code>: السعر المقترح.</li>
+      <li><code>last_used_at</code>: آخر مرة اتستخدمت.</li>
+    </ul>
+  </li>
+  <li><strong>السعر المقترح</strong> هو أكتر سعر اتكرر في آخر 3 شهور. لو مفيش استخدام في الفترة دي، بيطلع آخر سعر. ولو الخدمة ما اتستخدمتش خالص، بيطلع <code>null</code>.</li>
+  <li><strong>كل مركز عنده 25 خدمة افتراضية جاهزة.</strong> المركز يقدر يضيف خدمات، ويغيّر الأسماء، ويوقّف أي خدمة.</li>
+  <li><strong>الخدمة اللي اتستخدمت في أي فاتورة مينفعش تتمسح</strong>، وبترجع <code>409</code>. أوقفها بدل كده.</li>
+</ul>
+<div class="table-wrap"><table>
+  <tr><th>الـ API</th><th>الصلاحية</th><th>بيعمل إيه</th></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/routine-services?is_active=1</td><td><code>catalog.view</code></td><td>القائمة لشاشة الفاتورة. وفيه كمان <code>q</code> و<code>per_page</code> (الافتراضي 50)</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/routine-services/{id}</td><td><code>catalog.view</code></td><td>التفاصيل، ومعاها <code>prices</code>: كل سعر اتعمل كام مرة في آخر 3 شهور</td></tr>
+  <tr><td class="ltr"><span class="m m-get">GET</span>/routine-services/{id}/history</td><td><code>orders.view_closed</code></td><td>سجل الاستخدام: الفاتورة، والفرع، والعميل، واللوحة، والسعر، والتاريخ</td></tr>
+  <tr><td class="ltr"><span class="m m-post">POST</span> <span class="m m-put">PUT</span> /routine-services</td><td><code>catalog.manage</code></td><td>إضافة <code>{name}</code> أو تعديله</td></tr>
+  <tr><td class="ltr"><span class="m m-put">PATCH</span>/routine-services/toggle/{id}</td><td><code>catalog.manage</code></td><td>إيقاف أو تفعيل</td></tr>
+  <tr><td class="ltr"><span class="m m-del">DELETE</span>/routine-services/{id}</td><td><code>catalog.manage</code></td><td>مسح، ولو اتستخدمت قبل كده بيرجع <code>409</code></td></tr>
+</table></div>
+<h3>في الفاتورة: نوع بند جديد</h3>
+<p>بيتبعت في <code>items</code> بتاعة <code>POST /orders</code>، أو بيتضاف بـ <code>POST /orders/{id}/items</code>:</p>
+<pre><code>{ "routine_service_id": 1, "qty": 1, "unit_price": 450 }</code></pre>
+<ul>
+  <li><code>unit_price</code> <strong>إجباري</strong>. املاه بـ <code>suggested_price</code> وسيب الكاشير يعدّله.</li>
+  <li>اسم البند بيتاخد من الخدمة ومينفعش يتعدّل. اللي بيتعدّل في البند هو السعر والكمية بس.</li>
+  <li>الخدمة المتوقفة بترجع <code>422</code>. ومينفعش تبعت <code>product_id</code> و<code>routine_service_id</code> مع بعض.</li>
+</ul>
+<p><strong>كل بند في الفاتورة بقى فيه <code>routine_service_id</code>، ونوع البند بيتعرف كده:</strong></p>
+<ul>
+  <li><code>product_id</code> معاه قيمة: بند من الكتالوج.</li>
+  <li><code>routine_service_id</code> معاه قيمة: خدمة اعتيادية.</li>
+  <li>الاتنين <code>null</code>: صنف حر، وساعتها <code>is_free_item: true</code>.</li>
+</ul>
+<p class="muted">التفاصيل وشكل الردود كاملة في <code>FRONTEND_ROUTINE_SERVICES_UPDATE.html</code>.</p>
+
+<!-- ================================================================== -->
+<h2 id="todo">8. المطلوب من الفرونت بالترتيب</h2>
+<ol>
+  <li><strong>الصلاحيات:</strong> اتأكد إن كل زرار بيظهر ويختفي حسب <code>permissions</code> اللي من <code>auth/me</code>.</li>
+  <li><strong>شاشة الأدوار</strong> للمالك، من <code>/roles</code> و<code>/roles/permissions</code>.</li>
+  <li><strong>رقم الموبايل:</strong> نفس شرط الموبايل المصري في فورم العميل وفي شاشة الفاتورة.</li>
+  <li><strong>شاشة الفاتورة:</strong>
+    <ul>
+      <li>badge لحالة الواتساب من <code>whatsapp</code>، في القائمة وفي التفاصيل.</li>
+      <li>زرار "إعادة الإرسال" ونافذة تعديل الرقم، لما الحالة <code>failed</code> أو <code>skipped_*</code>.</li>
+      <li>رسالة "العميل هيوصله إشعار بالتعديل" لما حد يعدّل فاتورة مقفولة.</li>
+    </ul>
+  </li>
+  <li><strong>الخدمات الاعتيادية:</strong>
+    <ul>
+      <li>قسم في الفاتورة بيعرض الخدمات بالترتيب اللي جاي. لما الكاشير يختار خدمة تتفتح خانة السعر وفيها <code>suggested_price</code>.</li>
+      <li>شاشة إدارة جوه الكتالوج: القائمة والإضافة والتعديل والإيقاف، والمسح مع التعامل مع <code>409</code>، وسجل الاستخدام.</li>
+    </ul>
+  </li>
+  <li><strong>الفحص الفني:</strong>
+    <ul>
+      <li>زرار "إضافة فحص" أو "عرض الفحص" في الفاتورة، حسب <code>inspection_summary</code>.</li>
+      <li>شاشة فيها tab لكل قسم، وكل بند فيه 3 أزرار حالة وخانة ملاحظة. وتحت الأقسام خانة لجهاز كشف الأعطال، وخانة ملاحظات.</li>
+      <li>زرار "طباعة الفحص" بـ <code>output=pdf</code>.</li>
+      <li>زرار "ابعت الفحص للعميل"، ومعاه badge لحالة آخر إرسال من <code>whatsapp</code> في رد الفحص.</li>
+    </ul>
+  </li>
+  <li><strong>سجل رسايل الواتساب:</strong> ضيف النوعين الجداد <code>invoice_updated</code> و<code>inspection</code> للفلتر.</li>
+</ol>
+
+<div class="note">
+  <strong>للتجربة:</strong> جرّب على باك لوكال، أو على مركز تجريبي. ما تجربش على مركز حقيقي، لأن أي فاتورة أو رسالة واتساب هتتسجل وتتبعت فعلًا للعميل.
+</div>
+
+<h3>شكل الأخطاء (للتذكير)</h3>
+<p>ما اتغيرش، بس فيه شكلين:</p>
+<pre><code>// خطأ validation: الرسالة في message، وبتبقى أول خطأ بس
+{ "status": 0, "code": 422, "message": "رقم الموبايل لازم يكون 11 رقم ...", "data": null }
+
+// باقي الأخطاء (403 / 404 / 409 / 422 بتاعة قواعد الشغل / 429): الرسالة في msg
+{ "status": false, "msg": "الرقم ده مسجل لعميل تاني." }</code></pre>
+<ul>
+  <li><code>403</code>: المستخدم معهوش صلاحية.</li>
+  <li><code>404</code>: حاجة مش موجودة، أو مش تبع المركز ده.</li>
+  <li><code>409</code>: مينفعش تتمسح لأنها مستخدمة.</li>
+  <li><code>422</code>: بيانات غلط، أو قاعدة شغل اتكسرت.</li>
+  <li><code>429</code>: طلبات كتير ورا بعض.</li>
+</ul>
+<p>اعرض للمستخدم <code>message</code> أو <code>msg</code> زي ما هي، حسب الموجود منهم.</p>
+
+</main>
+</body>
+</html>

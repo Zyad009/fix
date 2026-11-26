@@ -5,6 +5,8 @@ namespace App\Jobs;
 use App\Enums\WhatsappFailureReason;
 use App\Enums\WhatsappMessageStatus;
 use App\Enums\WhatsappMessageType;
+use App\Exceptions\DocumentImageException;
+use App\Models\Inspection;
 use App\Models\MaintenanceCenter;
 use App\Models\Order;
 use App\Models\PaymentReceipt;
@@ -13,6 +15,7 @@ use App\Services\V1\BalanceService;
 use App\Services\V1\DocumentImageService;
 use App\Services\V1\GowaWhatsappService;
 use App\Services\V1\InvoiceChangeService;
+use App\Services\V1\PrintService;
 use App\Support\PhoneNormalizer;
 use Closure;
 use Illuminate\Bus\Queueable;
@@ -64,7 +67,7 @@ class SendWhatsappMessageJob implements ShouldQueue
                 return;
             }
 
-            if ($type === WhatsappMessageType::InvoiceUpdated && $this->order()->isCancelled()) {
+            if (in_array($type, [WhatsappMessageType::InvoiceUpdated, WhatsappMessageType::Inspection], true) && $this->order()->isCancelled()) {
                 $this->record(WhatsappMessageStatus::SkippedOrderCancelled, []);
 
                 return;
@@ -74,6 +77,7 @@ class SendWhatsappMessageJob implements ShouldQueue
                 WhatsappMessageType::Test => $gowa->sendText($this->recipient, __('messages.whatsapp_test_body', ['center' => maintenanceCenterContext()->maintenanceCenter()->name]), $this->deviceId),
                 WhatsappMessageType::Invoice => $this->sendInvoice($gowa, $images),
                 WhatsappMessageType::InvoiceUpdated => $this->sendInvoiceUpdate($gowa, $images, $changes),
+                WhatsappMessageType::Inspection => $this->sendInspection($gowa),
                 WhatsappMessageType::Payment => $this->sendReceipt($gowa, $images),
                 WhatsappMessageType::ServiceReminder => $gowa->sendText($this->recipient, $this->serviceReminderText(), $this->deviceId),
                 WhatsappMessageType::DebtReminder => $gowa->sendText($this->recipient, __('messages.whatsapp_debt_reminder_body', [
@@ -133,6 +137,41 @@ class SendWhatsappMessageJob implements ShouldQueue
             'paid' => formatNumber($order->paid),
             'remaining' => $order->remaining()->toFloat(),
         ]));
+    }
+
+    /**
+     * The inspection report as it is when sent, as the same A4 PDF that prints.
+     */
+    private function sendInspection(GowaWhatsappService $gowa): string
+    {
+        $order = $this->order();
+        $inspection = Inspection::query()->where('order_id', $order->id)->with(['items', 'inspector:id,name'])->firstOrFail();
+        $print = app(PrintService::class);
+
+        try {
+            $pdf = $print->pdf('pdf.inspection', $print->inspectionData($order, $inspection), PrintService::SIZE_A4);
+        } catch (Throwable $exception) {
+            throw new DocumentImageException($exception);
+        }
+
+        $path = storage_path('app/whatsapp-temp/inspection-'.$order->order_no.'-'.uniqid().'.pdf');
+
+        if (! is_dir(dirname($path))) {
+            mkdir(dirname($path), 0775, true);
+        }
+
+        file_put_contents($path, $pdf);
+
+        try {
+            return $gowa->sendFile($this->recipient, $path, __('messages.whatsapp_inspection_caption', [
+                'center' => maintenanceCenterContext()->maintenanceCenter()->name,
+                'number' => $order->order_no,
+            ]), $this->deviceId);
+        } finally {
+            if (is_file($path)) {
+                unlink($path);
+            }
+        }
     }
 
     private function order(): Order

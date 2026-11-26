@@ -223,6 +223,7 @@ class OrderService
             }
 
             $this->whatsapp->invoiceCompleted($order);
+            $this->whatsapp->inspectionCompleted($order);
 
             return ['order' => $this->load($order->refresh()), 'warnings' => $warnings];
         });

@@ -25,6 +25,14 @@ class InspectionResource extends JsonResource
             'diagnostic_result' => $this->diagnostic_result,
             'notes' => $this->notes,
             'inspected_by' => $this->whenLoaded('inspector', fn () => $this->inspector?->name),
+            'whatsapp' => $this->when($this->relationLoaded('order') && $this->order->relationLoaded('latestInspectionWhatsapp'), fn () => ($message = $this->order->latestInspectionWhatsapp) ? [
+                'id' => $message->id,
+                'status' => $message->status->response(),
+                'recipient' => $message->recipient,
+                'error' => $message->failureMessage(),
+                'sent_at' => $message->sent_at?->timestamp,
+                'created_at' => $message->created_at?->timestamp,
+            ] : null),
             'updated_at' => $this->updated_at?->timestamp,
         ];
     }

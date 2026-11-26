@@ -56,6 +56,35 @@ class WhatsappNotifier
         );
     }
 
+    /**
+     * The invoice was completed with a technical inspection: the report PDF
+     * follows the invoice image, under the same invoice switch.
+     */
+    public function inspectionCompleted(Order $order): void
+    {
+        if ($order->is_opening_balance || ! $order->inspection()->exists()) {
+            return;
+        }
+
+        $this->automatic(WhatsappMessageType::Inspection, maintenanceCenterContext()->maintenanceCenter()->whatsapp_invoice_enabled, $order->customer_id, orderId: $order->id);
+    }
+
+    /**
+     * The inspection report sent on demand, open invoices included.
+     */
+    public function sendInspection(Order $order): void
+    {
+        if ($order->isCancelled()) {
+            throw new BusinessRuleException(__('messages.whatsapp_inspection_not_sendable'), 422);
+        }
+
+        if (! $order->inspection()->exists()) {
+            throw new BusinessRuleException(__('messages.inspection_not_found'), 404);
+        }
+
+        $this->manual(WhatsappMessageType::Inspection, $this->customerPhone($order->customer_id), orderId: $order->id, customerId: $order->customer_id);
+    }
+
     public function paymentCollected(PaymentReceipt $receipt): void
     {
         $this->automatic(WhatsappMessageType::Payment, maintenanceCenterContext()->maintenanceCenter()->whatsapp_payment_enabled, $receipt->customer_id, receiptId: $receipt->id);

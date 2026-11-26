@@ -83,6 +83,7 @@
   <tr><td class="ltr"><span class="m m-put">PUT</span>/orders/{id}/inspection</td><td><code>orders.inspect</code></td><td>حفظ الفحص، سواء أول مرة أو تعديل</td></tr>
   <tr><td class="ltr"><span class="m m-del">DELETE</span>/orders/{id}/inspection</td><td><code>orders.inspect</code></td><td>مسح الفحص</td></tr>
   <tr><td class="ltr"><span class="m m-get">GET</span>/orders/{id}/inspection/print</td><td><code>orders.view</code></td><td><code>output=json</code> (الافتراضي) أو <code>output=pdf</code> بمقاس A4</td></tr>
+  <tr><td class="ltr"><span class="m m-put">POST</span>/orders/{id}/inspection/whatsapp</td><td><code>orders.inspect</code></td><td>يبعت التقرير للعميل على واتساب كملف PDF. بيتبعت كمان لوحده مع صورة الفاتورة لما فاتورة فيها فحص تتقفل. وحالة آخر إرسال بترجع في <code>whatsapp</code> في رد الفحص</td></tr>
 </table></div>
 
 <h3>قائمة الفحص</h3>

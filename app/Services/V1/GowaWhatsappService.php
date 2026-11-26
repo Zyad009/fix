@@ -36,6 +36,19 @@ class GowaWhatsappService
             ]));
     }
 
+    /**
+     * Sends a document (e.g. a PDF report) as a file attachment.
+     */
+    public function sendFile(string $phone, string $filePath, string $caption = '', ?string $deviceId = null): string
+    {
+        return $this->messageId($this->request($deviceId)
+            ->attach('file', (string) file_get_contents($filePath), basename($filePath))
+            ->post($this->url('send/file'), [
+                'phone' => $this->toJid($phone),
+                'caption' => $caption,
+            ]));
+    }
+
     private function request(?string $deviceId): PendingRequest
     {
         $request = Http::withBasicAuth((string) config('services.gowa.username'), (string) config('services.gowa.password'))
