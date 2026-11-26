@@ -14,7 +14,7 @@
             @endif
         </td>
         @if ($center['logo_path'])
-            <td class="logo"><img src="{{ $center['logo_path'] }}" alt=""></td>
+            <td class="logo"><img src="{{ $center['logo_path'] }}" style="height: {{ $size === 'thermal' ? '12mm' : '18mm' }}; width: auto;" alt=""></td>
         @endif
     </tr>
 </table>
